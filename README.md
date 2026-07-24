@@ -235,6 +235,72 @@ The ground surface's ring(s) (from either an LOD3 or LOD2 source), flattened
 to the base height and re-emitted as a `bldg:lod0FootPrint`. No height
 reasoning beyond that base height is needed, LOD0 has no vertical extent.
 
+### Semantic enrichment
+
+`semantics` needs an LOD3 source (it targets `BuildingInstallation`s the way
+LOD3 CityGRID/UVM exports model them) and, without touching any geometry:
+
+- gives every `Building`, `BuildingPart`, `BuildingInstallation` and boundary
+  surface a reproducible `gml:id` if it's missing one,
+- classifies each `BuildingInstallation` as a balcony or a chimney,
+- adds the matching `bldg:function` code (`1000` balcony, `1030` chimney) and
+  a `type` attribute,
+- aggregates each installation's own geometry into a `bldg:lod3Geometry`.
+
+A real `BuildingInstallation` (a chimney, from the test fixtures) before and
+after, geometry trimmed to the boundary structure for readability:
+
+```xml
+<!-- before -->
+<bldg:BuildingInstallation>
+  <bldg:boundedBy>
+    <bldg:RoofSurface>
+      <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
+    </bldg:RoofSurface>
+  </bldg:boundedBy>
+  <bldg:boundedBy>
+    <bldg:WallSurface>
+      <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
+    </bldg:WallSurface>
+  </bldg:boundedBy>
+</bldg:BuildingInstallation>
+```
+
+```xml
+<!-- after -->
+<bldg:BuildingInstallation gml:id="UUID_5ca3b199-fef2-56fa-aa36-7c29381818ca">
+  <gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute>
+  <bldg:function>1030</bldg:function>
+  <bldg:boundedBy>
+    <bldg:RoofSurface gml:id="UUID_e34bf5c2-5d5e-5333-a15d-86e6357fdd03">
+      <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
+    </bldg:RoofSurface>
+  </bldg:boundedBy>
+  <bldg:boundedBy>
+    <bldg:WallSurface gml:id="UUID_619af64e-276a-5ac5-98e0-665da1f43790">
+      <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
+    </bldg:WallSurface>
+  </bldg:boundedBy>
+  <bldg:lod3Geometry>
+    <gml:MultiSurface>
+      <gml:surfaceMember xlink:href="#CH_ROOF"/>
+      <gml:surfaceMember xlink:href="#CH_WALL"/>
+    </gml:MultiSurface>
+  </bldg:lod3Geometry>
+</bldg:BuildingInstallation>
+```
+
+The balcony/chimney call is made by **eave height**: an `OuterFloorSurface`
+is a decisive balcony signal on its own; otherwise, an installation whose
+body sits below the building's own eave (the lowest point of its main roof,
+excluding the installation's own roof) is a balcony, above it a chimney or
+other roof structure. This catches real balconies that source CityGRID
+exports don't reliably tag with `OuterFloorSurface`, verified on real data:
+352 balconies and 2246 chimneys correctly separated, 0 left unknown. See
+[Semantic enrichment](docs/DESIGN.md#semantic-enrichment) in the design doc
+for the full classification order and the known limitation (no filter yet
+for low canopies/awnings misread as balconies).
+
 ### Watertightness: measured reality, not assumption
 
 A closed LOD2 solid is only possible when the source LOD3 is itself a clean

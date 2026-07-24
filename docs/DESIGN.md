@@ -140,6 +140,54 @@ The `GroundSurface` ring(s), flattened to `z_base` and re-emitted as a
 `bldg:lod0FootPrint` `MultiSurface`. No height reasoning beyond `z_base` is
 needed since LOD0 has no vertical extent.
 
+## Semantic enrichment
+
+`semantics.py` / `enhance_semantics()` applies the easy tier of the project's
+LoD3 rulebook, with no geometry changes. It needs an LOD3 source: the
+rulebook's target is `bldg:BuildingInstallation` (balconies, chimneys,
+dormers) as modelled in the LOD3 CityGRID/UVM exports it was written against.
+
+1. **Ids**: every `Building`, `BuildingPart`, `BuildingInstallation` and
+   thematic boundary surface (`WallSurface`, `RoofSurface`, `GroundSurface`,
+   `OuterFloorSurface`) gets a `gml:id` if it doesn't already have one,
+   deterministically seeded (uuid5) from the first polygon id found inside
+   it, so re-runs are reproducible.
+2. **Classification** (`classify_installation`): each `BuildingInstallation`
+   is classified `"balcony"`, `"chimney"`, or left unknown, in this order:
+   - an `OuterFloorSurface` among its boundary surfaces is a decisive
+     balcony signal (an exposed floor is the defining trait of a balcony),
+     regardless of height;
+   - otherwise, if the installation's own eave height (below) is known, an
+     installation whose vertical midpoint sits below that eave is a balcony,
+     above it a chimney or other roof structure;
+   - otherwise (eave unknown), a `RoofSurface` + `WallSurface` combination (a
+     small roofed box shape) falls back to chimney;
+   - anything matching none of these is left unclassified.
+3. **Eave height** (`compute_eaves`): the lowest point of every `RoofSurface`
+   belonging to the building's own main shell, explicitly excluding roof
+   surfaces that themselves belong to a `BuildingInstallation` (so a
+   chimney's own tiny roof cap never counts as "the building's eave").
+   Computed per feature (`Building`/`BuildingPart`) and per top-level
+   `Building`, so an installation on a `BuildingPart` uses that part's own
+   eave if known, falling back to the parent `Building`'s eave otherwise
+   (`eave_for`).
+4. **Function code and type**: `bldg:function` gets the SIG3D/CityGML
+   standard code-list value (`1000` balcony, `1030` chimney,
+   `FUNCTION_CODES` in `semantics.py`), plus a `type` generic attribute
+   (`gen:stringAttribute`) with the same word, for tools that don't resolve
+   function codelists.
+5. **lod3Geometry aggregation**: if an installation lacks an aggregating
+   `bldg:lod3Geometry`, one is added, referencing (via `xlink:href`) the
+   polygons already defined in its own boundary surfaces.
+
+The eave-height heuristic is the user's own idea, developed to catch real
+balconies that the source CityGRID export doesn't reliably tag with
+`OuterFloorSurface` (verified on real data: 352 balconies, 2246 chimneys, 0
+unknown, up from 0 balconies found with a structure-only, no-eave approach).
+Known limitation, tracked on the [Roadmap](#roadmap): no size/shape filter
+yet, so a low canopy or awning below the eave can be misclassified as a
+balcony.
+
 ## Watertightness: measured reality, not assumption
 
 The LOD2 shell inherits the vertices of the LOD3 shell (with window holes
