@@ -27,6 +27,7 @@ Thumbs.db
 !tests/data/*.gml
 !tests/data/*.xml
 !examples/*.gml
+!examples/*.json
 
 # CityDoctor2 reports written next to validated inputs
 *.citydoctor.xml

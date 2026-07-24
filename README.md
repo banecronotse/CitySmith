@@ -27,6 +27,14 @@ The same building block derived down from LOD3 to LOD2 to LOD1 with `citysmith l
 </tr>
 </table>
 
+Source data: *3D-Gebäudemodell LoD3.0-HH Hamburg*, Freie und Hansestadt
+Hamburg, Landesbetrieb Geoinformation und Vermessung (LGV), [Datenlizenz
+Deutschland – Namensnennung – Version 2.0](https://www.govdata.de/dl-de/by-2-0).
+A runnable single-building example from the same dataset is included at
+[`examples/hamburg_building_lod3.gml`](examples/hamburg_building_lod3.gml),
+see [`examples/README.md`](examples/README.md) for the full attribution and
+how to run it yourself.
+
 ## Why
 
 There aren't enough tools for editing CityGML building data. Depending on the

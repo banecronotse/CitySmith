@@ -1,0 +1,34 @@
+{
+  "mode": "embed",
+  "levels": [
+    0,
+    1,
+    2
+  ],
+  "features": 1,
+  "source_lod3": 1,
+  "source_lod2": 0,
+  "source_none": 0,
+  "lod2_already_present": 0,
+  "walls_deholed": 11,
+  "interior_rings_removed": 0,
+  "roof_copied": 7,
+  "ground_copied": 1,
+  "other_copied": 0,
+  "lod1_added": 1,
+  "lod1_skipped": 0,
+  "lod0_added": 1,
+  "lod0_skipped": 0,
+  "closed": 1,
+  "open": 0,
+  "skipped_no_type": 0,
+  "boundary_edges_total": 0,
+  "quality_buckets": {
+    "watertight": 1,
+    "1-4_open_edges": 0,
+    "5-20_open_edges": 0,
+    "20+_open_edges": 0
+  },
+  "open_feature_ids": [],
+  "total": 1
+}
