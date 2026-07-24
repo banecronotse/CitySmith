@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Data (do not commit large or private city models)
+*.gml
+*.xml
+*.json
+!tests/data/*.gml
+!tests/data/*.xml
+!examples/*.gml
+
+# CityDoctor2 reports written next to validated inputs
+*.citydoctor.xml

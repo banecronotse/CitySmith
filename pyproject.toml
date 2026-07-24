@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "citysmith"
+version = "0.1.0"
+description = "Derive a watertight LOD2 CityGML representation from LOD3 buildings."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "banecronotse" }]
+keywords = ["citygml", "lod", "3d-city-models", "gis", "gml", "level-of-detail"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = ["lxml>=4.9"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/banecronotse/citysmith"
+Issues = "https://github.com/banecronotse/citysmith/issues"
+
+[project.scripts]
+citysmith = "citysmith.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/citysmith"]
+artifacts = ["src/citysmith/data/*.yml"]
+
+[tool.ruff]
+line-length = 100

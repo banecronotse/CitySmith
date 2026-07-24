@@ -1,0 +1,65 @@
+# Default CityDoctor2 validation plan used by `citysmith validate`.
+# Geometry checks (GE_*) are enabled; semantic checks that assume a specific
+# authoring convention (e.g. wall/floor angle thresholds) are left off so the
+# report focuses on geometry correctness. Override with --config.
+globalParameters:
+   numberOfRoundingPlaces: 8
+   # in m
+   minVertexDistance: 0.0001
+useStreaming: true
+requirements:
+   R_GE_R_TOO_FEW_POINTS:
+      enabled: true
+   R_GE_R_NOT_CLOSED:
+      enabled: true
+   R_GE_R_CONSECUTIVE_POINTS_SAME:
+      enabled: true
+   R_GE_R_SELF_INTERSECTION:
+      enabled: true
+   R_GE_S_MULTIPLE_CONNECTED_COMPONENTS:
+      enabled: true
+   R_GE_P_INTERIOR_DISCONNECTED:
+      enabled: true
+   R_GE_P_INTERSECTING_RINGS:
+      enabled: true
+   R_GE_P_NON_PLANAR:
+      enabled: true
+      parameters:
+         # one of ("distance", "angle", "both")
+         type: distance
+         # in m
+         distanceTolerance: 0.02
+         # in degree
+         angleTolerance: 1
+   R_GE_P_HOLE_OUTSIDE:
+      enabled: true
+   R_GE_P_ORIENTATION_RINGS_SAME:
+      enabled: true
+   R_GE_P_INNER_RINGS_NESTED:
+      enabled: true
+   R_GE_S_TOO_FEW_POLYGONS:
+      enabled: true
+   R_GE_S_NOT_CLOSED:
+      enabled: true
+   R_GE_S_NON_MANIFOLD_EDGE:
+      enabled: true
+   R_GE_S_POLYGON_WRONG_ORIENTATION:
+      enabled: true
+   R_GE_S_ALL_POLYGONS_WRONG_ORIENTATION:
+      enabled: true
+   R_GE_S_NON_MANIFOLD_VERTEX:
+      enabled: true
+   R_GE_S_SELF_INTERSECTION:
+      enabled: true
+   R_SE_BS_IS_WALL:
+      enabled: false
+   R_SE_BS_IS_FLOOR:
+      enabled: false
+   R_SE_BS_GROUND_UNFRAGMENTED:
+      enabled: false
+   R_SE_BS_IS_GROUND:
+      enabled: false
+   R_SE_BS_IS_CEILING:
+      enabled: false
+   R_SE_POLYGON_WITHOUT_SURFACE:
+      enabled: false
