@@ -240,7 +240,14 @@ def _build_lod2(groups, emitted_ids, report, feature_seed):
 
 
 def _heights(typed):
-    """Return (z_base, z_eave, z_ridge) from a shell's polygons, or None."""
+    """Return (z_base, z_eave, z_ridge) from a shell's polygons, or None.
+
+    Named after the SIG3D Modeling Guide for 3D Objects, Part 2, section 2.4
+    "Heights": z_base is Min. Relief Height (the terrain intersection), z_eave
+    is Min. Eaves Height (the lowest point of any roof surface) and z_ridge is
+    Max. Ridge Height (the highest point of the shell). Both are literal
+    min/max, not weighted or clustered, matching the spec's own definitions.
+    """
     ground = typed.get("GroundSurface", [])
     roof = typed.get("RoofSurface", [])
     all_pts = [p for polys in typed.values() for poly in polys for p in _ring_points(poly)]
@@ -254,8 +261,15 @@ def _heights(typed):
     return z_base, z_eave, max(z_all)
 
 
-def _build_lod1(typed, feature_seed, report, height="eave"):
-    """Return a bldg:lod1Solid prism node, or None if not derivable."""
+def _build_lod1(typed, feature_seed, report, height="average"):
+    """Return a bldg:lod1Solid prism node, or None if not derivable.
+
+    `height` selects the SIG3D-named top of the block:
+      'eave'    Min. Eaves Height (the conservative, spec-literal LOD1 value)
+      'ridge'   Max. Ridge Height (the tallest possible guess)
+      'average' Average Roof Height = (Min. Eaves + Max. Ridge) / 2 (default,
+                the spec's own formula for approximating the real roof volume)
+    """
     ground = typed.get("GroundSurface", [])
     if len(ground) != 1:
         report.lod1_skipped += 1
@@ -265,7 +279,12 @@ def _build_lod1(typed, feature_seed, report, height="eave"):
         report.lod1_skipped += 1
         return None
     z_base, z_eave, z_ridge = hs
-    z_top = z_ridge if height == "ridge" else z_eave
+    if height == "ridge":
+        z_top = z_ridge
+    elif height == "eave":
+        z_top = z_eave
+    else:
+        z_top = (z_eave + z_ridge) / 2
     if z_top <= z_base:
         z_top = z_ridge
     if z_top <= z_base:
@@ -364,12 +383,14 @@ def _process_feature(feature, lod3solid, poly_index, emitted_ids, report, levels
 # --- public API --------------------------------------------------------------
 
 def enhance(input_path: str, output_path: str, *, levels=(2,), keep_lod3: bool = True,
-            lod1_height: str = "eave", limit: int | None = None) -> Report:
+            lod1_height: str = "average", limit: int | None = None) -> Report:
     """Derive lower LODs for every LOD3 solid and write the result.
 
     levels: which lower LODs to add, any subset of {0, 1, 2}.
     keep_lod3: keep LOD3 (embed) or strip it, leaving lower LODs only.
-    lod1_height: 'eave' (default) or 'ridge' for the LOD1 block top.
+    lod1_height: 'average' (default, SIG3D Average Roof Height), 'eave'
+        (Min. Eaves Height) or 'ridge' (Max. Ridge Height) for the LOD1 block
+        top. See docs/DESIGN.md#lod1-extruded-block.
     """
     levels = tuple(sorted(set(levels)))
     parser = etree.XMLParser(huge_tree=True, remove_blank_text=False)

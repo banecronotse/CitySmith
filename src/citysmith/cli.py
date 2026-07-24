@@ -126,7 +126,10 @@ def build_parser() -> argparse.ArgumentParser:
     lod.add_argument("-o", "--output")
     lod.add_argument("--levels", default="2", help="comma list of LODs to add, e.g. 0,1,2 (default 2)")
     lod.add_argument("--lower-only", action="store_true", help="strip LOD3, keep only the lower LODs")
-    lod.add_argument("--lod1-height", choices=["eave", "ridge"], default="eave")
+    lod.add_argument("--lod1-height", choices=["average", "eave", "ridge"], default="average",
+                      help="LOD1 block top, per SIG3D Part 2 sec 2.4: 'average' (default, "
+                           "(Min. Eaves + Max. Ridge) / 2), 'eave' (Min. Eaves Height) or "
+                           "'ridge' (Max. Ridge Height)")
     lod.add_argument("--limit", type=int, default=None)
     lod.add_argument("--report")
     lod.set_defaults(func=_cmd_lod)

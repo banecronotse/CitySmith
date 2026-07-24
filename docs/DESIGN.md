@@ -6,6 +6,35 @@ Given a CityGML 2.0 file whose buildings are modelled in LOD3, add a
 standards-compliant, watertight LOD2 representation to every building and
 building part, without altering the existing LOD3.
 
+## Scope
+
+CitySmith targets the **CityGML 2.0 Building module only**. This is a
+structural fact, not a soft preference: `citygml.py`'s `NS` map registers
+exactly `core`, `bldg`, `gml`, `gen` and `xlink`, no `brid` (Bridge), `tun`
+(Tunnel), `tran` (Transportation), `veg` (Vegetation), `wtr` (WaterBody),
+`luse` (LandUse), `frn` (CityFurniture), `dem` (Relief) or `app`
+(Appearance). `_FEATURE_TAGS` in both `core.py` and `cityjson.py` hardcode
+`{bldg:Building, bldg:BuildingPart}` as the only units of work. Features from
+other modules pass through the XML tree untouched, since the engine never
+looks for them, but are also never validated, converted or enriched.
+
+The Appearance module deserves a specific callout since it's easy to miss:
+CitySmith has no code path that reads or writes `app:Appearance`,
+`app:ParameterizedTexture` or texture coordinates anywhere. Because every
+polygon CitySmith generates (LOD0/1/2) gets a freshly derived id (see
+`_det_id`), any pre-existing appearance's `app:target` xlink references,
+which point at specific LOD3 polygon ids, can never resolve against generated
+geometry. LOD3 itself is untouched so its own textures remain intact, but
+CitySmith-derived LODs are always untextured, silently. This was verified
+against real test data with 178 `app:Appearance` elements and 30k+
+`app:textureCoordinates` entries.
+
+CitySmith is also downgrade-only (LOD3 to LOD0/1/2, never upward, no LOD4)
+and, within semantics, easy-tier only (see [Roadmap](#roadmap) for the hard
+tier). See the [README's Scope section](../README.md#scope) for the
+user-facing version of this list, including the CRS and merged-building
+caveats.
+
 ## Input assumptions and how they are detected
 
 The engine does not hard-code any single vendor's export. It keys off the
@@ -34,6 +63,9 @@ For each feature with an `lod3Solid`:
 
 1. Collect the shell polygon ids from the composite surface, in order.
 2. Partition them by thematic type.
+
+### LOD2 (faithful shell)
+
 3. **Roof and ground**: copy the LOD3 polygon into the LOD2 with a fresh
    reproducible id. LOD2 geometry is kept self-contained (no cross-LOD XLinks)
    so each LOD is independent and third-party readers do not have to resolve
@@ -55,6 +87,53 @@ For each feature with an `lod3Solid`:
 Openings (`bldg:opening` / Window / Door) and `outerBuildingInstallation`
 (dormers, chimneys, roof bumps) are simply not referenced by the LOD2, which is
 the standard LOD2 content model. They remain present in the LOD3.
+
+### LOD1 (extruded block)
+
+LOD1 is a single prism: the ground surface's footprint, extruded straight up
+from a base height to a top height (`extrude_prism` in `geometry.py`, watertight
+by construction, see below). Per the SIG3D Modeling Guide for 3D Objects, Part
+2, section 2.1, LOD1 is by definition "exactly one prismatic extrusion solid"
+per `Building`/`BuildingPart`, which is exactly this shape: horizontal ground
+and top, vertical walls.
+
+Heights follow the vocabulary defined in the same guide, section 2.4
+("Heights"):
+
+- **Min. Relief Height** (`z_base`): the lowest point of the `GroundSurface`,
+  or the lowest point in the whole shell if no ground surface is present.
+  Used as the prism's base.
+- **Min. Eaves Height** (`z_eave`): the lowest point of any `RoofSurface` in
+  the shell.
+- **Max. Ridge Height** (`z_ridge`): the highest point anywhere in the shell.
+- **Average Roof Height**: `(Min. Eaves Height + Max. Ridge Height) / 2`, the
+  formula given verbatim in the guide's height diagram (section 2.4, page 6).
+
+`--lod1-height` selects the prism's top height from these, by name:
+
+- `average` (**default**): Average Roof Height. This is the block height
+  CitySmith uses unless told otherwise.
+- `eave`: Min. Eaves Height, the most conservative (lowest) option.
+- `ridge`: Max. Ridge Height, the tallest option.
+
+All three are literal min/max over the shell's points, no clustering or area
+weighting, matching how the guide itself defines them.
+
+**Known limitation**: LOD1 is still fundamentally "one box per `Building`."
+If a `Building` in the source data actually represents several real
+structures merged into a single feature (see the honest note in
+[README.md](../README.md#lod3-to-lod1-how-the-block-height-is-chosen)), no
+single height, eave, ridge, or average, is a correct answer, because the
+guide's height model assumes one coherent roof to begin with. CitySmith does
+not currently detect or flag this case; it is a known gap, tracked on the
+[Roadmap](#roadmap), consistent with the "report, don't force" approach
+already used for watertightness.
+
+### LOD0 (footprint)
+
+The `GroundSurface` ring(s), flattened to `z_base` and re-emitted as a
+`bldg:lod0FootPrint` `MultiSurface`. No height reasoning beyond `z_base` is
+needed since LOD0 has no vertical extent.
 
 ## Watertightness: measured reality, not assumption
 
@@ -86,6 +165,15 @@ that makes LOD2 itself watertight is future work.
 that every undirected edge is used exactly twice. Coordinates are rounded to
 millimetre precision before comparison. The per-feature result is aggregated in
 the `Report`, and any non-closed feature id is listed so it can be inspected.
+This is a direct implementation of the closed-solid definition in the [SIG3D
+Modeling Guide for 3D Objects, Part 1](https://files.sig3d.org/file/ag-qualitaet/201311_SIG3D_Modeling_Guide_for_3D_Objects_Part_1.pdf)
+(section 10, `gml:Solid`): every edge shared by exactly two polygons, and every
+polygon connected to every other through that shared-edge graph (condition v
+in the guide is the "umbrella axiom" from Gröger & Plümer 2011, every point is
+surrounded by a single closed cycle of polygons). Part 1 is also, not
+coincidentally, the rule set CityDoctor2's own geometry checks (`GE_S_*`,
+`GE_P_*`) are built on, which is why our closedness numbers and CityDoctor2's
+`GE_S_NOT_CLOSED` findings corroborate each other (see below).
 
 This native check is intentionally narrow (closedness only) and has zero
 dependencies. For a broader, independently developed validation, `validate`
@@ -139,22 +227,31 @@ annotations. So the bridge is validate-and-report, not auto-heal.
 
 ### Planned
 
-- **Semantic rulebook expansion**: read the [SIG3D Modeling Guide for 3D
-  Objects, Part 2](https://files.sig3d.org/file/ag-qualitaet/201311_SIG3D_Modeling_Guide_for_3D_Objects_Part_2.pdf)
+- **Semantic rulebook expansion**: the [SIG3D Modeling Guide for 3D Objects,
+  Part 2](https://files.sig3d.org/file/ag-qualitaet/201311_SIG3D_Modeling_Guide_for_3D_Objects_Part_2.pdf)
   (the broader CityGML coding standard the project's chimney and balcony
-  rulebook itself cites) and derive additional structured semantic-enrichment
-  rules from it, the same way the current easy tier came from that
-  chimney/balcony spec. Likely candidates: more `BuildingInstallation` and
-  `BoundarySurface` function codes, thickness/size thresholds for when a
-  component should collapse to a single surface, and orientation-based surface
-  reclassification rules.
+  rulebook itself cites) has now informed the LOD1 height methodology (section
+  2.4, see [LOD1 (extruded block)](#lod1-extruded-block)); its later
+  "Extended Modeling" sections on `BuildingInstallation` and boundary-surface
+  codelists are still unreviewed and are likely candidates for more structured
+  semantic-enrichment rules, the same way the current easy tier came from the
+  chimney/balcony spec.
 - **Semantic enhancer, hard tier**: restructure `BuildingPart`-modelled
-  balconies into `outerBuildingInstallation`, collapse thick (>0.2 m) elements
-  to single surfaces, reclassify faces by orientation (bottom to
+  balconies into `outerBuildingInstallation`, collapse thick (>0.5 m per
+  SIG3D Part 2 sec. 2.6, "Overhanging Building Elements") elements to solids
+  vs. surfaces, reclassify faces by orientation (bottom to
   `OuterFloorSurface`).
 - **Eave-heuristic refinement**: a size/shape filter to reduce false positives
   where non-balcony elements below the eave (canopies, awnings) get
   misclassified as balconies.
+- **Merged-building diagnostic for LOD1**: see the "Known limitation" note in
+  [LOD1 (extruded block)](#lod1-extruded-block). Detect and flag `Building`
+  features whose roof heights split into multiple large, comparably-sized
+  groups (a signal the feature actually merges several real structures, a
+  known export artifact e.g. from shared ALKIS footprints or addresses), so
+  users can review those buildings instead of silently trusting one LOD1 box
+  for them. Deferred for now; documented as a known limitation in the
+  meantime, the same "report, don't force" precedent as watertightness.
 - **Geometric healing**: an optional pass to make LOD2 itself watertight
   (T-junction resolution, soffit closing), rather than relying on LOD1 as the
   only guaranteed-closed output.

@@ -41,6 +41,44 @@ CityJSON encoding. CitySmith produces those from what you already have.
 | `convert` | Emit CityJSON 1.1 (validated through cjio, upgrades cleanly to 2.0) | done |
 | `validate` | Native watertightness report, plus a bridge to the CityDoctor2 external validator | done |
 
+## Scope
+
+CitySmith is deliberately narrow. It works on:
+
+- **CityGML 2.0**, the **Building module only** (`bldg:Building`,
+  `bldg:BuildingPart`). CityGML also defines separate modules for bridges,
+  tunnels, transportation, vegetation, water bodies, land use, city furniture
+  and terrain relief; none of those are read, written or even parsed, a
+  Bridge or Vegetation feature in the input file passes through completely
+  untouched. CityGML 1.0 and 3.0 are not supported.
+- **Downgrading only**: LOD3 to LOD0/1/2. There is no LOD4 (interiors), and no
+  path that upgrades a lower LOD into a higher one.
+- **Semantic enrichment, easy tier only**: ids, `function` codes, `type`
+  attributes, `lod3Geometry` aggregation, and specifically balcony/chimney
+  classification for `BuildingInstallation`. The hard tier (restructuring
+  `BuildingPart`-modelled balconies, face reclassification by orientation) is
+  not implemented yet, see the [Roadmap](docs/DESIGN.md#roadmap).
+
+And explicitly does **not** touch:
+
+- **Appearances, materials or textures.** This isn't a hypothetical gap:
+  real photogrammetric exports (like the one this was tested against) often
+  carry image-based `app:ParameterizedTexture` data with tens of thousands of
+  texture-coordinate entries per file. CitySmith neither reads nor writes any
+  of it. Existing LOD3 textures survive untouched in the output because LOD3
+  geometry and ids are never modified, but every polygon CitySmith generates
+  for LOD0/1/2 gets a fresh id, so none of the generated geometry can ever be
+  textured (the source appearance's surface references only resolve against
+  the original LOD3 ids). CityJSON export drops materials/textures entirely
+  too. If you need textured lower LODs, this tool does not produce them.
+- **Multiple coordinate reference systems in one file.** CitySmith assumes,
+  per SIG3D Part 2 section 2.2's own recommendation, that `srsName` is
+  declared once at the document level and inherited by every geometry; new
+  geometry it generates relies on that inheritance rather than setting its
+  own `srsName`. A file that legally but unusually declares different
+  `srsName` values per polygon is not specially handled.
+- **Buildings that are secretly several buildings.** See the honest note in
+  [LOD3 to LOD1](#lod3-to-lod1-how-the-block-height-is-chosen) below.
 
 ## LOD3 to LOD2 today
 
@@ -52,6 +90,42 @@ For every building and building part that owns an `lod3Solid`, CitySmith:
 - writes standards-compliant `lod2` boundary surfaces and an `lod2Solid`,
 - keeps the LOD3 untouched (or, with `--lod2-only`, strips it for a LOD2 file),
 - gives every new element a reproducible id, so re-runs are byte-identical.
+
+## LOD3 to LOD1: how the block height is chosen
+
+LOD1 is a single prism: the ground surface's footprint, extruded from a base
+height up to a top height, per the [SIG3D Modeling Guide for 3D
+Objects, Part 2](https://files.sig3d.org/file/ag-qualitaet/201311_SIG3D_Modeling_Guide_for_3D_Objects_Part_2.pdf),
+section 2.1: "exactly one prismatic extrusion solid" per building or building
+part. The base is the lowest point of the ground surface (**Min. Relief
+Height** in the guide's own vocabulary, section 2.4 "Heights"). The top height
+is chosen with `--lod1-height`, using the same section's named heights:
+
+- **`average`** (default): **Average Roof Height**, the guide's own formula
+  `(Min. Eaves Height + Max. Ridge Height) / 2`.
+- **`eave`**: **Min. Eaves Height**, the lowest point of any roof surface, the
+  most conservative option.
+- **`ridge`**: **Max. Ridge Height**, the highest point anywhere in the shell,
+  the tallest option.
+
+All three are plain min/max over the shell's points, exactly as the guide
+defines them, no clustering or weighting on top. See
+[LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) in the design doc
+for the full section reference.
+
+LOD1 is still, by definition, one box per `Building`. If a `Building` in your
+source data actually represents several real structures at substantially
+different heights merged into a single feature (a common artifact of
+ALKIS-footprint-driven or address-driven exports, where several real
+buildings share one cadastral footprint or address and get exported as one
+`Building`), none of the three height choices is a correct answer: the
+guide's height model assumes one coherent roof, not a merger of unrelated
+structures. That is a source-data modelling issue, not a CitySmith defect,
+worth checking the export's metadata (in ours, the source description pointed
+to this) before assuming the tool is wrong. Splitting such buildings into
+separate `BuildingPart`s upstream is the correct fix. CitySmith does not yet
+detect or flag this case automatically; it's a known limitation, tracked on
+the [Roadmap](docs/DESIGN.md#roadmap).
 
 ### Honest note on watertightness
 

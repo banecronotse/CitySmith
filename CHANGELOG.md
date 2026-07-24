@@ -15,8 +15,8 @@ All notable changes to this project are documented here. The format follows
 - Test suite with a box fixture covering both modes, id uniqueness,
   reproducibility and hole filling.
 
-- LOD1 derivation: watertight extruded block solid from the footprint, eave or
-  ridge height. LOD0 derivation: footprint MultiSurface.
+- LOD1 derivation: watertight extruded block solid from the footprint, average
+  (default), eave or ridge height. LOD0 derivation: footprint MultiSurface.
 - Multi-LOD `enhance()` API and `citysmith lod --levels 0,1,2` command.
 - Semantic enhancer (`enhance_semantics`, `citysmith semantics`): ids, function
   codes, `type` attributes, `lod3Geometry` aggregation, structure-based
@@ -43,6 +43,12 @@ All notable changes to this project are documented here. The format follows
 - LOD1 prism faces now have outward-facing normals (footprint reoriented to
   counter-clockwise), so the roof/top no longer disappears under back-face
   culling in viewers such as FZK ModelViewer.
+- LOD1's default block height changed from Min. Eaves Height (the global
+  minimum across every `RoofSurface`, which let a single low secondary roof
+  segment drag the whole block down) to **Average Roof Height**, `(Min. Eaves
+  Height + Max. Ridge Height) / 2`, following the SIG3D Modeling Guide for 3D
+  Objects, Part 2, section 2.4. `--lod1-height eave`/`ridge` remain available
+  for the guide's other two named heights.
 - `localname()` no longer raises on XML comment / processing-instruction nodes.
 
 ### Notes
