@@ -97,8 +97,8 @@ And explicitly does **not** touch:
 ## Install
 
 ```bash
-git clone https://github.com/banecronotse/citysmith.git
-cd citysmith
+git clone https://github.com/banecronotse/CitySmith.git
+cd CitySmith
 pip install -e .
 ```
 

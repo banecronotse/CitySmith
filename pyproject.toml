@@ -24,8 +24,8 @@ dependencies = ["lxml>=4.9"]
 dev = ["pytest>=7", "ruff>=0.4"]
 
 [project.urls]
-Homepage = "https://github.com/banecronotse/citysmith"
-Issues = "https://github.com/banecronotse/citysmith/issues"
+Homepage = "https://github.com/banecronotse/CitySmith"
+Issues = "https://github.com/banecronotse/CitySmith/issues"
 
 [project.scripts]
 citysmith = "citysmith.cli:main"
