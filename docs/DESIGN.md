@@ -2,9 +2,12 @@
 
 ## Goal
 
-Given a CityGML 2.0 file whose buildings are modelled in LOD3, add a
-standards-compliant, watertight LOD2 representation to every building and
-building part, without altering the existing LOD3.
+Given a CityGML 2.0 file whose buildings are modelled in LOD3 or LOD2, derive
+standards-compliant lower levels of detail (LOD2 needs LOD3 as its source;
+LOD1 and LOD0 work from either) for every building and building part, without
+altering the existing source geometry. LOD2 is the realistic default input:
+real-world CityGML is overwhelmingly LOD2, not LOD3, see [Which LOD is my
+data?](../README.md#which-lod-is-my-data) in the README.
 
 ## Scope
 
@@ -29,20 +32,22 @@ CitySmith-derived LODs are always untextured, silently. This was verified
 against real test data with 178 `app:Appearance` elements and 30k+
 `app:textureCoordinates` entries.
 
-CitySmith is also downgrade-only (LOD3 to LOD0/1/2, never upward, no LOD4)
-and, within semantics, easy-tier only (see [Roadmap](#roadmap) for the hard
-tier). See the [README's Scope section](../README.md#scope) for the
-user-facing version of this list, including the CRS and merged-building
-caveats.
+CitySmith is also downgrade-only (never upward, no LOD4) and, within
+semantics, easy-tier only (see [Roadmap](#roadmap) for the hard tier). See the
+[README's Scope section](../README.md#scope) for the user-facing version of
+this list, including the CRS and merged-building caveats.
 
 ## Input assumptions and how they are detected
 
 The engine does not hard-code any single vendor's export. It keys off the
 CityGML data model and degrades gracefully:
 
-1. The unit of work is any feature that owns a `bldg:lod3Solid`
-   (a `bldg:Building` or a `bldg:BuildingPart`).
-2. An `lod3Solid` is a `gml:Solid` whose exterior `gml:CompositeSurface`
+1. The unit of work is any feature that owns a `bldg:lod3Solid` or, failing
+   that, a `bldg:lod2Solid` (a `bldg:Building` or a `bldg:BuildingPart`).
+   `_find_source_solid` prefers LOD3 when both are present. LOD2 derivation
+   specifically only runs when the source was LOD3; LOD1/LOD0 run from
+   either, since both only need Ground/Roof surface heights.
+2. A source solid is a `gml:Solid` whose exterior `gml:CompositeSurface`
    references the shell polygons. Two encodings are supported:
    - references by `xlink:href` to polygons defined inside the boundary
      surfaces (the common CityGRID / 3DCityDB style), and
@@ -122,7 +127,7 @@ weighting, matching how the guide itself defines them.
 **Known limitation**: LOD1 is still fundamentally "one box per `Building`."
 If a `Building` in the source data actually represents several real
 structures merged into a single feature (see the honest note in
-[README.md](../README.md#lod3-to-lod1-how-the-block-height-is-chosen)), no
+[README.md](../README.md#lod1-how-the-block-height-is-chosen)), no
 single height, eave, ridge, or average, is a correct answer, because the
 guide's height model assumes one coherent roof to begin with. CitySmith does
 not currently detect or flag this case; it is a known gap, tracked on the

@@ -8,8 +8,9 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - Project scaffold, packaging and design document.
 - CityGML 2.0 namespace helpers.
-- LOD3 to LOD2 engine (`citysmith.add_lod2`) with embed and `--lod2-only` modes,
-  window/door hole filling, reproducible ids and self-contained LOD2 geometry.
+- LOD3 to LOD2 engine (`citysmith.add_lod2`) with embed and `--lower-only`
+  modes, window/door hole filling, reproducible ids and self-contained LOD2
+  geometry.
 - Native watertightness quality report (per-building open-edge buckets).
 - Command line (`citysmith`) with JSON report output.
 - Test suite with a box fixture covering both modes, id uniqueness,
@@ -33,11 +34,23 @@ All notable changes to this project are documented here. The format follows
   CitySmith does not check natively (non-planarity, ring orientation, roof
   fragmentation) and corroborated the native closedness report independently.
 
+### Added
+- `lod` now reads whichever detail level a feature actually has (LOD3
+  preferred, LOD2 as fallback) instead of only ever looking for `lod3Solid`.
+  LOD1/LOD0 derive equally well from an LOD2 source, since both only need
+  Ground/Roof surface heights; LOD2 derivation still requires an LOD3 source.
+  `Report` gained `source_lod3`/`source_lod2`/`source_none`/
+  `lod2_already_present` so this is always visible, never silent.
+- `--levels` now rejects unsupported values (e.g. `3`) with a clear error
+  instead of silently ignoring them.
+
 ### Changed
 - Installation classification now uses the building eave height: an installation
   whose body sits below the eave is a balcony, above it a chimney/roof structure.
   This catches balconies that CityGRID does not label with OuterFloorSurface
   (previously all such installations were misread as chimneys or left unknown).
+- `enhance()`/`add_lod2()` renamed the `keep_lod3` parameter to `keep_source`,
+  since the source being kept isn't always LOD3 anymore.
 
 ### Fixed
 - LOD1 prism faces now have outward-facing normals (footprint reoriented to

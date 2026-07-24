@@ -1,7 +1,7 @@
 """Command-line interface for citysmith.
 
 Subcommands:
-  lod        derive and embed lower LODs (LOD0/1/2) from LOD3
+  lod        derive and embed lower LODs (LOD0/1/2) from an LOD3 or LOD2 source
   semantics  apply the easy-tier semantic fixes (ids, function, type, aggregate)
   convert    export CityGML to CityJSON 1.1
   validate   run the CityDoctor2 external validator and report the results
@@ -35,14 +35,23 @@ def _cmd_lod(args) -> int:
     levels = tuple(int(x) for x in args.levels.split(",") if x.strip() != "")
     out = args.output or _default_out(args.input, "_lod")
     print(f"reading  : {args.input}")
-    report = enhance(args.input, out, levels=levels, keep_lod3=not args.lower_only,
-                     lod1_height=args.lod1_height, limit=args.limit)
+    try:
+        report = enhance(args.input, out, levels=levels, keep_source=not args.lower_only,
+                         lod1_height=args.lod1_height, limit=args.limit)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     print(f"written  : {out}")
     print(f"mode                : {report.mode}   levels: {list(report.levels)}")
-    print(f"features processed  : {report.features}")
+    print(f"features processed  : {report.features}  "
+          f"(sourced from LOD3: {report.source_lod3}, from LOD2: {report.source_lod2}, "
+          f"no usable source: {report.source_none})")
     if 2 in levels:
         print(f"  walls de-holed    : {report.walls_deholed} "
               f"(holes filled: {report.interior_rings_removed})")
+        if report.lod2_already_present:
+            print(f"  LOD2 already present, nothing to derive: {report.lod2_already_present} "
+                  "feature(s) (LOD2 can only be derived from an LOD3 source)")
         print("  LOD2 watertightness (report-only; reflects source LOD3 quality):")
         for k in ("watertight", "1-4_open_edges", "5-20_open_edges", "20+_open_edges"):
             print(f"    {k:16}: {report.quality_buckets[k]}")
@@ -121,11 +130,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"citysmith {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
-    lod = sub.add_parser("lod", help="derive and embed lower LODs from LOD3")
+    lod = sub.add_parser("lod", help="derive and embed lower LODs from LOD3 or LOD2 source")
     lod.add_argument("input")
     lod.add_argument("-o", "--output")
-    lod.add_argument("--levels", default="2", help="comma list of LODs to add, e.g. 0,1,2 (default 2)")
-    lod.add_argument("--lower-only", action="store_true", help="strip LOD3, keep only the lower LODs")
+    lod.add_argument("--levels", default="2",
+                      help="comma list of LODs to derive, any of 0,1,2 (default 2). LOD1/LOD0 "
+                           "work from an LOD3 or LOD2 source; LOD2 needs an LOD3 source.")
+    lod.add_argument("--lower-only", action="store_true",
+                      help="strip the source geometry, keep only the newly derived lower LODs")
     lod.add_argument("--lod1-height", choices=["average", "eave", "ridge"], default="average",
                       help="LOD1 block top, per SIG3D Part 2 sec 2.4: 'average' (default, "
                            "(Min. Eaves + Max. Ridge) / 2), 'eave' (Min. Eaves Height) or "

@@ -104,7 +104,7 @@ def test_reproducible_ids(tmp_path):
 
 def test_lod2_only_strips_lod3(tmp_path):
     out = tmp_path / "box_only.gml"
-    citysmith.add_lod2(str(DATA), str(out), keep_lod3=False)
+    citysmith.add_lod2(str(DATA), str(out), keep_source=False)
     root = etree.parse(str(out)).getroot()
     assert _count(root, "lod3Solid") == 0
     assert _count(root, "lod3MultiSurface") == 0
@@ -129,6 +129,46 @@ def test_lod1_prism_watertight_and_lod0(tmp_path):
     assert shell_stats(rings)["closed"] is True  # prism watertight by construction
     dups = {k: v for k, v in Counter(_ids(root)).items() if v > 1}
     assert dups == {}
+
+
+# --- engine: LOD2 as source (not just LOD3) -----------------------------------
+
+def test_lod1_lod0_derivable_from_lod2_source(tmp_path):
+    """LOD1/LOD0 only need Ground/Roof surface heights, which an LOD2-only
+    file already has, so they must be derivable without any LOD3 present."""
+    lod2_only = tmp_path / "box_lod2_only.gml"
+    citysmith.add_lod2(str(DATA), str(lod2_only), keep_source=False)
+
+    out = tmp_path / "box_lod2_plus_lower.gml"
+    report = citysmith.enhance(str(lod2_only), str(out), levels=(0, 1))
+    assert report.source_lod3 == 0
+    assert report.source_lod2 == 1
+    assert report.lod1_added == 1
+    assert report.lod0_added == 1
+    root = etree.parse(str(out)).getroot()
+    assert _count(root, "lod1Solid") == 1
+    assert _count(root, "lod0FootPrint") == 1
+
+
+def test_lod2_request_on_lod2_source_is_a_reported_noop(tmp_path):
+    """Asking for LOD2 when the source is already LOD2 has nothing to derive
+    (LOD2 derivation needs LOD3's window/door holes and installations to
+    remove); it must not crash or duplicate the existing lod2Solid."""
+    lod2_only = tmp_path / "box_lod2_only.gml"
+    citysmith.add_lod2(str(DATA), str(lod2_only), keep_source=False)
+
+    out = tmp_path / "box_lod2_noop.gml"
+    report = citysmith.enhance(str(lod2_only), str(out), levels=(1, 2))
+    assert report.lod2_already_present == 1
+    assert report.lod1_added == 1
+    root = etree.parse(str(out)).getroot()
+    assert _count(root, "lod2Solid") == 1  # unchanged, not duplicated
+
+
+def test_unsupported_level_rejected(tmp_path):
+    out = tmp_path / "box_bad.gml"
+    with pytest.raises(ValueError, match="unsupported"):
+        citysmith.enhance(str(DATA), str(out), levels=(2, 3))
 
 
 # --- semantics ---------------------------------------------------------------
