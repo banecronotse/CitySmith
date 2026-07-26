@@ -39,23 +39,37 @@ this list, including the CRS and merged-building caveats.
 
 ## Input assumptions and how they are detected
 
-The engine does not hard-code any single vendor's export. It keys off the
-CityGML data model and degrades gracefully:
+The engine does not hard-code any single vendor's export or authoring tool.
+It keys off the CityGML data model itself and degrades gracefully; `_find_source_shell`
+in `core.py` is the single place this detection happens, and `citysmith inspect`
+runs it read-only so a file's shape is knowable before committing to a real run.
 
-1. The unit of work is any feature that owns a `bldg:lod3Solid` or, failing
-   that, a `bldg:lod2Solid` (a `bldg:Building` or a `bldg:BuildingPart`).
-   `_find_source_solid` prefers LOD3 when both are present. LOD2 derivation
-   specifically only runs when the source was LOD3; LOD1/LOD0 run from
-   either, since both only need Ground/Roof surface heights.
-2. A source solid is a `gml:Solid` whose exterior `gml:CompositeSurface`
-   references the shell polygons. Two encodings are supported:
-   - references by `xlink:href` to polygons defined inside the boundary
-     surfaces (the common CityGRID / 3DCityDB style), and
-   - polygons defined inline in the composite surface.
-3. Each shell polygon is classified by its nearest boundary-surface ancestor
-   (`RoofSurface`, `WallSurface`, `GroundSurface`, and the other
-   `*Surface` thematic types).
-4. Wall openings are expected as `gml:interior` rings on the wall polygon
+1. The unit of work is any feature that owns usable LOD3 or LOD2 geometry (a
+   `bldg:Building` or a `bldg:BuildingPart`), LOD3 preferred. Three
+   structurally different, all valid, CityGML encodings are recognised, by
+   structure, never by guessing the authoring tool from a filename:
+   - **`solid`**: an aggregating `lodXSolid` (a `gml:Solid`) whose exterior
+     `gml:CompositeSurface` references the shell polygons, either by
+     `xlink:href` to polygons defined inside the boundary surfaces (the
+     common CityGRID / 3DCityDB style) or inline in the composite surface.
+   - **`surfaces`**: no aggregating solid; each boundary surface under
+     `boundedBy` carries its own `lodXMultiSurface` directly, inline or by
+     local `xlink:href` (seen from SketchUp-modelled, FME-workbench-exported
+     data, which doesn't always construct a closed solid; verified against
+     real files from that pipeline). Structurally just as usable as `solid`
+     for every capability except that watertightness can't be assumed, since
+     nothing claimed the shell was closed in the first place.
+   - **`unclassified`**: a `lodXMultiSurface` directly on the feature, not
+     inside any `boundedBy` thematic surface, a flat bag of polygons with no
+     wall/roof/ground distinction. Detected, reported (`source_unclassified`
+     in `Report`/`InspectReport`), but never processable: LOD1/LOD0
+     extrusion needs to know which polygon is the ground, information this
+     pattern simply doesn't carry. Not a defect in the tool or the data, just
+     a genuine information gap.
+2. Each shell polygon (in the `solid` and `surfaces` patterns) is classified
+   by its nearest boundary-surface ancestor (`RoofSurface`, `WallSurface`,
+   `GroundSurface`, and the other `*Surface` thematic types).
+3. Wall openings are expected as `gml:interior` rings on the wall polygon
    (optionally with `bldg:opening` glass/leaf geometry). Openings modelled as
    recesses are out of scope for v1 and are reported, not silently mangled.
 
@@ -64,9 +78,11 @@ tool is safe to point at unfamiliar data.
 
 ## Transformation
 
-For each feature with an `lod3Solid`:
+For each feature with a usable `solid` or `surfaces` shell (`unclassified`
+features are skipped, see above):
 
-1. Collect the shell polygon ids from the composite surface, in order.
+1. Collect the shell polygons, from the composite surface's ids (`solid`) or
+   directly from each boundary surface's own geometry (`surfaces`).
 2. Partition them by thematic type.
 
 ### LOD2 (faithful shell)
@@ -88,6 +104,86 @@ For each feature with an `lod3Solid`:
 7. Insert the new nodes immediately before the `lod3Solid`, so the `lod2Solid`
    precedes the `lod3Solid` (schema-correct solid ordering) and the LOD2
    boundary surfaces stay within the `boundedBy` group.
+
+#### Panelized surfaces: outer-boundary merge, not just de-holing
+
+Removing `gml:interior` rings only fixes one way window/door gaps get
+modelled. Some real exports (confirmed on SketchUp-modelled, FME-workbench-
+exported data) instead tile a facade into many small panel polygons and
+simply omit the panel where a window is, there is no hole to strip, the
+geometry for that patch was never captured. De-holing can't fix a gap that
+was never a hole.
+
+For any thematic surface with more than one polygon, `_build_lod2` first
+calls `geometry.cluster_coplanar_rings` to group the polygons by which plane
+they actually lie on (same normal direction, same offset, within tolerance).
+This matters because a single `boundedBy` can legitimately bundle either
+several small panels of the *same* physical face (the missing-panel pattern
+above) or several genuinely different faces altogether, this project's own
+`box_lod3.gml` test fixture bundles all four walls of a box under one
+`WallSurface`, and merging those would fit a meaningless plane through
+perpendicular faces. Clustering by plane, not just counting polygons, is
+what tells the two cases apart.
+
+Each resulting cluster with more than one polygon is then collapsed by
+`geometry.union_coplanar_polygons`: project every ring (exterior *and*
+interior) into the cluster's fitted plane, build the undirected multiset of
+all their edges, and drop every edge shared by two adjacent panels. An edge
+walked by two panels appears twice and cancels; an edge on the true outline
+appears once and survives. The surviving edges are traced into closed loops,
+and loops nested inside an odd number of others (window/door gaps left as
+missing panels, or genuine cut interior rings) are dropped, filling them.
+This is a real boundary union, not a convex hull, so a concave, L-shaped or
+stepped wall keeps its actual outline rather than being rounded out to a
+bulging convex envelope with diagonal chords across the concavity (the
+earlier convex-hull merge did exactly that, and on real SketchUp/FME data it
+produced visibly oversized, diagonal-cut walls, it was wrong, not an
+acceptable approximation). A lone polygon in its own cluster is untouched,
+going through the normal de-hole copy path. `Report` gains
+`merged_surfaces`/`merged_panels` to make this visible.
+
+Edge cancellation is only safe when panels meet edge-to-edge. If any vertex
+lands strictly in the interior of another panel's edge (a T-junction), the
+shared edges won't cancel and the traced outline would be broken, so
+`union_coplanar_polygons` detects that and returns `None`, and the cluster
+falls back to the untouched per-polygon path. The same happens if the
+cluster's points don't actually fit one plane (a mis-grouped cluster of
+genuinely different faces): fitting one plane through them would be silently
+wrong, so it bails rather than guess.
+
+Three ways a window/door opening can be modelled, and how each is handled
+when simplifying to LOD2:
+
+1. *Interior ring* (`gml:interior`), the standard: the ring is dropped when
+   copying the wall (de-holing), or, on the merge path, comes out as its own
+   loop and is discarded. Removed.
+2. *Missing panel*: the facade is tiled into panels and the panel where the
+   window is was simply never emitted, leaving a gap. Edge cancellation
+   traces the gap as an interior loop and discards it. Removed.
+3. *Exterior-boundary notch*: the opening is carved directly into the wall
+   polygon's own exterior ring, which juts inward to trace around the
+   opening and back out, sometimes through a very thin neck. **Not removed.**
+   A reentrant indentation in a boundary is geometrically indistinguishable
+   from an intentional concavity (an L-shaped wall, a recessed entrance):
+   there is no local test that says "this notch is a window, that one is the
+   building's real shape." Removing them would require a size heuristic (fill
+   any inward bay below some width/depth) that would also flatten genuinely
+   concave walls, including in clean CityGRID data, so it is deliberately not
+   done. This encoding shows up only in inconsistent exports (the same
+   building can even mix all three ways of modelling openings in a single
+   wall); a well-formed LOD3 source uses interior rings, which are handled.
+   The outline is left faithful to the source rather than guessed at.
+
+The same cleanup also applies when a feature's *native* source already is
+LOD2 but is itself panelized (`_needs_lod2_build` checks real mergeability,
+not just polygon count, so it stays in sync with what `_build_lod2` will
+actually do): requesting LOD2 output no longer means "leave a messy native
+LOD2 exactly as found," it means "produce a clean one either way." A single
+scratch `_strip_source_geometry` pass afterwards can't tell freshly built
+LOD2 content apart from original LOD2 debris by tag name alone (both are
+tagged `lod2MultiSurface` identically), so the exact elements
+`_process_feature` inserts are tracked by object identity in a `new_nodes`
+set and always protected from stripping, regardless of tag-based rules.
 
 Openings (`bldg:opening` / Window / Door) and `outerBuildingInstallation`
 (dormers, chimneys, roof bumps) are simply not referenced by the LOD2, which is
@@ -212,6 +308,15 @@ building (watertight, 1-4, 5-20, 20+ open edges). Guaranteed-closed output comes
 from LOD1 instead (extruded prism, watertight by construction); a healing pass
 that makes LOD2 itself watertight is future work.
 
+This matters even more for the `surfaces` pattern (see [Input
+assumptions](#input-assumptions-and-how-they-are-detected)): a `solid`-pattern
+source at least *claims* to be a closed shell (that's what a `gml:Solid` means),
+even if it turns out not to be one in practice. A `surfaces`-pattern source
+never made that claim in the first place, it's just an independently listed
+set of boundary surfaces, so open edges there are the expected default, not a
+surprise. The same `shell_stats` check runs identically either way; the
+numbers just mean something different depending on which pattern produced them.
+
 ## Quality control
 
 `geometry.is_closed_shell` rebuilds the edge set of each LOD2 solid and asserts
@@ -272,7 +377,14 @@ annotations. So the bridge is validate-and-report, not auto-heal.
 
 ### Done (v0.1)
 
-- LOD0/LOD1/LOD2 derivation from LOD3, embed or lower-only output.
+- LOD0/LOD1/LOD2 derivation from LOD3, embed or lower-only output. LOD1/LOD0
+  also derivable from an LOD2-only source.
+- Three CityGML shell encodings recognised (`solid`, `surfaces`,
+  `unclassified`), detected structurally, not guessed from filenames or
+  authoring-tool metadata; verified against real CityGRID/3DCityDB-style,
+  SketchUp/FME-workbench-exported data.
+- `citysmith inspect`: read-only preflight reporting what was found and what
+  each capability can/can't do with it, before committing to a real run.
 - Semantic enhancer, easy tier: ids, `function` codes, `type` attributes,
   `lod3Geometry` aggregation, eave-height-based balcony/chimney classification.
 - Native CityJSON 1.1 writer.

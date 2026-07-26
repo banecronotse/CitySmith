@@ -5,12 +5,18 @@ detail and embed them alongside the source (or emit a lower-LOD-only file).
 See docs/DESIGN.md for the rationale.
 
 Each feature (Building/BuildingPart) is read from whichever detail level it
-actually has: `lod3Solid` if present, else `lod2Solid`. LOD1/LOD0 extrusion
-only needs Ground/Roof surface heights, which both levels provide, so it
-works from either source. LOD2 *derivation* specifically (de-holing walls,
-copying roof/ground) only makes sense starting from LOD3, since that's the
-only source with window/door holes and installations to remove in the first
-place; a feature already at LOD2 has nothing to derive there.
+actually has, LOD3 preferred, LOD2 as the fallback, in whichever of three
+structurally different (all valid) CityGML encodings it was exported in, see
+`_find_source_shell` for the full breakdown ('solid', 'surfaces' or
+'unclassified'). `inspect()` runs this same detection read-only, without
+writing anything, so a file's actual shape and what each capability can and
+can't do with it are knowable before committing to a real run. LOD1/LOD0
+extrusion only needs Ground/Roof surface heights, which both levels and both
+usable patterns provide, so it works from any of them. LOD2 *derivation*
+specifically (de-holing walls, copying roof/ground) only makes sense
+starting from LOD3, since that's the only source with window/door holes and
+installations to remove in the first place; a feature already at LOD2 has
+nothing to derive there.
 
 LOD2  faithful shell, derived from LOD3 only: roof and ground copied, walls
       copied with window/door holes filled, structure mirrored from LOD3.
@@ -31,7 +37,8 @@ from dataclasses import dataclass, field
 from lxml import etree
 
 from .citygml import BLDG, GML, XLINK, BOUNDARY_LOCALNAMES, gml_id, href_target, localname, q
-from .geometry import extrude_prism, parse_pos_list, shell_stats
+from .geometry import (cluster_coplanar_rings, extrude_prism, parse_pos_list,
+                       shell_stats, union_coplanar_polygons)
 
 # Fixed namespace so uuid5-derived ids are stable across runs and machines.
 _ID_NAMESPACE = uuid.UUID("1b9d6bcd-0c6f-5a1e-9d0a-10b0c0ffee00")
@@ -47,6 +54,7 @@ _LOD2_GEOMETRY_PROPS = {
 _SOURCE_GEOMETRY_PROPS = {3: _LOD3_GEOMETRY_PROPS, 2: _LOD2_GEOMETRY_PROPS}
 _INSTALLATION_PROPS = {"outerBuildingInstallation", "interiorBuildingInstallation"}
 _FEATURE_TAGS = {q(BLDG, "Building"), q(BLDG, "BuildingPart")}
+_GEOMETRY_BEARING_PROPS = {"lod0FootPrint", "lod1Solid", "lod2Solid", "boundedBy"}
 
 
 @dataclass
@@ -59,7 +67,13 @@ class Report:
     source_lod3: int = 0
     source_lod2: int = 0
     source_none: int = 0
+    source_unclassified: int = 0
+    source_pattern_solid: int = 0
+    source_pattern_surfaces: int = 0
     lod2_already_present: int = 0
+    lod2_cleaned: int = 0
+    merged_surfaces: int = 0
+    merged_panels: int = 0
     walls_deholed: int = 0
     interior_rings_removed: int = 0
     roof_copied: int = 0
@@ -128,6 +142,25 @@ def _ring_points(polygon):
     return parse_pos_list(pos.text) if pos is not None and pos.text else []
 
 
+def _all_ring_points(polygon):
+    """Every ring of a polygon (exterior first, then interiors) as point
+    lists. The boundary-union merge needs interior (hole) rings too, so a
+    real cut hole cancels/drops the same way a missing-panel gap does."""
+    rings = []
+    ext = _ring_points(polygon)
+    if ext:
+        rings.append(ext)
+    for interior in polygon.findall(q(GML, "interior")):
+        lr = interior.find(q(GML, "LinearRing"))
+        if lr is None:
+            continue
+        pos = lr.find(q(GML, "posList"))
+        pts = parse_pos_list(pos.text) if pos is not None and pos.text else []
+        if pts:
+            rings.append(pts)
+    return rings
+
+
 def _boundary_ancestor(polygon):
     for anc in polygon.iterancestors():
         if localname(anc) in BOUNDARY_LOCALNAMES:
@@ -184,27 +217,10 @@ def _shell_polygon_ids(solid) -> list[str]:
     return ids
 
 
-def _find_source_solid(feature):
-    """Return (solid_element, level) for a feature's most detailed geometry.
-
-    lod3Solid is preferred; lod2Solid is the fallback so LOD1/LOD0 can still
-    be derived from LOD2-only input, which is the far more common real-world
-    format. (None, None) if the feature has neither (e.g. LOD1/LOD0-only or
-    LOD4 data, which this engine does not read).
-    """
-    lod3 = feature.find(q(BLDG, "lod3Solid"))
-    if lod3 is not None:
-        return lod3, 3
-    lod2 = feature.find(q(BLDG, "lod2Solid"))
-    if lod2 is not None:
-        return lod2, 2
-    return None, None
-
-
 # --- shell collection --------------------------------------------------------
 
 def _collect_shell(solid, poly_index, report):
-    """Return (groups, typed) for a solid's shell.
+    """Return (groups, typed) for an aggregating solid's shell.
 
     groups: OrderedDict(boundary-surface element -> [polygon]) for structure
             mirroring. typed: dict(thematic type -> [polygon]). Works for a
@@ -227,6 +243,96 @@ def _collect_shell(solid, poly_index, report):
     return groups, typed
 
 
+def _surface_own_polygons(surf, level, poly_index):
+    """Polygons directly inside one boundary surface's own lodX geometry
+    (e.g. a WallSurface's own lod3MultiSurface), inline or by local xlink.
+    Used for the 'surfaces' pattern, see _find_source_shell."""
+    ms_prop = surf.find(q(BLDG, f"lod{level}MultiSurface"))
+    if ms_prop is None:
+        return []
+    polys = []
+    for sm in ms_prop.iter(q(GML, "surfaceMember")):
+        target = href_target(sm)
+        if target:
+            poly = poly_index.get(target)
+            if poly is not None:
+                polys.append(poly)
+        else:
+            poly = sm.find(q(GML, "Polygon"))
+            if poly is not None:
+                polys.append(poly)
+    return polys
+
+
+def _find_source_shell(feature, poly_index, report):
+    """Return (groups, typed, level, pattern, anchor) for a feature's most
+    detailed usable geometry, or (None, None, None, None, None).
+
+    Three structurally different patterns are read, not guessed from
+    filenames or authoring-tool metadata, detected from the XML shape
+    itself:
+      'solid'         an aggregating lodXSolid ties the shell's polygons
+                       together via xlink into one gml:Solid (the common
+                       CityGRID/3DCityDB style).
+      'surfaces'      no aggregating solid; each boundary surface under
+                       boundedBy carries its own lodXMultiSurface directly,
+                       inline or by local xlink (common from SketchUp-
+                       modelled, FME-exported data, which doesn't always
+                       construct a closed solid).
+      'unclassified'  a lodXMultiSurface directly on the feature itself (not
+                       inside any boundedBy thematic surface): a flat bag of
+                       polygons with no wall/roof/ground distinction at all.
+                       Detected but never processable: LOD1/LOD0 extrusion
+                       needs to know which polygon is the ground, which is
+                       exactly the information this pattern doesn't carry.
+                       Returned with groups=None so callers can tell "found
+                       geometry, structurally can't use it" apart from
+                       "found nothing."
+    LOD3 is preferred over LOD2; within a level, 'solid' beats 'surfaces'
+    beats 'unclassified' if a feature somehow has more than one, since each
+    is progressively less capable. `anchor` is the index, among the
+    feature's direct children, before which newly derived lower-LOD nodes
+    should be inserted (immediately before the solid, or immediately after
+    the last boundedBy surface used, for the 'solid'/'surfaces' patterns
+    respectively; None for 'unclassified', nothing gets inserted there),
+    keeping LOD ordering schema-correct either way.
+    """
+    unclassified_level = None
+    for level in (3, 2):
+        solid = feature.find(q(BLDG, f"lod{level}Solid"))
+        if solid is not None:
+            groups, typed = _collect_shell(solid, poly_index, report)
+            if groups:
+                return groups, typed, level, "solid", list(feature).index(solid)
+
+        groups: "OrderedDict" = OrderedDict()
+        typed: dict = defaultdict(list)
+        last_bounded_idx = None
+        for idx, child in enumerate(feature):
+            if localname(child) != "boundedBy":
+                continue
+            surf = next((c for c in child if localname(c) in BOUNDARY_LOCALNAMES), None)
+            if surf is None:
+                continue
+            polys = _surface_own_polygons(surf, level, poly_index)
+            if not polys:
+                continue
+            groups.setdefault(surf, []).extend(polys)
+            typed[localname(surf)].extend(polys)
+            last_bounded_idx = idx
+        if groups:
+            return groups, typed, level, "surfaces", last_bounded_idx + 1
+
+        if unclassified_level is None:
+            flat = feature.find(q(BLDG, f"lod{level}MultiSurface"))
+            if flat is not None and flat.find(f".//{q(GML, 'Polygon')}") is not None:
+                unclassified_level = level
+
+    if unclassified_level is not None:
+        return None, None, unclassified_level, "unclassified", None
+    return None, None, None, None, None
+
+
 # --- LOD builders ------------------------------------------------------------
 
 def _build_lod2(groups, emitted_ids, report, feature_seed):
@@ -245,26 +351,80 @@ def _build_lod2(groups, emitted_ids, report, feature_seed):
         ms = etree.SubElement(
             etree.SubElement(surf_el, q(BLDG, "lod2MultiSurface")), q(GML, "MultiSurface")
         )
-        for p_idx, poly in enumerate(polys):
-            orig_pid = gml_id(poly) or f"{feature_seed}:s{s_idx}p{p_idx}"
-            new_pid = _det_id(f"{orig_pid}:lod2poly")
-            solid_refs.append(new_pid)
-            qc_rings.append(_ring_points(poly))
-            if new_pid in emitted_ids:
-                ms.append(_surface_member_ref(new_pid))
+
+        # A surface modelled as many small panels (missing panels, not cut
+        # holes, are how window/door gaps show up on some real exports)
+        # can't be de-holed one polygon at a time. But a group can also
+        # legitimately bundle several genuinely different faces under one
+        # thematic surface (this project's own box_lod3.gml fixture does
+        # exactly that for its four walls), which must never be merged
+        # together. Cluster by plane first, then only merge within a
+        # cluster that actually shares one; a lone polygon in its own
+        # cluster falls back to the plain de-hole copy path unchanged.
+        ext_rings = [_ring_points(p) for p in polys]
+        all_rings = [_all_ring_points(p) for p in polys]
+        clusters = cluster_coplanar_rings(ext_rings) if len(polys) > 1 else [[0]]
+
+        for c_idx, idxs in enumerate(clusters):
+            cluster_polys = [polys[i] for i in idxs]
+            merged_rings = (
+                union_coplanar_polygons([r for i in idxs for r in all_rings[i]])
+                if len(idxs) > 1 else None
+            )
+            if merged_rings:
+                seed_c = f"{seed}:c{c_idx}"
+                counted = False
+                for m_idx, mring in enumerate(merged_rings):
+                    new_pid = _det_id(f"{seed_c}:lod2poly:merged:{m_idx}")
+                    solid_refs.append(new_pid)
+                    qc_rings.append(mring)
+                    if new_pid not in emitted_ids:
+                        emitted_ids.add(new_pid)
+                        etree.SubElement(ms, q(GML, "surfaceMember")).append(
+                            _make_polygon(mring, new_pid)
+                        )
+                        counted = True
+                    else:
+                        ms.append(_surface_member_ref(new_pid))
+                if counted:
+                    report.merged_surfaces += 1
+                    report.merged_panels += len(idxs)
+                    if is_wall:
+                        report.walls_deholed += 1
+                    elif btype == "RoofSurface":
+                        report.roof_copied += 1
+                    elif btype == "GroundSurface":
+                        report.ground_copied += 1
+                    else:
+                        report.other_copied += 1
                 continue
-            emitted_ids.add(new_pid)
-            copy, removed = _copy_polygon(poly, new_pid, dehole=is_wall)
-            etree.SubElement(ms, q(GML, "surfaceMember")).append(copy)
-            if is_wall:
-                report.walls_deholed += 1
-                report.interior_rings_removed += removed
-            elif btype == "RoofSurface":
-                report.roof_copied += 1
-            elif btype == "GroundSurface":
-                report.ground_copied += 1
-            else:
-                report.other_copied += 1
+
+            for p_idx, poly in zip(idxs, cluster_polys):
+                orig_pid = gml_id(poly) or f"{feature_seed}:s{s_idx}p{p_idx}"
+                new_pid = _det_id(f"{orig_pid}:lod2poly")
+                solid_refs.append(new_pid)
+                qc_rings.append(_ring_points(poly))
+                if new_pid in emitted_ids:
+                    ms.append(_surface_member_ref(new_pid))
+                    continue
+                emitted_ids.add(new_pid)
+                # Fill holes on walls and roofs alike: a window/door/skylight
+                # left as a cut interior ring is LOD3 detail, not part of an
+                # LOD2 shell. Ground rings are kept (an interior ring there is
+                # a real courtyard, not an opening).
+                dehole = btype in ("WallSurface", "RoofSurface")
+                copy, removed = _copy_polygon(poly, new_pid, dehole=dehole)
+                etree.SubElement(ms, q(GML, "surfaceMember")).append(copy)
+                if is_wall:
+                    report.walls_deholed += 1
+                    report.interior_rings_removed += removed
+                elif btype == "RoofSurface":
+                    report.roof_copied += 1
+                    report.interior_rings_removed += removed
+                elif btype == "GroundSurface":
+                    report.ground_copied += 1
+                else:
+                    report.other_copied += 1
         new_nodes.append(bounded)
 
     solid_prop = etree.Element(q(BLDG, "lod2Solid"))
@@ -368,36 +528,129 @@ def _build_lod0(typed, feature_seed, report):
     return prop
 
 
-def _strip_source_geometry(root) -> None:
-    """Remove each feature's source-LOD geometry (whichever it was sourced
-    from, LOD3 or LOD2) and any installations, leaving only the newly derived
-    lower LODs. A file can mix features sourced from different levels, so this
-    is decided per feature, not globally."""
+def _strip_source_geometry(root, poly_index, levels, new_nodes, *, keep_source: bool) -> None:
+    """Remove source content that a rebuild has made obsolete, leaving only
+    the newly derived lower LODs (plus, if `keep_source`, whatever original
+    content wasn't rebuilt). A file can mix features sourced from different
+    levels or patterns, so this is decided per feature, not globally.
+
+    `new_nodes` (the exact elements `_process_feature` inserted this run,
+    tracked by object identity, not by tag) is checked first and always
+    wins: nothing built in this run is ever stripped, full stop. This
+    matters because LOD3 and LOD2 tag *names* alone can't tell freshly
+    built output apart from original source content of the same tier, e.g.
+    a feature whose native LOD2 was panelized and got rebuilt (see
+    `_needs_lod2_build`) has both the old panelized boundedBy elements and
+    the new merged ones present at the same time, both tagged
+    lod2MultiSurface identically.
+
+    LOD2 is stripped whenever it was rebuilt (`_needs_lod2_build` true for
+    an LOD2 source), *regardless of `keep_source`*: the old panelized LOD2
+    and the freshly merged one are two versions of the same requested level,
+    not "source vs. derived output", so `keep_source` (which means "keep the
+    *other*, untouched levels alongside what was derived") does not apply to
+    it. Leaving both would silently double the feature's LOD2 geometry (seen
+    on real data: an LOD2 source that needed a second merge pass on
+    re-derivation left 4 lod2Solid elements instead of 2 in embed mode,
+    before this was caught and fixed). LOD2 is left alone only if the
+    feature's own source already was LOD2 and needed no rebuild (single
+    polygon per surface, `2 in levels`): that LOD2 *is* the requested
+    output, not source debris, and was never added to `new_nodes` since
+    nothing was built for it.
+
+    Everything else (LOD3, and installations) is only stripped when
+    `keep_source` is False (lower-only mode): LOD3 can carry stray content
+    alongside an LOD2 shell (confirmed on real data: window openings
+    modelled as separate `bldg:opening`/Window features with their own
+    lod3MultiSurface, nested inside boundary surfaces that otherwise carry
+    the feature's real lod2MultiSurface shell), but in embed mode that's
+    exactly the original detail embed mode exists to keep.
+    """
     features = [e for e in root.iter() if e.tag in _FEATURE_TAGS]
+    scratch = Report()  # re-detecting the source here must not double-count the real report
     for feat in features:
-        _, source_level = _find_source_solid(feat)
-        props = _SOURCE_GEOMETRY_PROPS.get(source_level, set())
-        multi_surface_tag = f"lod{source_level}MultiSurface" if source_level else None
+        groups, _, source_level, _, _ = _find_source_shell(feat, poly_index, scratch)
+        rebuilt_lod2 = (source_level == 2 and 2 in levels
+                        and _needs_lod2_build(source_level, groups or {}))
+        keep_lod2 = keep_source and not rebuilt_lod2
+        strip_props = set() if keep_source else set(_LOD3_GEOMETRY_PROPS)
+        if not keep_lod2:
+            strip_props |= _LOD2_GEOMETRY_PROPS
         for child in list(feat):
+            if child in new_nodes:
+                continue
             ln = localname(child)
-            if ln in props or ln in _INSTALLATION_PROPS:
+            if ln in strip_props or (not keep_source and ln in _INSTALLATION_PROPS):
                 feat.remove(child)
-            elif (multi_surface_tag and ln == "boundedBy"
-                  and child.find(f".//{q(BLDG, multi_surface_tag)}") is not None):
+                continue
+            if ln != "boundedBy":
+                continue
+            has_lod3 = not keep_source and child.find(f".//{q(BLDG, 'lod3MultiSurface')}") is not None
+            has_lod2 = not keep_lod2 and child.find(f".//{q(BLDG, 'lod2MultiSurface')}") is not None
+            if has_lod3 or has_lod2:
                 feat.remove(child)
 
 
-def _process_feature(feature, solid, source_level, poly_index, emitted_ids, report, levels,
-                      lod1_height):
-    groups, typed = _collect_shell(solid, poly_index, report)
-    if not groups:
-        return
+def _remove_empty_features(root) -> None:
+    """Drop any Building/BuildingPart left with no geometry-bearing content
+    after stripping, e.g. a BuildingPart with no GroundSurface, so LOD1/LOD0
+    couldn't be derived for it, and nothing else survived the strip, rather
+    than leaving an empty stub feature (or an empty consistsOfBuildingPart
+    wrapper on its parent) sitting in lower-only output. BuildingParts are
+    processed before their parent Building, since removing an empty part can
+    leave the parent with nothing left either.
+    """
+    features = [e for e in root.iter() if e.tag in _FEATURE_TAGS]
+    features.sort(key=lambda f: 0 if localname(f) == "BuildingPart" else 1)
+    keep_tags = _GEOMETRY_BEARING_PROPS | {"consistsOfBuildingPart"}
+    for feat in features:
+        if any(localname(c) in keep_tags for c in feat):
+            continue
+        parent = feat.getparent()
+        if parent is None:
+            continue
+        if localname(parent) == "consistsOfBuildingPart":
+            grandparent = parent.getparent()
+            if grandparent is not None:
+                grandparent.remove(parent)
+        else:
+            parent.remove(feat)
+
+
+def _needs_lod2_build(source_level, groups) -> bool:
+    """True if LOD2 needs to be (re)built rather than left exactly as found:
+    always for an LOD3 source (there is no LOD2 yet), and also for an
+    already-LOD2 source where at least one thematic surface's several
+    polygons can actually be merged into a clean outer-boundary surface
+    (missing panels, not cut holes, are how window gaps show up in some
+    real-world exports). A surface with several polygons that _aren't_
+    genuinely coplanar (e.g. several distinct wall faces bundled under one
+    thematic WallSurface, a legitimate, common CityGRID convention) has
+    nothing safe to merge, `union_coplanar_polygons` would correctly refuse,
+    so this checks the real thing rather than just counting polygons, to
+    stay in sync with what `_build_lod2` will actually do.
+    """
+    if source_level == 3:
+        return True
+    for polys in groups.values():
+        if len(polys) < 2:
+            continue
+        rings = [_ring_points(p) for p in polys]
+        clusters = cluster_coplanar_rings(rings)
+        if any(len(idxs) > 1 for idxs in clusters):
+            return True
+    return False
+
+
+def _process_feature(feature, groups, typed, source_level, anchor, emitted_ids, report, levels,
+                      lod1_height, new_nodes_out):
     # Stable seed from source ids (never id(obj): lxml reuses proxy addresses).
     first_pid = next((gml_id(p) for polys in groups.values() for p in polys if gml_id(p)), None)
-    feature_seed = gml_id(feature) or first_pid or gml_id(solid) or "feat"
+    feature_seed = gml_id(feature) or first_pid or "feat"
 
-    # Lower LODs are inserted before the source solid, low to high, so the
-    # solids stay in ascending-LOD order (lod1Solid, lod2Solid, lod3Solid).
+    # Lower LODs are inserted at the anchor (before the source solid, or
+    # after the last boundedBy surface used, for the 'solid'/'surfaces'
+    # patterns respectively), low to high, so LOD ordering stays ascending.
     prepend = []
     if 0 in levels:
         node = _build_lod0(typed, feature_seed, report)
@@ -410,17 +663,18 @@ def _process_feature(feature, solid, source_level, poly_index, emitted_ids, repo
 
     qc_rings = None
     if 2 in levels:
-        if source_level == 3:
+        if _needs_lod2_build(source_level, groups):
             lod2_nodes, qc_rings = _build_lod2(groups, emitted_ids, report, feature_seed)
             prepend.extend(lod2_nodes)
+            if source_level == 2:
+                report.lod2_cleaned += 1
         else:
-            # Already at LOD2 (or lower): nothing to derive, LOD2 needs LOD3
-            # detail (window/door holes, installations) to remove.
+            # Already at LOD2, single polygon per surface: nothing to do.
             report.lod2_already_present += 1
 
-    insert_at = list(feature).index(solid)
     for offset, node in enumerate(prepend):
-        feature.insert(insert_at + offset, node)
+        feature.insert(anchor + offset, node)
+    new_nodes_out.update(prepend)
 
     if qc_rings is not None:
         stats = shell_stats(qc_rings)
@@ -468,25 +722,35 @@ def enhance(input_path: str, output_path: str, *, levels=(2,), keep_source: bool
     report = Report(mode="embed" if keep_source else "lower-only", levels=levels)
     poly_index = _build_polygon_index(root)
     emitted_ids: set[str] = set()
+    new_nodes: set = set()  # direct children freshly inserted this run, by object identity
 
     for feature in list(root.iter()):
         if feature.tag not in _FEATURE_TAGS:
             continue
         if limit is not None and report.features >= limit:
             break
-        solid, source_level = _find_source_solid(feature)
-        if solid is None:
+        groups, typed, source_level, pattern, anchor = _find_source_shell(feature, poly_index,
+                                                                            report)
+        if source_level is None:
             report.source_none += 1
+            continue
+        if pattern == "unclassified":
+            report.source_unclassified += 1
             continue
         if source_level == 3:
             report.source_lod3 += 1
         else:
             report.source_lod2 += 1
-        _process_feature(feature, solid, source_level, poly_index, emitted_ids, report, levels,
-                          lod1_height)
+        if pattern == "solid":
+            report.source_pattern_solid += 1
+        else:
+            report.source_pattern_surfaces += 1
+        _process_feature(feature, groups, typed, source_level, anchor, emitted_ids, report,
+                          levels, lod1_height, new_nodes)
 
+    _strip_source_geometry(root, poly_index, levels, new_nodes, keep_source=keep_source)
     if not keep_source:
-        _strip_source_geometry(root)
+        _remove_empty_features(root)
 
     tree.write(output_path, xml_declaration=True, encoding="utf-8")
     return report
@@ -496,3 +760,66 @@ def add_lod2(input_path: str, output_path: str, *, keep_source: bool = True,
              limit: int | None = None) -> Report:
     """Backwards-compatible helper: add only LOD2 (requires LOD3 source)."""
     return enhance(input_path, output_path, levels=(2,), keep_source=keep_source, limit=limit)
+
+
+@dataclass
+class InspectReport:
+    """Read-only preflight: what CitySmith found in a file and what each
+    capability can do with it, without writing anything. See `inspect()`."""
+
+    features: int = 0
+    source_lod3: int = 0
+    source_lod2: int = 0
+    source_unclassified: int = 0
+    source_none: int = 0
+    pattern_solid: int = 0
+    pattern_surfaces: int = 0
+    installations: int = 0
+    feature_detail: list[dict] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
+
+
+def inspect(input_path: str, *, limit: int | None = None) -> InspectReport:
+    """Detect, per feature, what geometry pattern is present and how
+    detailed each one is, without deriving or writing anything. Intended to
+    be run before a real `lod`/`semantics` call on unfamiliar data, so its
+    shape (and what CitySmith can and can't do with it, and why) is known
+    upfront rather than discovered from a silent zero-progress run."""
+    parser = etree.XMLParser(huge_tree=True, remove_blank_text=False)
+    root = etree.parse(input_path, parser).getroot()
+    poly_index = _build_polygon_index(root)
+    report = InspectReport()
+
+    for feature in root.iter():
+        if feature.tag not in _FEATURE_TAGS:
+            continue
+        if limit is not None and report.features >= limit:
+            break
+        report.features += 1
+        n_inst = sum(1 for _ in feature.iter(q(BLDG, "BuildingInstallation")))
+        report.installations += n_inst
+
+        groups, typed, level, pattern, _ = _find_source_shell(feature, poly_index, Report())
+        detail = {"id": gml_id(feature) or "(no id)", "level": level, "pattern": pattern,
+                   "installations": n_inst}
+        if pattern in ("solid", "surfaces"):
+            detail["surfaces"] = {k: len(v) for k, v in typed.items()}
+            detail["has_ground"] = "GroundSurface" in typed
+            detail["has_roof"] = "RoofSurface" in typed
+            if level == 3:
+                report.source_lod3 += 1
+            else:
+                report.source_lod2 += 1
+            if pattern == "solid":
+                report.pattern_solid += 1
+            else:
+                report.pattern_surfaces += 1
+        elif pattern == "unclassified":
+            report.source_unclassified += 1
+        else:
+            report.source_none += 1
+        report.feature_detail.append(detail)
+
+    return report

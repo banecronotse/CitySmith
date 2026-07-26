@@ -34,7 +34,6 @@ All notable changes to this project are documented here. The format follows
   CitySmith does not check natively (non-planarity, ring orientation, roof
   fragmentation) and corroborated the native closedness report independently.
 
-### Added
 - `lod` now reads whichever detail level a feature actually has (LOD3
   preferred, LOD2 as fallback) instead of only ever looking for `lod3Solid`.
   LOD1/LOD0 derive equally well from an LOD2 source, since both only need
@@ -43,6 +42,38 @@ All notable changes to this project are documented here. The format follows
   `lod2_already_present` so this is always visible, never silent.
 - `--levels` now rejects unsupported values (e.g. `3`) with a clear error
   instead of silently ignoring them.
+- The engine now recognises three structurally different CityGML shell
+  encodings, not just the aggregating-`gml:Solid` style: `surfaces` (no
+  solid, each boundary surface carries its own geometry directly, seen from
+  SketchUp-modelled, FME-workbench-exported data) and `unclassified` (a flat,
+  unclassifiable bag of polygons, detected and reported, never silently
+  dropped, but genuinely not processable). Detection is structural, never
+  guessed from filenames or tool metadata. `Report` gained
+  `source_unclassified`/`source_pattern_solid`/`source_pattern_surfaces`.
+- New `citysmith inspect <file>` command and `citysmith.inspect()`/
+  `InspectReport`: a read-only preflight that reports, per feature, what
+  geometry pattern was found and what each capability can and can't do with
+  it, and why, without writing any output. Meant to be run first on
+  unfamiliar data instead of discovering a silent zero-progress run.
+- `validate`/`citysmith.validate_citydoctor` gained `--pdf`/`pdf_path`: also
+  renders CityDoctor2's own human-readable PDF report (`-pdfreport`, an
+  Apache-FOP walkthrough of every check and error) alongside the XML report,
+  which is always produced regardless. `ValidationReport` gained
+  `pdf_report_path`.
+- README's example renders now come from `tests/CS1_lod*.gml` (the real,
+  reproducible fixture the test suite itself runs against) instead of static
+  screenshots of data no longer in the repo, rendered directly from the GML
+  with a small matplotlib script, no CityGML viewer needed.
+- Second real-world reference set, `tests/CS2_lod*.gml`, cropped from the
+  same open-licensed Hamburg LGV dataset as the earlier Hamburg example
+  (`3D-Gebäudemodell LoD3.0-HH Hamburg`, DL-DE-BY-2.0): a single-feature
+  CityGRID/UVM "solid"-pattern building with 14 roof installations, run
+  through the full `lod`/`semantics`/`convert`/`validate` pipeline the same
+  way CS1 was.
+- README credits CityGRID® as a registered trademark of UVM Systems GmbH,
+  since CS1 and CS2 are both real exports from their software (previously
+  "CityGRID" was only used as a technical term for the export pattern, with
+  no credit to the company).
 
 ### Changed
 - Installation classification now uses the building eave height: an installation
@@ -53,6 +84,41 @@ All notable changes to this project are documented here. The format follows
   since the source being kept isn't always LOD3 anymore.
 
 ### Fixed
+- LOD2 walls/roofs modelled as many small panels (some real exports omit the
+  panel where a window is instead of cutting a hole, so de-holing had nothing
+  to fix) are now collapsed into a clean simplified surface: polygons are
+  clustered by plane (`geometry.cluster_coplanar_rings`) and each coplanar
+  cluster merged into its true outer boundary
+  (`geometry.union_coplanar_polygons`) by cancelling every edge shared by two
+  adjacent panels, pure Python, no new dependency. This is a real boundary
+  union, not a convex hull, so a concave, L-shaped or stepped wall keeps its
+  actual outline instead of being rounded out to a bulging envelope with
+  diagonal chords (the earlier convex-hull merge did exactly that on real
+  data and was wrong). Interior loops left by missing panels (window/door
+  gaps) or genuine cut interior rings come out as their own loops and are
+  dropped, filling them. Applies both when deriving LOD2 from LOD3 and when a
+  native LOD2 source is itself panelized. Unsafe cases fall back to the
+  untouched per-polygon path: a surface bundling genuinely different faces
+  (this project's own `box_lod3.gml` fixture bundles all four walls of a box
+  under one `WallSurface`), or panels meeting at a T-junction (a vertex
+  mid-edge), where edge cancellation would leave a broken outline.
+- LOD2 roof holes are now filled too (window/door/skylight openings left as
+  cut interior rings are LOD3 detail, not part of an LOD2 shell); previously
+  only walls were de-holed on the per-polygon fallback path, so roof
+  skylights survived into LOD2. Ground interior rings are still kept (a real
+  courtyard, not an opening).
+- `--lower-only` no longer deletes freshly built LOD2 output when a
+  feature's native source already was LOD2: the exact elements built this
+  run are now tracked by object identity and always protected from
+  stripping, since LOD2 tag names alone can't tell original source content
+  apart from this run's own rebuilt output.
+- `--lower-only` no longer leaves stray LOD3 content (e.g. window openings
+  modelled as separate features with their own geometry) behind on an
+  LOD2-sourced feature; LOD3 debris is now always stripped regardless of
+  which tier a feature was actually derived from.
+- Empty `BuildingPart`s with no derivable geometry (e.g. no `GroundSurface`,
+  so LOD1/LOD0 couldn't be built) are now dropped from `--lower-only` output
+  instead of appearing as an empty layer.
 - LOD1 prism faces now have outward-facing normals (footprint reoriented to
   counter-clockwise), so the roof/top no longer disappears under back-face
   culling in viewers such as FZK ModelViewer.
@@ -65,6 +131,16 @@ All notable changes to this project are documented here. The format follows
 - `localname()` no longer raises on XML comment / processing-instruction nodes.
 
 ### Notes
+- Window/door openings modelled as a *notch in the wall polygon's own
+  exterior ring* (the boundary juts inward around the opening and back out)
+  are left as-is, not filled. Unlike an interior ring or a missing panel,
+  both of which are removed, a reentrant boundary indentation can't be told
+  apart from a wall's genuine concave shape (an L or a recessed entrance)
+  without a size heuristic that would also flatten real concave walls. This
+  encoding only appears in inconsistent exports (one wall can even mix all
+  three ways of modelling openings); well-formed LOD3 uses interior rings.
+  See docs/DESIGN.md, LOD2 section. Roadmap: an opt-in, size-bounded,
+  wall-only boundary-notch fill for known-messy sources.
 - Source LOD3 solids are frequently not watertight (T-junctions, missing
   soffits). Watertightness is reported, not forced. Healing and extrusion-based
   reconstruction are planned.

@@ -17,23 +17,15 @@ bridge.
 
 ## Example output
 
-The same building block derived down from LOD3 to LOD2 to LOD1 with `citysmith lod`:
+The same real building (`tests/CS1_lod3.gml`, a CityGRID-style export with a
+Building and a BuildingPart) derived from LOD3 down to LOD0 with `citysmith lod`:
 
-<table width="40%">
-<tr>
-<td align="center" width="33%"><img src="docs/images/example_lod1.png" alt="LOD1: derived block model, extruded from the footprint" width="100%"><br><sub><b>LOD1</b> (derived): block model, extruded from the footprint</sub></td>
-<td align="center" width="33%"><img src="docs/images/example_lod2.png" alt="LOD2: derived shell with facade detail removed, roof shape kept" width="100%"><br><sub><b>LOD2</b> (derived): facade detail removed, roof shape kept</sub></td>
-<td align="center" width="33%"><img src="docs/images/example_lod3.png" alt="LOD3: source model with windows, doors and roof detail" width="100%"><br><sub><b>LOD3</b> (source): windows, doors, roof detail</sub></td>
-</tr>
-</table>
+<img src="docs/images/cs1_example.png" alt="LOD3 source model with windows and roof detail, next to the derived LOD2 shell with windows removed, the derived LOD1 block model, and the derived LOD0 flattened footprint" width="100%">
 
-Source data: *3D-Gebäudemodell LoD3.0-HH Hamburg*, Freie und Hansestadt
-Hamburg, Landesbetrieb Geoinformation und Vermessung (LGV), [Datenlizenz
-Deutschland – Namensnennung – Version 2.0](https://www.govdata.de/dl-de/by-2-0).
-A runnable single-building example from the same dataset is included at
-[`examples/hamburg_building_lod3.gml`](examples/hamburg_building_lod3.gml),
-see [`examples/README.md`](examples/README.md) for the full attribution and
-how to run it yourself.
+Every file shown is in `tests/`, reproducible with
+`citysmith lod tests/CS1_lod3.gml --levels 0,1,2`. This building is a real
+export from CityGRID®, UVM Systems GmbH's software (see
+[Which export style is my data?](#which-export-style-is-my-data) below).
 
 ## Why
 
@@ -46,6 +38,7 @@ produces those from what you already have.
 
 | Area | What it does | Status |
 | --- | --- | --- |
+| `inspect` | Read-only preflight: what geometry was found and what each capability can/can't do with it, no output written | done |
 | `lod` | Derive and embed lower LODs: LOD1 block and LOD0 footprint from LOD3 or LOD2 data, a clean LOD2 shell from LOD3 | done |
 | `semantics` | Fill missing ids, `function`, `type` attributes and `lod3Geometry` aggregates per a rulebook (needs LOD3) | easy tier done |
 | `convert` | Emit CityJSON 1.1 (validated through cjio, upgrades cleanly to 2.0) | done |
@@ -110,6 +103,9 @@ directory isn't on PATH yet. Either add it, or run everything as
 ## Usage
 
 ```bash
+# Check what's actually in a file before running anything on it
+citysmith inspect unfamiliar_city_model.gml
+
 # Derive lower LODs and embed them next to the source
 citysmith lod city_lod3.gml --levels 0,1,2          # complete multi-LOD file
 citysmith lod city_lod3.gml --levels 2              # just LOD2 (default)
@@ -126,6 +122,9 @@ citysmith convert city_multiLOD.gml -o city.city.json
 
 # Validate with CityDoctor2 (needs a separate download, see Validation below)
 citysmith validate city_lod3.gml --citydoctor-home /path/to/CityDoctorValidation-3.18.3
+
+# ...and optionally render a human-readable PDF report alongside the XML one
+citysmith validate city_lod3.gml --pdf city_report.pdf
 ```
 
 Python API:
@@ -135,11 +134,16 @@ import citysmith
 from citysmith.semantics import enhance_semantics
 from citysmith.cityjson import convert
 
+insp = citysmith.inspect("unfamiliar_city_model.gml")
+print(insp.source_lod3, insp.source_lod2, insp.source_unclassified)
+
 report = citysmith.enhance("city_lod3.gml", "out.gml", levels=(0, 1, 2), keep_source=True)
 print(report.quality_buckets)          # LOD2 watertightness breakdown
 enhance_semantics("city_lod3.gml", "city_sem.gml")
 convert("out.gml", "city.city.json")
-print(citysmith.validate_citydoctor("out.gml", citydoctor_home="/path/to/CityDoctorValidation").error_counts)
+vr = citysmith.validate_citydoctor("out.gml", citydoctor_home="/path/to/CityDoctorValidation",
+                                   pdf_path="out_report.pdf")
+print(vr.error_counts, vr.pdf_report_path)
 ```
 
 ## Interoperability
@@ -183,6 +187,40 @@ downward from there, it never invents detail that isn't in the source:
 
 `citysmith lod` reports exactly what it found and did with it, "sourced from
 LOD3: X, from LOD2: Y, no usable source: Z", so this is never silent.
+
+### Which export style is my data?
+
+LOD level isn't the only thing that varies. CityGML also allows more than one
+valid way to encode a building's shell, and different tools produce different
+ones. CitySmith detects the encoding structurally, never by guessing the
+authoring tool from a filename, and supports two of them, verified against
+real data from different pipelines:
+
+- **`solid`**: an aggregating `gml:Solid` ties the shell's polygons together
+  (the common CityGRID/3DCityDB style).
+- **`surfaces`**: no aggregating solid; each boundary surface carries its own
+  geometry directly (seen from SketchUp-modelled, FME-workbench-exported
+  data, which doesn't always construct a closed solid). Everything works the
+  same as `solid` except watertightness can't be assumed, since the source
+  never claimed to be a closed shell in the first place.
+
+A third case, **`unclassified`**, a flat bag of polygons with no wall/roof/
+ground distinction at all, is detected but genuinely can't be processed:
+there's no way to know which polygon is the ground without that distinction.
+Not a bug, just not enough information in the source data.
+
+CityGRID® is a registered trademark of UVM Systems GmbH
+([uvmsystems.com](https://www.uvmsystems.com/)). CitySmith is not affiliated
+with or endorsed by UVM Systems; "CityGRID" is used here only to name the
+CityGML export convention their software produces, which CitySmith reads.
+
+Run `citysmith inspect your_file.gml` before a real run on unfamiliar data to
+see exactly which pattern it found, per feature, and what each capability
+will and won't be able to do with it, without writing anything:
+
+```bash
+citysmith inspect your_file.gml
+```
 
 ### LOD3 to LOD2
 
@@ -339,6 +377,14 @@ its path with `--citydoctor-home` or set `CITYSMITH_CITYDOCTOR_HOME`. No format
 conversion is needed; CityGML goes in directly and an XML report comes out,
 which CitySmith parses. Java 17+ is required unless you use a release that
 bundles its own runtime (the official Windows/macOS/Linux zips do).
+
+Add `--pdf out.pdf` to also render a full human-readable PDF report (CityDoctor2's
+own `-pdfreport`, an Apache-FOP-generated walkthrough of every check and error,
+one section per building) alongside the XML report `validate` always produces:
+
+```bash
+citysmith validate city_lod3.gml --pdf city_report.pdf
+```
 
 Note: CityDoctor2's own `-out` option does not currently repair geometry
 automatically (verified, not just documented). It re-serializes the file with

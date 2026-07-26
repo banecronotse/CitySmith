@@ -68,6 +68,7 @@ class ValidationReport:
     num_error_buildings: int = 0
     error_counts: dict = field(default_factory=dict)
     xml_report_path: str = ""
+    pdf_report_path: str = ""
 
     @property
     def total_errors(self) -> int:
@@ -133,8 +134,15 @@ def _parse_report(xml_path: Path) -> ValidationReport:
 
 
 def validate(input_path: str, *, citydoctor_home: str | None = None,
-             config_path: str | None = None, timeout: int = 600) -> ValidationReport:
+             config_path: str | None = None, timeout: int = 600,
+             pdf_path: str | None = None) -> ValidationReport:
     """Run CityDoctor2 on a CityGML file and return a parsed report.
+
+    pdf_path: if given, also ask CityDoctor2 to render a human-readable PDF
+        report (its own `-pdfreport` flag, an Apache-FOP-rendered walkthrough
+        of every check and error, distinct from and in addition to the XML
+        report the parsed ValidationReport is always built from) and write it
+        there.
 
     Raises CityDoctorNotFound if no installation can be located, or
     CityDoctorError if the CityDoctor2 process fails.
@@ -157,6 +165,10 @@ def validate(input_path: str, *, citydoctor_home: str | None = None,
             "-xmlReport", str(xml_out),
             "-db_location", str(db_dir) + os.sep,
         ]
+        pdf_tmp = None
+        if pdf_path is not None:
+            pdf_tmp = tmp_dir / "report.pdf"
+            cmd += ["-pdfreport", str(pdf_tmp)]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True,
                                   timeout=timeout, cwd=str(home))
@@ -170,10 +182,19 @@ def validate(input_path: str, *, citydoctor_home: str | None = None,
                 "CityDoctor2 did not produce a report.\n"
                 f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
             )
+        if pdf_tmp is not None and not pdf_tmp.exists():
+            raise CityDoctorError(
+                "CityDoctor2 did not produce the requested PDF report.\n"
+                f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+            )
 
         report = _parse_report(xml_out)
-        # Copy the report out of the temp dir so the caller can keep it.
+        # Copy the report(s) out of the temp dir so the caller can keep them.
         persisted = Path(input_path).with_suffix(".citydoctor.xml")
         persisted.write_bytes(xml_out.read_bytes())
         report.xml_report_path = str(persisted)
+        if pdf_tmp is not None:
+            pdf_dest = Path(pdf_path)
+            pdf_dest.write_bytes(pdf_tmp.read_bytes())
+            report.pdf_report_path = str(pdf_dest)
         return report

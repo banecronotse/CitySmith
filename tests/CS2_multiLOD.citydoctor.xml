@@ -1,0 +1,822 @@
+<?xml version="1.0" ?>
+<cd:error_report xmlns:cd="http://www.citydoctor.eu">
+    <cd:header>
+        <cd:file>CS2_multiLOD.gml</cd:file>
+        <cd:environment>
+            <cd:city_doctor_validation_version>3.18.3-8e446fe</cd:city_doctor_validation_version>
+            <cd:java_vm_version>17.0.14</cd:java_vm_version>
+            <cd:java_vm_vendor>BellSoft</cd:java_vm_vendor>
+            <cd:java_version>17.0.14+10-LTS</cd:java_version>
+            <cd:os_name>Windows 11</cd:os_name>
+            <cd:os_arch>amd64</cd:os_arch>
+        </cd:environment>
+        <cd:date>2026-07-26T16:39:24.6788429+02:00</cd:date>
+    </cd:header>
+    <cd:global_statistics>
+        <cd:model_statistics>
+            <cd:num_buildings>1</cd:num_buildings>
+            <cd:num_vegetation>0</cd:num_vegetation>
+            <cd:num_transportation>0</cd:num_transportation>
+            <cd:num_land_objects>0</cd:num_land_objects>
+            <cd:num_bridge_objects>0</cd:num_bridge_objects>
+            <cd:num_water_objects>0</cd:num_water_objects>
+            <cd:num_tunnel_objects>0</cd:num_tunnel_objects>
+            <cd:num_city_furniture>0</cd:num_city_furniture>
+            <cd:num_generic_city_objects>0</cd:num_generic_city_objects>
+        </cd:model_statistics>
+        <cd:global_error_statistics>
+            <cd:num_error_buildings>1</cd:num_error_buildings>
+            <cd:num_error_vegetation>0</cd:num_error_vegetation>
+            <cd:num_error_land_objects>0</cd:num_error_land_objects>
+            <cd:num_error_bridge_objects>0</cd:num_error_bridge_objects>
+            <cd:num_error_water_objects>0</cd:num_error_water_objects>
+            <cd:num_error_transportation>0</cd:num_error_transportation>
+            <cd:num_error_tunnel_objects>0</cd:num_error_tunnel_objects>
+            <cd:num_error_city_furniture>0</cd:num_error_city_furniture>
+            <cd:num_error_generic_city_objects>0</cd:num_error_generic_city_objects>
+        </cd:global_error_statistics>
+        <cd:errors>
+            <cd:error name="GE_S_NOT_CLOSED">1</cd:error>
+            <cd:error name="SE_BS_UNFRAGMENTED">9</cd:error>
+        </cd:errors>
+    </cd:global_statistics>
+    <cd:validation_plan>
+        <cd:numberOfRoundingPlaces>8</cd:numberOfRoundingPlaces>
+        <cd:minVertexDistance>1.0E-4</cd:minVertexDistance>
+        <cd:check name="R_GE_R_TOO_FEW_POINTS" activated="true"></cd:check>
+        <cd:check name="R_GE_R_NOT_CLOSED" activated="true"></cd:check>
+        <cd:check name="R_GE_R_CONSECUTIVE_POINTS_SAME" activated="true"></cd:check>
+        <cd:check name="R_GE_R_SELF_INTERSECTION" activated="true">
+            <cd:parameter name="degeneratedRingTolerance">0</cd:parameter>
+        </cd:check>
+        <cd:check name="R_GE_S_MULTIPLE_CONNECTED_COMPONENTS" activated="true"></cd:check>
+        <cd:check name="R_GE_P_INTERIOR_DISCONNECTED" activated="true"></cd:check>
+        <cd:check name="R_GE_P_INTERSECTING_RINGS" activated="true"></cd:check>
+        <cd:check name="R_GE_P_NON_PLANAR" activated="true">
+            <cd:parameter name="type">distance</cd:parameter>
+            <cd:parameter name="distanceTolerance">0.02</cd:parameter>
+            <cd:parameter name="angleTolerance">1</cd:parameter>
+        </cd:check>
+        <cd:check name="R_GE_P_HOLE_OUTSIDE" activated="true"></cd:check>
+        <cd:check name="R_GE_P_ORIENTATION_RINGS_SAME" activated="true"></cd:check>
+        <cd:check name="R_GE_P_INNER_RINGS_NESTED" activated="true"></cd:check>
+        <cd:check name="R_GE_S_TOO_FEW_POLYGONS" activated="true"></cd:check>
+        <cd:check name="R_GE_S_NOT_CLOSED" activated="true"></cd:check>
+        <cd:check name="R_GE_S_NON_MANIFOLD_EDGE" activated="true"></cd:check>
+        <cd:check name="R_GE_S_POLYGON_WRONG_ORIENTATION" activated="true"></cd:check>
+        <cd:check name="R_GE_S_ALL_POLYGONS_WRONG_ORIENTATION" activated="true"></cd:check>
+        <cd:check name="R_GE_S_NON_MANIFOLD_VERTEX" activated="true"></cd:check>
+        <cd:check name="R_GE_S_SELF_INTERSECTION" activated="true"></cd:check>
+        <cd:check name="R_SE_BS_IS_WALL" activated="false"></cd:check>
+        <cd:check name="R_SE_BS_IS_FLOOR" activated="false"></cd:check>
+        <cd:check name="R_SE_BS_GROUND_UNFRAGMENTED" activated="false"></cd:check>
+        <cd:check name="R_SE_BS_IS_GROUND" activated="false"></cd:check>
+        <cd:check name="R_SE_BS_IS_CEILING" activated="false"></cd:check>
+        <cd:check name="R_SE_POLYGON_WITHOUT_SURFACE" activated="false"></cd:check>
+        <cd:check name="R_SE_BS_ROOF_UNFRAGMENTED" activated="true">
+            <cd:parameter name="maxAngleDeviation">1</cd:parameter>
+        </cd:check>
+    </cd:validation_plan>
+    <cd:validation_results>
+        <cd:global_errors></cd:global_errors>
+        <cd:building_report gml_id="DEHHALKAJ0000ytX">
+            <cd:statistics>
+                <cd:error_statistics>
+                    <cd:error name="GE_S_NOT_CLOSED">1</cd:error>
+                    <cd:error name="SE_BS_UNFRAGMENTED">9</cd:error>
+                </cd:error_statistics>
+            </cd:statistics>
+            <cd:errors>
+                <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1785076767698_0" feature_type="Geometry"></cd:feature>
+                    <cd:error_details>
+                        <cd:geometry type="SOLID" lod="LOD2">
+                            <cd:parent gml_id="DEHHALKAJ0000ytX" type="BUILDING"></cd:parent>
+                        </cd:geometry>
+                        <cd:edges name="open edges">
+                            <cd:edge>
+                                <cd:from x="564772.941" y="5934062.712" z="36.799"></cd:from>
+                                <cd:to x="564778.076" y="5934062.937" z="35.737"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.076" y="5934062.937" z="35.737"></cd:from>
+                                <cd:to x="564778.61" y="5934062.961" z="35.626"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.61" y="5934062.961" z="35.626"></cd:from>
+                                <cd:to x="564778.531" y="5934062.95" z="35.643"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.531" y="5934062.95" z="35.643"></cd:from>
+                                <cd:to x="564778.087" y="5934062.889" z="35.736"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.087" y="5934062.889" z="35.736"></cd:from>
+                                <cd:to x="564778.082" y="5934062.888" z="35.737"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.082" y="5934062.888" z="35.737"></cd:from>
+                                <cd:to x="564773.005" y="5934062.197" z="36.797"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564773.005" y="5934062.197" z="36.797"></cd:from>
+                                <cd:to x="564772.941" y="5934062.712" z="36.799"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.756" y="5934076.258" z="35.715"></cd:from>
+                                <cd:to x="564776.855" y="5934076.271" z="35.695"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.855" y="5934076.271" z="35.695"></cd:from>
+                                <cd:to x="564771.405" y="5934074.13" z="36.863"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.405" y="5934074.13" z="36.863"></cd:from>
+                                <cd:to x="564771.25" y="5934075.507" z="36.865"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.25" y="5934075.507" z="36.865"></cd:from>
+                                <cd:to x="564776.756" y="5934076.258" z="35.715"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.094" y="5934062.908" z="35.831"></cd:from>
+                                <cd:to x="564772.876" y="5934062.764" z="36.473"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564772.876" y="5934062.764" z="36.473"></cd:from>
+                                <cd:to x="564767.982" y="5934061.546" z="35.743"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.982" y="5934061.546" z="35.743"></cd:from>
+                                <cd:to x="564767.349" y="5934061.388" z="35.647"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.349" y="5934061.388" z="35.647"></cd:from>
+                                <cd:to x="564767.33" y="5934061.517" z="35.81"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.33" y="5934061.517" z="35.81"></cd:from>
+                                <cd:to x="564767.312" y="5934061.654" z="35.981"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.312" y="5934061.654" z="35.981"></cd:from>
+                                <cd:to x="564767.237" y="5934062.208" z="36.674"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.237" y="5934062.208" z="36.674"></cd:from>
+                                <cd:to x="564767.212" y="5934062.396" z="36.91"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.212" y="5934062.396" z="36.91"></cd:from>
+                                <cd:to x="564767.125" y="5934063.045" z="37.722"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.125" y="5934063.045" z="37.722"></cd:from>
+                                <cd:to x="564766.828" y="5934065.239" z="40.468"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.828" y="5934065.239" z="40.468"></cd:from>
+                                <cd:to x="564766.563" y="5934065.204" z="40.467"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.563" y="5934065.204" z="40.467"></cd:from>
+                                <cd:to x="564766.478" y="5934065.84" z="41.263"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.478" y="5934065.84" z="41.263"></cd:from>
+                                <cd:to x="564766.458" y="5934065.988" z="41.448"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.458" y="5934065.988" z="41.448"></cd:from>
+                                <cd:to x="564766.404" y="5934066.386" z="41.948"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.404" y="5934066.386" z="41.948"></cd:from>
+                                <cd:to x="564766.349" y="5934066.793" z="42.456"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.349" y="5934066.793" z="42.456"></cd:from>
+                                <cd:to x="564766.209" y="5934067.831" z="43.757"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.209" y="5934067.831" z="43.757"></cd:from>
+                                <cd:to x="564767.116" y="5934067.948" z="43.757"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.116" y="5934067.948" z="43.757"></cd:from>
+                                <cd:to x="564767.12" y="5934067.949" z="43.758"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.12" y="5934067.949" z="43.758"></cd:from>
+                                <cd:to x="564777.239" y="5934069.24" z="43.758"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.239" y="5934069.24" z="43.758"></cd:from>
+                                <cd:to x="564777.244" y="5934069.241" z="43.758"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.244" y="5934069.241" z="43.758"></cd:from>
+                                <cd:to x="564778.003" y="5934069.337" z="43.757"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.003" y="5934069.337" z="43.757"></cd:from>
+                                <cd:to x="564778.008" y="5934069.338" z="43.758"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.008" y="5934069.338" z="43.758"></cd:from>
+                                <cd:to x="564778.065" y="5934068.912" z="43.225"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.065" y="5934068.912" z="43.225"></cd:from>
+                                <cd:to x="564778.193" y="5934067.957" z="42.029"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.193" y="5934067.957" z="42.029"></cd:from>
+                                <cd:to x="564778.248" y="5934067.56" z="41.532"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.248" y="5934067.56" z="41.532"></cd:from>
+                                <cd:to x="564778.278" y="5934067.331" z="41.245"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.278" y="5934067.331" z="41.245"></cd:from>
+                                <cd:to x="564778.047" y="5934067.3" z="41.243"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.047" y="5934067.3" z="41.243"></cd:from>
+                                <cd:to x="564778.343" y="5934065.106" z="38.497"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.343" y="5934065.106" z="38.497"></cd:from>
+                                <cd:to x="564778.472" y="5934064.153" z="37.304"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.472" y="5934064.153" z="37.304"></cd:from>
+                                <cd:to x="564778.501" y="5934063.932" z="37.027"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.501" y="5934063.932" z="37.027"></cd:from>
+                                <cd:to x="564778.556" y="5934063.531" z="36.525"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.556" y="5934063.531" z="36.525"></cd:from>
+                                <cd:to x="564778.562" y="5934063.488" z="36.471"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.562" y="5934063.488" z="36.471"></cd:from>
+                                <cd:to x="564778.637" y="5934062.923" z="35.763"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.637" y="5934062.923" z="35.763"></cd:from>
+                                <cd:to x="564778.094" y="5934062.908" z="35.831"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.007" y="5934069.345" z="43.777"></cd:from>
+                                <cd:to x="564777.981" y="5934069.533" z="43.551"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.981" y="5934069.533" z="43.551"></cd:from>
+                                <cd:to x="564777.917" y="5934070.005" z="42.986"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.917" y="5934070.005" z="42.986"></cd:from>
+                                <cd:to x="564777.871" y="5934070.35" z="42.573"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.871" y="5934070.35" z="42.573"></cd:from>
+                                <cd:to x="564777.817" y="5934070.755" z="42.088"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.817" y="5934070.755" z="42.088"></cd:from>
+                                <cd:to x="564777.771" y="5934071.092" z="41.685"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.771" y="5934071.092" z="41.685"></cd:from>
+                                <cd:to x="564777.744" y="5934071.286" z="41.453"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.744" y="5934071.286" z="41.453"></cd:from>
+                                <cd:to x="564777.514" y="5934071.254" z="41.455"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.514" y="5934071.254" z="41.455"></cd:from>
+                                <cd:to x="564777.222" y="5934073.425" z="38.855"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.222" y="5934073.425" z="38.855"></cd:from>
+                                <cd:to x="564777.205" y="5934073.547" z="38.71"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.205" y="5934073.547" z="38.71"></cd:from>
+                                <cd:to x="564777.106" y="5934074.281" z="37.831"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.106" y="5934074.281" z="37.831"></cd:from>
+                                <cd:to x="564777.103" y="5934074.302" z="37.805"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.103" y="5934074.302" z="37.805"></cd:from>
+                                <cd:to x="564777.073" y="5934074.523" z="37.541"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.073" y="5934074.523" z="37.541"></cd:from>
+                                <cd:to x="564777.039" y="5934074.765" z="37.251"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.039" y="5934074.765" z="37.251"></cd:from>
+                                <cd:to x="564777.016" y="5934074.945" z="37.035"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.016" y="5934074.945" z="37.035"></cd:from>
+                                <cd:to x="564776.98" y="5934075.213" z="36.714"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.98" y="5934075.213" z="36.714"></cd:from>
+                                <cd:to x="564776.953" y="5934075.413" z="36.475"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.953" y="5934075.413" z="36.475"></cd:from>
+                                <cd:to x="564776.953" y="5934075.416" z="36.472"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.953" y="5934075.416" z="36.472"></cd:from>
+                                <cd:to x="564776.848" y="5934076.189" z="35.546"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.848" y="5934076.189" z="35.546"></cd:from>
+                                <cd:to x="564771.404" y="5934074.242" z="37.018"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.404" y="5934074.242" z="37.018"></cd:from>
+                                <cd:to x="564766.223" y="5934074.604" z="35.812"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.223" y="5934074.604" z="35.812"></cd:from>
+                                <cd:to x="564765.559" y="5934074.649" z="35.658"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.559" y="5934074.649" z="35.658"></cd:from>
+                                <cd:to x="564765.623" y="5934074.182" z="36.218"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.623" y="5934074.182" z="36.218"></cd:from>
+                                <cd:to x="564765.647" y="5934074.003" z="36.433"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.647" y="5934074.003" z="36.433"></cd:from>
+                                <cd:to x="564765.679" y="5934073.759" z="36.724"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.679" y="5934073.759" z="36.724"></cd:from>
+                                <cd:to x="564765.709" y="5934073.539" z="36.988"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.709" y="5934073.539" z="36.988"></cd:from>
+                                <cd:to x="564765.742" y="5934073.292" z="37.283"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.742" y="5934073.292" z="37.283"></cd:from>
+                                <cd:to x="564765.828" y="5934072.662" z="38.038"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.828" y="5934072.662" z="38.038"></cd:from>
+                                <cd:to x="564766.12" y="5934070.49" z="40.639"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.12" y="5934070.49" z="40.639"></cd:from>
+                                <cd:to x="564765.855" y="5934070.455" z="40.64"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.855" y="5934070.455" z="40.64"></cd:from>
+                                <cd:to x="564766.081" y="5934068.778" z="42.649"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.081" y="5934068.778" z="42.649"></cd:from>
+                                <cd:to x="564766.192" y="5934067.961" z="43.627"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.192" y="5934067.961" z="43.627"></cd:from>
+                                <cd:to x="564766.208" y="5934067.837" z="43.775"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.208" y="5934067.837" z="43.775"></cd:from>
+                                <cd:to x="564767.116" y="5934067.953" z="43.776"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.116" y="5934067.953" z="43.776"></cd:from>
+                                <cd:to x="564767.12" y="5934067.953" z="43.776"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.12" y="5934067.953" z="43.776"></cd:from>
+                                <cd:to x="564777.239" y="5934069.247" z="43.777"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.239" y="5934069.247" z="43.777"></cd:from>
+                                <cd:to x="564777.244" y="5934069.248" z="43.776"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.244" y="5934069.248" z="43.776"></cd:from>
+                                <cd:to x="564778.002" y="5934069.344" z="43.777"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.002" y="5934069.344" z="43.777"></cd:from>
+                                <cd:to x="564778.007" y="5934069.345" z="43.777"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.38" y="5934074.843" z="35.776"></cd:from>
+                                <cd:to x="564771.298" y="5934075.513" z="36.746"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.298" y="5934075.513" z="36.746"></cd:from>
+                                <cd:to x="564771.453" y="5934074.136" z="36.743"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.453" y="5934074.136" z="36.743"></cd:from>
+                                <cd:to x="564766.237" y="5934074.665" z="35.744"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.237" y="5934074.665" z="35.744"></cd:from>
+                                <cd:to x="564765.57" y="5934074.733" z="35.616"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.57" y="5934074.733" z="35.616"></cd:from>
+                                <cd:to x="564765.702" y="5934074.751" z="35.643"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.702" y="5934074.751" z="35.643"></cd:from>
+                                <cd:to x="564766.216" y="5934074.821" z="35.744"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.216" y="5934074.821" z="35.744"></cd:from>
+                                <cd:to x="564766.25" y="5934074.824" z="35.75"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.25" y="5934074.824" z="35.75"></cd:from>
+                                <cd:to x="564766.38" y="5934074.843" z="35.776"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.339" y="5934061.427" z="35.643"></cd:from>
+                                <cd:to x="564767.783" y="5934061.488" z="35.73"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.783" y="5934061.488" z="35.73"></cd:from>
+                                <cd:to x="564767.977" y="5934061.515" z="35.769"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.977" y="5934061.515" z="35.769"></cd:from>
+                                <cd:to x="564768.177" y="5934061.541" z="35.808"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564768.177" y="5934061.541" z="35.808"></cd:from>
+                                <cd:to x="564772.905" y="5934062.184" z="36.74"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564772.905" y="5934062.184" z="36.74"></cd:from>
+                                <cd:to x="564772.841" y="5934062.7" z="36.74"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564772.841" y="5934062.7" z="36.74"></cd:from>
+                                <cd:to x="564767.969" y="5934061.574" z="35.769"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.969" y="5934061.574" z="35.769"></cd:from>
+                                <cd:to x="564767.339" y="5934061.427" z="35.643"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.046" y="5934067.307" z="41.237"></cd:from>
+                                <cd:to x="564778.34" y="5934065.13" z="38.477"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.34" y="5934065.13" z="38.477"></cd:from>
+                                <cd:to x="564778.468" y="5934064.185" z="37.279"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.468" y="5934064.185" z="37.279"></cd:from>
+                                <cd:to x="564778.497" y="5934063.965" z="37.0"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.497" y="5934063.965" z="37.0"></cd:from>
+                                <cd:to x="564778.551" y="5934063.567" z="36.496"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.551" y="5934063.567" z="36.496"></cd:from>
+                                <cd:to x="564778.557" y="5934063.524" z="36.441"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.557" y="5934063.524" z="36.441"></cd:from>
+                                <cd:to x="564778.632" y="5934062.963" z="35.73"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.743" y="5934071.297" z="41.463"></cd:from>
+                                <cd:to x="564777.77" y="5934071.101" z="41.693"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.77" y="5934071.101" z="41.693"></cd:from>
+                                <cd:to x="564777.816" y="5934070.76" z="42.092"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.816" y="5934070.76" z="42.092"></cd:from>
+                                <cd:to x="564777.871" y="5934070.349" z="42.572"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.871" y="5934070.349" z="42.572"></cd:from>
+                                <cd:to x="564777.918" y="5934069.999" z="42.981"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.918" y="5934069.999" z="42.981"></cd:from>
+                                <cd:to x="564777.983" y="5934069.521" z="43.541"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.983" y="5934069.521" z="43.541"></cd:from>
+                                <cd:to x="564778.009" y="5934069.33" z="43.764"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.009" y="5934069.33" z="43.764"></cd:from>
+                                <cd:to x="564778.066" y="5934068.908" z="43.229"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.066" y="5934068.908" z="43.229"></cd:from>
+                                <cd:to x="564778.193" y="5934067.96" z="42.027"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.193" y="5934067.96" z="42.027"></cd:from>
+                                <cd:to x="564778.247" y="5934067.565" z="41.527"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.247" y="5934067.565" z="41.527"></cd:from>
+                                <cd:to x="564778.277" y="5934067.338" z="41.239"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.099" y="5934074.334" z="37.876"></cd:from>
+                                <cd:to x="564777.199" y="5934073.59" z="38.747"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.199" y="5934073.59" z="38.747"></cd:from>
+                                <cd:to x="564777.216" y="5934073.467" z="38.891"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.216" y="5934073.467" z="38.891"></cd:from>
+                                <cd:to x="564777.513" y="5934071.266" z="41.465"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.944" y="5934075.482" z="36.534"></cd:from>
+                                <cd:to x="564776.971" y="5934075.28" z="36.771"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.971" y="5934075.28" z="36.771"></cd:from>
+                                <cd:to x="564777.008" y="5934075.008" z="37.089"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.008" y="5934075.008" z="37.089"></cd:from>
+                                <cd:to x="564777.032" y="5934074.826" z="37.302"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.032" y="5934074.826" z="37.302"></cd:from>
+                                <cd:to x="564777.066" y="5934074.58" z="37.589"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.066" y="5934074.58" z="37.589"></cd:from>
+                                <cd:to x="564777.096" y="5934074.356" z="37.851"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.096" y="5934074.356" z="37.851"></cd:from>
+                                <cd:to x="564777.099" y="5934074.334" z="37.876"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.944" y="5934075.485" z="36.531"></cd:from>
+                                <cd:to x="564776.944" y="5934075.482" z="36.534"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.838" y="5934076.269" z="35.614"></cd:from>
+                                <cd:to x="564776.944" y="5934075.485" z="36.531"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.277" y="5934067.338" z="41.239"></cd:from>
+                                <cd:to x="564778.046" y="5934067.307" z="41.237"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564777.513" y="5934071.266" z="41.465"></cd:from>
+                                <cd:to x="564777.743" y="5934071.297" z="41.463"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.549" y="5934074.73" z="35.726"></cd:from>
+                                <cd:to x="564765.681" y="5934074.748" z="35.753"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.681" y="5934074.748" z="35.753"></cd:from>
+                                <cd:to x="564766.193" y="5934074.818" z="35.861"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.193" y="5934074.818" z="35.861"></cd:from>
+                                <cd:to x="564766.227" y="5934074.822" z="35.868"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.227" y="5934074.822" z="35.868"></cd:from>
+                                <cd:to x="564766.357" y="5934074.84" z="35.895"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.357" y="5934074.84" z="35.895"></cd:from>
+                                <cd:to x="564771.263" y="5934075.509" z="36.927"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564771.263" y="5934075.509" z="36.927"></cd:from>
+                                <cd:to x="564776.74" y="5934076.256" z="35.637"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564776.74" y="5934076.256" z="35.637"></cd:from>
+                                <cd:to x="564776.838" y="5934076.269" z="35.614"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.117" y="5934070.513" z="40.658"></cd:from>
+                                <cd:to x="564765.821" y="5934072.715" z="38.082"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.821" y="5934072.715" z="38.082"></cd:from>
+                                <cd:to x="564765.734" y="5934073.354" z="37.335"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.734" y="5934073.354" z="37.335"></cd:from>
+                                <cd:to x="564765.701" y="5934073.604" z="37.043"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.701" y="5934073.604" z="37.043"></cd:from>
+                                <cd:to x="564765.671" y="5934073.827" z="36.782"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.671" y="5934073.827" z="36.782"></cd:from>
+                                <cd:to x="564765.637" y="5934074.074" z="36.493"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.637" y="5934074.074" z="36.493"></cd:from>
+                                <cd:to x="564765.613" y="5934074.256" z="36.28"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.613" y="5934074.256" z="36.28"></cd:from>
+                                <cd:to x="564765.549" y="5934074.73" z="35.726"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.562" y="5934065.215" z="40.458"></cd:from>
+                                <cd:to x="564766.477" y="5934065.846" z="41.258"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.477" y="5934065.846" z="41.258"></cd:from>
+                                <cd:to x="564766.457" y="5934065.993" z="41.444"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.457" y="5934065.993" z="41.444"></cd:from>
+                                <cd:to x="564766.404" y="5934066.389" z="41.946"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.404" y="5934066.389" z="41.946"></cd:from>
+                                <cd:to x="564766.349" y="5934066.792" z="42.457"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.349" y="5934066.792" z="42.457"></cd:from>
+                                <cd:to x="564766.21" y="5934067.823" z="43.764"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.21" y="5934067.823" z="43.764"></cd:from>
+                                <cd:to x="564766.193" y="5934067.949" z="43.617"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.193" y="5934067.949" z="43.617"></cd:from>
+                                <cd:to x="564766.082" y="5934068.777" z="42.648"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.082" y="5934068.777" z="42.648"></cd:from>
+                                <cd:to x="564765.852" y="5934070.478" z="40.659"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.344" y="5934061.428" z="35.614"></cd:from>
+                                <cd:to x="564767.325" y="5934061.557" z="35.778"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.325" y="5934061.557" z="35.778"></cd:from>
+                                <cd:to x="564767.307" y="5934061.693" z="35.95"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.307" y="5934061.693" z="35.95"></cd:from>
+                                <cd:to x="564767.233" y="5934062.242" z="36.646"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.233" y="5934062.242" z="36.646"></cd:from>
+                                <cd:to x="564767.208" y="5934062.429" z="36.883"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.208" y="5934062.429" z="36.883"></cd:from>
+                                <cd:to x="564767.121" y="5934063.073" z="37.699"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.121" y="5934063.073" z="37.699"></cd:from>
+                                <cd:to x="564766.827" y="5934065.25" z="40.459"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564765.852" y="5934070.478" z="40.659"></cd:from>
+                                <cd:to x="564766.117" y="5934070.513" z="40.658"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564766.827" y="5934065.25" z="40.459"></cd:from>
+                                <cd:to x="564766.562" y="5934065.215" z="40.458"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.344" y="5934061.428" z="35.614"></cd:from>
+                                <cd:to x="564767.791" y="5934061.489" z="35.686"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.791" y="5934061.489" z="35.686"></cd:from>
+                                <cd:to x="564767.987" y="5934061.515" z="35.718"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564767.987" y="5934061.515" z="35.718"></cd:from>
+                                <cd:to x="564768.188" y="5934061.543" z="35.751"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564768.188" y="5934061.543" z="35.751"></cd:from>
+                                <cd:to x="564772.948" y="5934062.19" z="36.521"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564772.948" y="5934062.19" z="36.521"></cd:from>
+                                <cd:to x="564778.096" y="5934062.89" z="35.805"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.096" y="5934062.89" z="35.805"></cd:from>
+                                <cd:to x="564778.101" y="5934062.891" z="35.804"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.101" y="5934062.891" z="35.804"></cd:from>
+                                <cd:to x="564778.551" y="5934062.952" z="35.741"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="564778.551" y="5934062.952" z="35.741"></cd:from>
+                                <cd:to x="564778.632" y="5934062.963" z="35.73"></cd:to>
+                            </cd:edge>
+                        </cd:edges>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.6684815855071232</cd:parameter>
+                        <cd:surface gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_aa9caf07-0d0f-4cab-af1b-5e2c26c41a6e" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.1378538280290198</cd:parameter>
+                        <cd:surface gml_id="UUID_aa9caf07-0d0f-4cab-af1b-5e2c26c41a6e"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.6861000126994398</cd:parameter>
+                        <cd:surface gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.1905734747112975</cd:parameter>
+                        <cd:surface gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_d21a153c-7ff7-4778-a9f1-231243abbd80" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.3273626497798697</cd:parameter>
+                        <cd:surface gml_id="UUID_d21a153c-7ff7-4778-a9f1-231243abbd80"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.1265690273205116</cd:parameter>
+                        <cd:surface gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.21455815550702</cd:parameter>
+                        <cd:surface gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.7143669599823472</cd:parameter>
+                        <cd:surface gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_71eafe0a-8483-5a7d-9b40-a0cdeff07cde" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.2327762920879368</cd:parameter>
+                        <cd:surface gml_id="UUID_71eafe0a-8483-5a7d-9b40-a0cdeff07cde"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+            </cd:errors>
+        </cd:building_report>
+    </cd:validation_results>
+</cd:error_report>

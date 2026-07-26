@@ -1,6 +1,8 @@
 """Command-line interface for citysmith.
 
 Subcommands:
+  inspect    read-only preflight: what geometry CitySmith found and what
+             each capability can/can't do with it, without writing anything
   lod        derive and embed lower LODs (LOD0/1/2) from an LOD3 or LOD2 source
   semantics  apply the easy-tier semantic fixes (ids, function, type, aggregate)
   convert    export CityGML to CityJSON 1.1
@@ -12,7 +14,7 @@ import json
 import sys
 
 from . import __version__
-from .core import enhance
+from .core import enhance, inspect as inspect_source
 from .semantics import enhance_semantics
 from .cityjson import convert
 from .citydoctor import validate, CityDoctorNotFound, CityDoctorError
@@ -27,6 +29,46 @@ def _write_report(path, data):
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(data, fh, indent=2)
     print(f"report              : {path}")
+
+
+# --- inspect -------------------------------------------------------------------
+
+_PATTERN_LABEL = {
+    "solid": "aggregating Solid (CityGRID/3DCityDB style)",
+    "surfaces": "per-surface MultiSurface, no Solid (e.g. SketchUp/FME-exported data)",
+}
+
+
+def _cmd_inspect(args) -> int:
+    print(f"reading  : {args.input}")
+    report = inspect_source(args.input, limit=args.limit)
+    print(f"features found      : {report.features}")
+    print(f"  usable, LOD3       : {report.source_lod3}")
+    print(f"  usable, LOD2       : {report.source_lod2}")
+    print(f"  unclassified       : {report.source_unclassified} "
+          "(geometry found, but no wall/roof/ground distinction: not processable)")
+    print(f"  no geometry found  : {report.source_none}")
+    print(f"  pattern: solid     : {report.pattern_solid}")
+    print(f"  pattern: surfaces  : {report.pattern_surfaces}")
+    print(f"  BuildingInstallations: {report.installations}")
+    print()
+    print("What each capability will do with this file:")
+    usable = report.source_lod3 + report.source_lod2
+    print(f"  lod (LOD1/LOD0)    : {'yes, ' + str(usable) + ' feature(s)' if usable else 'no usable source'}")
+    print(f"  lod (LOD2)         : {'yes, ' + str(report.source_lod3) + ' feature(s)' if report.source_lod3 else 'no'} "
+          "(needs an LOD3 source; LOD2-sourced features have nothing to derive there)")
+    print(f"  semantics          : {'yes, ' + str(report.installations) + ' installation(s) to classify' if report.installations else 'no BuildingInstallations found'}")
+    print("  convert            : yes, whatever geometry/semantics is already present converts to CityJSON")
+    print("  validate           : yes, native + CityDoctor2 both work on the raw file regardless of pattern")
+    if report.source_unclassified:
+        print()
+        print(f"Note: {report.source_unclassified} feature(s) have geometry CitySmith can see but not use, "
+              "a flat MultiSurface with no boundedBy thematic classification, so there's no way to tell "
+              "which polygon is the roof, wall or ground. Not a bug, just not enough information in the "
+              "source data for this tool's approach.")
+    if args.report:
+        _write_report(args.report, report.to_dict())
+    return 0
 
 
 # --- lod ---------------------------------------------------------------------
@@ -104,7 +146,8 @@ def _cmd_validate(args) -> int:
     print(f"reading  : {args.input}")
     try:
         report = validate(args.input, citydoctor_home=args.citydoctor_home,
-                          config_path=args.config, timeout=args.timeout)
+                          config_path=args.config, timeout=args.timeout,
+                          pdf_path=args.pdf)
     except CityDoctorNotFound as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -113,6 +156,8 @@ def _cmd_validate(args) -> int:
         return 1
 
     print(f"xml report          : {report.xml_report_path}")
+    if report.pdf_report_path:
+        print(f"pdf report          : {report.pdf_report_path}")
     print(f"buildings           : {report.num_buildings}")
     print(f"buildings w/ errors : {report.num_error_buildings}")
     print(f"total errors        : {report.total_errors}")
@@ -129,6 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="citysmith", description="A CityGML enhancer.")
     p.add_argument("--version", action="version", version=f"citysmith {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
+
+    insp = sub.add_parser("inspect", help="read-only preflight: what's in this file and what "
+                          "each capability can do with it")
+    insp.add_argument("input")
+    insp.add_argument("--limit", type=int, default=None)
+    insp.add_argument("--report")
+    insp.set_defaults(func=_cmd_inspect)
 
     lod = sub.add_parser("lod", help="derive and embed lower LODs from LOD3 or LOD2 source")
     lod.add_argument("input")
@@ -169,6 +221,8 @@ def build_parser() -> argparse.ArgumentParser:
     val.add_argument("--config", help="CityDoctor2 validation plan YAML (default: bundled)")
     val.add_argument("--timeout", type=int, default=600)
     val.add_argument("--report")
+    val.add_argument("--pdf", help="also render a human-readable PDF validation report "
+                     "at this path (CityDoctor2's own -pdfreport)")
     val.set_defaults(func=_cmd_validate)
     return p
 
