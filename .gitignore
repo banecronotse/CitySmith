@@ -24,10 +24,10 @@ Thumbs.db
 *.gml
 *.xml
 *.json
-!tests/*.gml
-!tests/*.xml
-!tests/*.json
+!tests/**/*.gml
+!tests/**/*.xml
+!tests/**/*.json
 
 # CityDoctor2 reports written next to validated inputs
 *.citydoctor.xml
-!tests/*.citydoctor.xml
+!tests/**/*.citydoctor.xml

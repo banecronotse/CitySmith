@@ -10,7 +10,7 @@ import citysmith
 from citysmith.citygml import GML, BLDG, q
 from citysmith.geometry import is_closed_shell, shell_stats, parse_pos_list
 
-DATA = Path(__file__).parent / "CS1_lod3.gml"
+DATA = Path(__file__).parent / "lod" / "CS1_lod3.gml"
 
 
 def _count(root, tag):
@@ -316,7 +316,7 @@ def test_crop_by_building_part_id_keeps_whole_parent(tmp_path):
     from citysmith.crop import crop
     part_id = "UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965"
     out = tmp_path / "cs1_part_crop.gml"
-    src = Path(__file__).parent / "CS1_lod3_enhanced.gml"
+    src = Path(__file__).parent / "semantics" / "CS1_lod3_enhanced.gml"
     report = crop(str(src), str(out), [part_id])
     assert report.kept == 1
     assert report.missing_ids == []
@@ -476,7 +476,7 @@ def test_extrude_prism_outward_normals():
 
 def test_citydoctor_parses_sample_report():
     from citysmith.citydoctor import _parse_report
-    sample = Path(__file__).parent / "CS1_multiLOD.citydoctor.xml"
+    sample = Path(__file__).parent / "validate" / "CS1_multiLOD.citydoctor.xml"
     report = _parse_report(sample)
     assert report.num_buildings == 1
     assert report.num_error_buildings == 1

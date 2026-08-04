@@ -17,13 +17,13 @@ geometric quality, natively or through the CityDoctor2 bridge.
 
 ## Example output
 
-The same real building (`tests/CS1_lod3.gml`, a CityGRID-style export with a
+The same real building (`tests/lod/CS1_lod3.gml`, a CityGRID-style export with a
 Building and a BuildingPart) derived from LOD3 down to LOD0 with `citysmith lod`:
 
 <img src="docs/images/cs1_example.png" alt="LOD3 source model with windows and roof detail, next to the derived LOD2 shell with windows removed, the derived LOD1 block model, and the derived LOD0 flattened footprint" width="100%">
 
 Every file shown is in `tests/`, reproducible with
-`citysmith lod tests/CS1_lod3.gml --levels 0,1,2`. This building is a real
+`citysmith lod tests/lod/CS1_lod3.gml --levels 0,1,2`. This building is a real
 export from CityGRID®, UVM Systems GmbH's software (see
 [Which export style is my data?](#which-export-style-is-my-data) below).
 

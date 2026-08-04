@@ -91,6 +91,18 @@ All notable changes to this project are documented here. The format follows
   tag, every other one indents into its next sibling, so naively keeping an
   earlier feature (the overwhelmingly common case) left its own mid-document
   indentation behind the closing tag instead.
+- `tests/` restructured into one folder per exporting capability (`lod/`,
+  `semantics/`, `convert/`, `validate/`), each with a source file, one output
+  file per flag/variant that isolates what that flag alone does, a final
+  file with everything applied together, and its own `README.md` naming the
+  exact command and effect of every file in it, plus a top-level
+  `tests/README.md` mapping the whole folder. `CS2`'s existing flat set is
+  unchanged, it demonstrates the pipeline end to end on a second building
+  rather than isolating individual flags. Every new file's effect was
+  verified against the real output (e.g. the three `--lod1-height` variants
+  produce genuinely different, correctly ordered block heights; the three
+  `semantics --no-*` combinations each touch only what they claim to), not
+  just trusted from the command's printed summary.
 
 ### Changed
 - Installation classification now uses the building eave height: an installation
