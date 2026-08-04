@@ -134,6 +134,245 @@ def test_lod1_prism_watertight_and_lod0(tmp_path):
     assert dups == {}
 
 
+# --- engine: split ground footprints ------------------------------------------
+#
+# Neither CS1 nor CS2 has a multi-polygon GroundSurface, so these build the
+# minimum CityGML that exercises it: the 'surfaces' pattern (each thematic
+# surface carries its own lod3MultiSurface), which needs no aggregating solid
+# or xlinks to be a valid source.
+
+_GML_HEAD = (
+    '<?xml version="1.0" encoding="UTF-8"?>\n'
+    '<CityModel xmlns="http://www.opengis.net/citygml/2.0" '
+    'xmlns:gml="http://www.opengis.net/gml" '
+    'xmlns:bldg="http://www.opengis.net/citygml/building/2.0">'
+)
+
+
+def _square(x0, y0, size, z):
+    return [(x0, y0, z), (x0 + size, y0, z), (x0 + size, y0 + size, z),
+            (x0, y0 + size, z), (x0, y0, z)]
+
+
+def _poly(pid, pts):
+    coords = " ".join(f"{x} {y} {z}" for x, y, z in pts)
+    return (f'<gml:surfaceMember><gml:Polygon gml:id="{pid}"><gml:exterior>'
+            f'<gml:LinearRing><gml:posList srsDimension="3">{coords}</gml:posList>'
+            f'</gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember>')
+
+
+def _surface(kind, sid, polys):
+    return (f'<bldg:boundedBy><bldg:{kind} gml:id="{sid}"><bldg:lod3MultiSurface>'
+            f'<gml:MultiSurface>{"".join(polys)}</gml:MultiSurface>'
+            f'</bldg:lod3MultiSurface></bldg:{kind}></bldg:boundedBy>')
+
+
+def _building(bid, surfaces):
+    return (f'<cityObjectMember><bldg:Building gml:id="{bid}">'
+            f'{"".join(surfaces)}</bldg:Building></cityObjectMember>')
+
+
+def _write_gml(tmp_path, name, *buildings):
+    path = tmp_path / name
+    path.write_text(_GML_HEAD + "".join(buildings) + "</CityModel>", encoding="utf-8")
+    return path
+
+
+def test_lod1_disjoint_footprint_becomes_composite_solid(tmp_path):
+    """A building whose ground plane is split into two separated pieces (it
+    spans a passage) gets one prism per piece in a gml:CompositeSolid, each
+    taking its own roof height rather than one shared block height."""
+    from citysmith.core import _ring_points
+    src = _write_gml(tmp_path, "split.gml", _building("B1", [
+        _surface("GroundSurface", "g", [_poly("gA", _square(0, 0, 10, 0.0)),
+                                        _poly("gB", _square(20, 0, 10, 0.0))]),
+        _surface("RoofSurface", "r", [_poly("rA", _square(0, 0, 10, 10.0)),
+                                      _poly("rB", _square(20, 0, 10, 8.0))]),
+    ]))
+    out = tmp_path / "split_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), keep_source=False)
+    assert report.lod1_added == 1
+    assert report.lod1_composite == 1
+    assert report.lod1_pieces_skipped == 0
+
+    root = etree.parse(str(out)).getroot()
+    composite = root.find(f".//{q(BLDG, 'lod1Solid')}/{q(GML, 'CompositeSolid')}")
+    assert composite is not None
+    assert len(composite.findall(q(GML, "solidMember"))) == 2
+    tops = set()
+    for solid in composite.iter(q(GML, "Solid")):
+        rings = [_ring_points(p) for p in solid.iter(q(GML, "Polygon"))]
+        assert shell_stats(rings)["closed"] is True  # every prism still watertight
+        tops.add(round(max(z for r in rings for _, _, z in r), 3))
+    assert tops == {10.0, 8.0}
+
+
+def test_lod1_sliver_ground_piece_dropped(tmp_path):
+    """A ground piece too small to be massing (a pillar carrying the building
+    over a passage) is dropped rather than extruded into a tall thin spike,
+    leaving a plain gml:Solid rather than a one-member CompositeSolid."""
+    src = _write_gml(tmp_path, "sliver.gml", _building("B1", [
+        _surface("GroundSurface", "g", [_poly("gA", _square(0, 0, 10, 0.0)),
+                                        _poly("gS", _square(20, 0, 1, 0.0))]),
+        _surface("RoofSurface", "r", [_poly("rA", _square(0, 0, 10, 10.0))]),
+    ]))
+    out = tmp_path / "sliver_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), keep_source=False)
+    assert report.lod1_added == 1
+    assert report.lod1_pieces_skipped == 1
+    assert report.lod1_composite == 0
+
+    root = etree.parse(str(out)).getroot()
+    assert root.find(f".//{q(BLDG, 'lod1Solid')}/{q(GML, 'CompositeSolid')}") is None
+    assert root.find(f".//{q(BLDG, 'lod1Solid')}/{q(GML, 'Solid')}") is not None
+
+
+def test_lod1_all_small_pieces_still_get_geometry(tmp_path):
+    """The size threshold must never leave a building with no LOD1 at all: if
+    every piece is below it, the building genuinely is that small, so all are
+    kept."""
+    src = _write_gml(tmp_path, "tiny.gml", _building("B1", [
+        _surface("GroundSurface", "g", [_poly("gA", _square(0, 0, 1, 0.0)),
+                                        _poly("gB", _square(5, 0, 2, 0.0))]),
+        _surface("RoofSurface", "r", [_poly("rA", _square(0, 0, 1, 3.0)),
+                                      _poly("rB", _square(5, 0, 2, 3.0))]),
+    ]))
+    out = tmp_path / "tiny_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), keep_source=False)
+    assert report.lod1_added == 1
+    assert report.lod1_pieces_skipped == 0
+    root = etree.parse(str(out)).getroot()
+    composite = root.find(f".//{q(BLDG, 'lod1Solid')}/{q(GML, 'CompositeSolid')}")
+    assert len(composite.findall(q(GML, "solidMember"))) == 2
+
+
+def test_lower_only_keeps_and_reports_features_without_geometry(tmp_path):
+    """A feature no LOD1 can be derived for (no GroundSurface to extrude) must
+    survive the run and be named in the report, never silently deleted: a
+    missing building is not actionable, an id in the summary is."""
+    src = _write_gml(
+        tmp_path, "noground.gml",
+        _building("HASGROUND", [
+            _surface("GroundSurface", "g", [_poly("gA", _square(0, 0, 10, 0.0))]),
+            _surface("RoofSurface", "r", [_poly("rA", _square(0, 0, 10, 10.0))]),
+        ]),
+        _building("NOGROUND", [
+            _surface("WallSurface", "w", [_poly("wA", [(0, 0, 0), (1, 0, 0),
+                                                       (1, 0, 5), (0, 0, 5), (0, 0, 0)])]),
+        ]),
+    )
+    out = tmp_path / "noground_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), keep_source=False)
+    assert report.lod1_added == 1
+    assert report.lod1_skipped == 1
+    assert report.kept_empty_ids == ["NOGROUND"]
+
+    root = etree.parse(str(out)).getroot()
+    assert {b.get(q(GML, "id")) for b in root.iter(q(BLDG, "Building"))} == {
+        "HASGROUND", "NOGROUND"}
+
+
+# --- crop ----------------------------------------------------------------------
+
+def test_crop_keeps_only_requested_ids(tmp_path):
+    from citysmith.crop import crop
+    src = _write_gml(
+        tmp_path, "three.gml",
+        _building("KEEP1", [_surface("GroundSurface", "g1",
+                                     [_poly("g1a", _square(0, 0, 5, 0.0))])]),
+        _building("DROP", [_surface("GroundSurface", "g2",
+                                    [_poly("g2a", _square(10, 0, 5, 0.0))])]),
+        _building("KEEP2", [_surface("GroundSurface", "g3",
+                                     [_poly("g3a", _square(20, 0, 5, 0.0))])]),
+    )
+    out = tmp_path / "three_crop.gml"
+    report = crop(str(src), str(out), ["KEEP1", "KEEP2"])
+    assert report.requested == 2
+    assert report.kept == 2
+    assert report.missing_ids == []
+
+    root = etree.parse(str(out)).getroot()
+    assert {b.get(q(GML, "id")) for b in root.iter(q(BLDG, "Building"))} == {
+        "KEEP1", "KEEP2"}
+
+
+def test_crop_missing_id_is_reported_not_silent(tmp_path):
+    from citysmith.crop import crop
+    src = _write_gml(tmp_path, "one.gml", _building(
+        "ONLY", [_surface("GroundSurface", "g", [_poly("ga", _square(0, 0, 5, 0.0))])]))
+    out = tmp_path / "one_crop.gml"
+    report = crop(str(src), str(out), ["ONLY", "GHOST"])
+    assert report.requested == 2
+    assert report.kept == 1
+    assert report.missing_ids == ["GHOST"]
+
+    root = etree.parse(str(out)).getroot()
+    assert [b.get(q(GML, "id")) for b in root.iter(q(BLDG, "Building"))] == ["ONLY"]
+
+
+def test_crop_by_building_part_id_keeps_whole_parent(tmp_path):
+    """Naming just a BuildingPart's id must keep its whole parent Building,
+    a lone part is not independently meaningful CityGML."""
+    from citysmith.crop import crop
+    part_id = "UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965"
+    out = tmp_path / "cs1_part_crop.gml"
+    src = Path(__file__).parent / "CS1_lod3_enhanced.gml"
+    report = crop(str(src), str(out), [part_id])
+    assert report.kept == 1
+    assert report.missing_ids == []
+
+    root = etree.parse(str(out)).getroot()
+    assert [b.get(q(GML, "id")) for b in root.iter(q(BLDG, "Building"))] == ["CS1"]
+    assert root.find(f".//{q(BLDG, 'BuildingPart')}[@{{{GML}}}id='{part_id}']") is not None
+
+
+def test_crop_recomputes_envelope_to_kept_geometry(tmp_path):
+    from citysmith.crop import crop
+    src = _write_gml(
+        tmp_path, "two.gml",
+        _building("NEAR", [_surface("GroundSurface", "g1",
+                                    [_poly("g1a", _square(0, 0, 5, 0.0))])]),
+        _building("FAR", [_surface("GroundSurface", "g2",
+                                   [_poly("g2a", _square(1000, 1000, 5, 0.0))])]),
+    )
+    out = tmp_path / "two_crop.gml"
+    crop(str(src), str(out), ["NEAR"])
+
+    root = etree.parse(str(out)).getroot()
+    env = root.find(f"{q(GML, 'boundedBy')}/{q(GML, 'Envelope')}")
+    assert env is not None
+    lower = [float(x) for x in env.find(q(GML, "lowerCorner")).text.split()]
+    upper = [float(x) for x in env.find(q(GML, "upperCorner")).text.split()]
+    assert lower[0] == 0.0 and upper[0] == 5.0  # NEAR's extent, not FAR's
+
+
+def test_crop_closing_tag_keeps_source_indentation(tmp_path):
+    """A kept feature that wasn't already the last one in the source must not
+    leave its own mid-document indentation (meant to lead into the next
+    sibling) behind the closing </CityModel> tag: real CityGML formats each
+    non-last cityObjectMember's tail as '\\n\\t' (indenting into the next
+    sibling) and only the true last one as a bare '\\n' (leading straight into
+    the closing tag), so naively keeping an earlier child's own tail wrongly
+    indents the file's closing tag."""
+    from citysmith.crop import crop
+    src = tmp_path / "ordered.gml"
+    src.write_text(
+        _GML_HEAD
+        + _building("FIRST", [_surface("GroundSurface", "g1",
+                                       [_poly("g1a", _square(0, 0, 5, 0.0))])])
+        + "\n\t"
+        + _building("LAST", [_surface("GroundSurface", "g2",
+                                      [_poly("g2a", _square(10, 0, 5, 0.0))])])
+        + "\n</CityModel>",
+        encoding="utf-8",
+    )
+    out = tmp_path / "ordered_crop.gml"
+    crop(str(src), str(out), ["FIRST"])  # keep the one that was NOT last
+
+    text = out.read_text(encoding="utf-8")
+    assert text.rstrip("\n").endswith("</cityObjectMember>\n</CityModel>")
+
+
 # --- engine: LOD2 as source (not just LOD3) -----------------------------------
 
 def test_lod1_lod0_derivable_from_lod2_source(tmp_path):

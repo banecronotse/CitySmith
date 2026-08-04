@@ -74,6 +74,23 @@ All notable changes to this project are documented here. The format follows
   since CS1 and CS2 are both real exports from their software (previously
   "CityGRID" was only used as a technical term for the export pattern, with
   no credit to the company).
+- `citysmith crop` (`crop.py`, `citysmith.crop`): extract a named subset of
+  buildings by `gml:id` out of a larger file, e.g. cutting a small test area
+  out of a city-wide export. Selection is `--ids` (comma list) and/or
+  `--ids-file` (one id per line); naming a `BuildingPart`'s id keeps its
+  whole parent `Building`, since a lone part is not independently meaningful
+  CityGML. Ids not found in the source are reported by id, never silently
+  dropped. The output's `gml:Envelope` is recomputed from the kept
+  geometry's real bounds rather than left describing the original file's
+  extent. `app:appearance` blocks nested per building (this project's own
+  reference data) survive untouched by construction; the rarer document-level
+  appearance convention is detected and any texture reference left pointing
+  at removed geometry is pruned, reported as `appearance_pruned`. The closing
+  `</CityModel>` tag keeps the source's own indentation: real CityGML gives
+  only the true last `cityObjectMember` a bare-newline tail into the closing
+  tag, every other one indents into its next sibling, so naively keeping an
+  earlier feature (the overwhelmingly common case) left its own mid-document
+  indentation behind the closing tag instead.
 
 ### Changed
 - Installation classification now uses the building eave height: an installation
@@ -116,9 +133,6 @@ All notable changes to this project are documented here. The format follows
   modelled as separate features with their own geometry) behind on an
   LOD2-sourced feature; LOD3 debris is now always stripped regardless of
   which tier a feature was actually derived from.
-- Empty `BuildingPart`s with no derivable geometry (e.g. no `GroundSurface`,
-  so LOD1/LOD0 couldn't be built) are now dropped from `--lower-only` output
-  instead of appearing as an empty layer.
 - LOD1 prism faces now have outward-facing normals (footprint reoriented to
   counter-clockwise), so the roof/top no longer disappears under back-face
   culling in viewers such as FZK ModelViewer.
@@ -129,6 +143,26 @@ All notable changes to this project are documented here. The format follows
   Objects, Part 2, section 2.4. `--lod1-height eave`/`ridge` remain available
   for the guide's other two named heights.
 - `localname()` no longer raises on XML comment / processing-instruction nodes.
+- LOD1 is now derived for buildings whose `GroundSurface` is more than one
+  polygon, which previously skipped outright: on the Hamburg reference
+  dataset that was 25 of 178 buildings producing no LOD1 at all. Adjoining
+  pieces are unioned into one outline (edge cancellation, the same merge
+  LOD2 uses on wall panels) and still yield a single prism. Pieces that
+  genuinely don't adjoin get **one prism each inside a
+  `gml:CompositeSolid`**: connectivity analysis showed these are not
+  separate structures but single buildings spanning a passage at ground
+  level, so only the footprint is split while the volume above is
+  continuous. Each piece takes its own eave/ridge from the roof surfaces
+  over it, since wings of one building differ in height. Pieces below
+  `LOD1_MIN_PIECE_AREA` (10 m²) are dropped as pillars rather than extruded
+  into thin full-height spikes, but never the last one, so no building is
+  left without geometry. `Report` gained `lod1_composite` and
+  `lod1_pieces_skipped`. See docs/DESIGN.md, LOD1 section.
+- `--lower-only` no longer deletes features left without geometry. Silently
+  dropping a building makes a run lose count with no trace of which ones or
+  why; they are now kept and named in the run summary instead, matching the
+  "report, don't force" approach used everywhere else. `Report` gained
+  `kept_empty_ids`.
 
 ### Notes
 - Window/door openings modelled as a *notch in the wall polygon's own
@@ -144,5 +178,11 @@ All notable changes to this project are documented here. The format follows
 - Source LOD3 solids are frequently not watertight (T-junctions, missing
   soffits). Watertightness is reported, not forced. Healing and extrusion-based
   reconstruction are planned.
+- A `Building` that merges several real structures sharing one *connected*
+  footprint still gets a single LOD1 box, and no single block height is
+  correct for it. Unlike the split-footprint case above, nothing in the
+  geometry distinguishes it from a genuinely simple building, so it is not
+  detected or flagged. Emitting such features as separate `BuildingPart`s is
+  future work.
 - Building installations are not yet emitted as CityJSON CityObjects; balcony
   hard-tier geometry (thickness collapse, face reclassification) is future work.

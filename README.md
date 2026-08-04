@@ -5,11 +5,11 @@ lower levels of detail, filling in missing semantics, checking geometric
 quality, and converting to other encodings, all while leaving the original
 data intact.
 
-Four capabilities: `lod` derives lower levels of detail (LOD1 and LOD0 from
-either LOD2 or LOD3 data, a clean LOD2 from LOD3), `semantics` fills in
-missing ids and semantic attributes, `convert` exports to CityJSON, and
-`validate` checks geometric quality, natively or through the CityDoctor2
-bridge.
+Five capabilities: `crop` extracts a named subset of buildings out of a
+larger file, `lod` derives lower levels of detail (LOD1 and LOD0 from either
+LOD2 or LOD3 data, a clean LOD2 from LOD3), `semantics` fills in missing ids
+and semantic attributes, `convert` exports to CityJSON, and `validate` checks
+geometric quality, natively or through the CityDoctor2 bridge.
 
 > Status: early development. LOD derivation, semantics, CityJSON export and the
 > CityDoctor2 validation bridge all work end to end and are tested. See the
@@ -39,6 +39,7 @@ produces those from what you already have.
 | Area | What it does | Status |
 | --- | --- | --- |
 | `inspect` | Read-only preflight: what geometry was found and what each capability can/can't do with it, no output written | done |
+| `crop` | Extract a named subset of buildings by `gml:id` out of a larger file | done |
 | `lod` | Derive and embed lower LODs: LOD1 block and LOD0 footprint from LOD3 or LOD2 data, a clean LOD2 shell from LOD3 | done |
 | `semantics` | Fill missing ids, `function`, `type` attributes and `lod3Geometry` aggregates per a rulebook (needs LOD3) | easy tier done |
 | `convert` | Emit CityJSON 1.1 (validated through cjio, upgrades cleanly to 2.0) | done |
@@ -70,7 +71,11 @@ And explicitly does **not** touch:
   real photogrammetric exports (like the one this was tested against) often
   carry image-based `app:ParameterizedTexture` data with tens of thousands of
   texture-coordinate entries per file. CitySmith neither reads nor writes any
-  of it. Existing LOD3 textures survive untouched in the output because LOD3
+  of it, with one narrow exception: `crop` prunes texture references left
+  pointing at geometry it removed, but only if the file declares appearances
+  once at document level rather than nested per building (this project's own
+  reference data uses the latter, which needs no such cleanup).
+  Existing LOD3 textures survive untouched in the output because LOD3
   geometry and ids are never modified, but every polygon CitySmith generates
   for LOD0/1/2 gets a fresh id, so none of the generated geometry can ever be
   textured (the source appearance's surface references only resolve against
@@ -105,6 +110,10 @@ directory isn't on PATH yet. Either add it, or run everything as
 ```bash
 # Check what's actually in a file before running anything on it
 citysmith inspect unfamiliar_city_model.gml
+
+# Cut a small area out of a larger dataset by naming the buildings you want
+citysmith crop citywide.gml --ids BLDG_001,BLDG_002,BLDG_003 -o area.gml
+citysmith crop citywide.gml --ids-file wanted_ids.txt -o area.gml
 
 # Derive lower LODs and embed them next to the source
 citysmith lod city_lod3.gml --levels 0,1,2          # complete multi-LOD file
@@ -261,9 +270,22 @@ defines them, no clustering or weighting on top. See
 [LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) in the design doc
 for the full section reference.
 
-LOD1 is still, by definition, one box per `Building`. If a `Building` in your
+If a building's ground surface comes in several polygons, adjoining pieces are
+merged into one outline and still give a single prism. Pieces that genuinely
+don't adjoin get one prism each inside a `gml:CompositeSolid`: these are
+buildings spanning a passage or archway at ground level, so only the footprint
+is split while the volume above is continuous, and each piece takes its own
+roof height. Pieces too small to be massing (pillars carrying the building
+over the passage) are dropped rather than extruded into thin full-height
+spikes, but never the last one, so no building is left without geometry. The
+counts are always reported. See
+[LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) for the reasoning
+and the measured alternatives that were rejected.
+
+LOD1 is otherwise one box per volume. If a `Building` in your
 source data actually represents several real structures at substantially
-different heights merged into a single feature (a common artifact of
+different heights merged into a single feature *sharing one connected
+footprint* (a common artifact of
 ALKIS-footprint-driven or address-driven exports, where several real
 buildings share one cadastral footprint or address and get exported as one
 `Building`), none of the three height choices is a correct answer: the

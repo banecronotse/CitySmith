@@ -220,15 +220,60 @@ Heights follow the vocabulary defined in the same guide, section 2.4
 All three are literal min/max over the shell's points, no clustering or area
 weighting, matching how the guide itself defines them.
 
-**Known limitation**: LOD1 is still fundamentally "one box per `Building`."
-If a `Building` in the source data actually represents several real
-structures merged into a single feature (see the honest note in
-[README.md](../README.md#lod1-how-the-block-height-is-chosen)), no
-single height, eave, ridge, or average, is a correct answer, because the
-guide's height model assumes one coherent roof to begin with. CitySmith does
-not currently detect or flag this case; it is a known gap, tracked on the
-[Roadmap](#roadmap), consistent with the "report, don't force" approach
-already used for watertightness.
+#### Footprints that come in several pieces
+
+A `GroundSurface` is not always one polygon. When it is several, they are
+first unioned by edge cancellation (`union_coplanar_polygons`, the same merge
+LOD2 uses on wall panels): pieces that adjoin collapse into one outline,
+leaving a single prism exactly as before. Only exterior rings are fed in,
+since `extrude_prism` consumes an exterior ring anyway, so a ground interior
+ring (a courtyard) is no more represented in LOD1 than it has ever been.
+
+Pieces that genuinely don't adjoin are the interesting case. Analysing the
+Hamburg reference dataset (178 buildings) showed 24 of them with 2-3 ground
+pieces separated by 2.2-4.7 m. Testing shell connectivity (union-find over
+polygons sharing an edge) established that in **every** case those pieces
+belong to one connected shell: these are single buildings spanning a passage
+or archway at ground level, so only the ground plane is split while the
+volume above is continuous. They are not separate structures.
+
+Such a feature gets **one prism per piece, wrapped in a
+`gml:CompositeSolid`**. `bldg:lod1Solid` is a `gml:SolidPropertyType`, whose
+content is `gml:_Solid`, and `gml:CompositeSolid` substitutes for `gml:_Solid`,
+so this is valid CityGML 2.0; CityDoctor2 validates such output with no
+errors. Each piece takes its own eave/ridge from the roof surfaces standing
+over it (falling back to the whole building's heights when none do), because
+the wings of one building really do differ: on the Hamburg sample one
+feature's second wing tops out 2.0 m below its main mass.
+
+This deviates from SIG3D Part 2 §2.1's "exactly one prismatic extrusion
+solid" per `Building`, deliberately. A single prism cannot represent a
+footprint split by a passage without either inventing the passage area or
+discarding a wing, and on this dataset discarding would have thrown away up
+to 50% of a building (one feature is two wings of 239.6 m² and 236.0 m²).
+Deriving the outline from the roof projection instead was measured and
+rejected: it inflates footprints by 7-94% through eave overhang, and fails
+outright on some buildings.
+
+Pieces below `LOD1_MIN_PIECE_AREA` (10 m², in `core.py`) are dropped, but
+only when a larger piece survives. Sub-threshold pieces are pillars carrying
+the building over the passage (0.5-8 m² on the sample) which, extruded to the
+building's full height, would render as thin 20-26 m spikes rather than
+massing. If every piece is below the threshold the building genuinely is that
+small, so all are kept and it is never left without geometry. The count of
+dropped pieces is reported, never silent.
+
+**Known limitation**: LOD1 is still fundamentally "one box per volume." If a
+`Building` in the source data actually represents several real structures
+merged into a single feature *sharing one connected footprint* (see the
+honest note in
+[README.md](../README.md#lod1-how-the-block-height-is-chosen)), no single
+height, eave, ridge, or average, is a correct answer, because the guide's
+height model assumes one coherent roof to begin with. Nothing in the geometry
+distinguishes that from a genuinely simple building, so CitySmith does not
+detect or flag it; it is a known gap, tracked on the [Roadmap](#roadmap),
+consistent with the "report, don't force" approach already used for
+watertightness.
 
 ### LOD0 (footprint)
 

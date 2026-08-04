@@ -37,11 +37,23 @@ from dataclasses import dataclass, field
 from lxml import etree
 
 from .citygml import BLDG, GML, XLINK, BOUNDARY_LOCALNAMES, gml_id, href_target, localname, q
-from .geometry import (cluster_coplanar_rings, extrude_prism, parse_pos_list,
-                       shell_stats, union_coplanar_polygons)
+from .geometry import (_point_in_polygon_2d, cluster_coplanar_rings, extrude_prism,
+                       parse_pos_list, polygon_area_2d, shell_stats,
+                       union_coplanar_polygons)
 
 # Fixed namespace so uuid5-derived ids are stable across runs and machines.
 _ID_NAMESPACE = uuid.UUID("1b9d6bcd-0c6f-5a1e-9d0a-10b0c0ffee00")
+
+# Smallest ground piece (in the CRS's squared units, i.e. m² for a projected
+# CRS) that still earns its own LOD1 prism when a footprint comes in several
+# disjoint pieces. Real data has buildings spanning a ground-level passage on
+# pillars: the pillars show up as ground pieces of 0.5-8 m² which, extruded to
+# the building's full height, would render as thin 20-26 m spikes rather than
+# massing. Anything at or above this is kept, including genuine secondary
+# wings. Only ever applied when a larger piece survives, so a building that
+# really is one small structure is never left without geometry. See
+# docs/DESIGN.md, LOD1 section.
+LOD1_MIN_PIECE_AREA = 10.0
 
 _LOD3_GEOMETRY_PROPS = {
     "lod3Solid", "lod3MultiSurface", "lod3Geometry",
@@ -81,6 +93,8 @@ class Report:
     other_copied: int = 0
     lod1_added: int = 0
     lod1_skipped: int = 0
+    lod1_composite: int = 0
+    lod1_pieces_skipped: int = 0
     lod0_added: int = 0
     lod0_skipped: int = 0
     closed: int = 0
@@ -91,6 +105,7 @@ class Report:
         "watertight": 0, "1-4_open_edges": 0, "5-20_open_edges": 0, "20+_open_edges": 0,
     })
     open_feature_ids: list[str] = field(default_factory=list)
+    kept_empty_ids: list[str] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -460,49 +475,150 @@ def _heights(typed):
     return z_base, z_eave, max(z_all)
 
 
+def _lod1_footprint_loops(ground):
+    """Return the footprint outline(s) to extrude, as closed 3D rings.
+
+    One `GroundSurface` polygon is used as-is, the overwhelmingly common case
+    and the one that must stay byte-identical. Several are unioned by edge
+    cancellation (`union_coplanar_polygons`, the same merge LOD2 uses on wall
+    panels): pieces that adjoin collapse into one outline, pieces that don't
+    come back as separate loops. Only exterior rings are fed in, since
+    `extrude_prism` takes an exterior ring anyway, so a ground interior ring
+    (a courtyard) is no more represented in LOD1 than it is today, and holes
+    never interact with the union's even-odd nesting rules.
+
+    If the union refuses (T-junction, or rings that aren't really coplanar),
+    fall back to one loop per ground polygon rather than giving up: separate
+    prisms are still a far better answer than no geometry at all.
+    """
+    if len(ground) == 1:
+        ring = _ring_points(ground[0])
+        return [ring] if len(ring) >= 3 else []
+    rings = [r for r in (_ring_points(g) for g in ground) if len(r) >= 3]
+    if not rings:
+        return []
+    return union_coplanar_polygons(rings) or rings
+
+
+def _significant_loops(loops, report):
+    """Drop footprint pieces too small to be real massing, but never the last
+    of them. See LOD1_MIN_PIECE_AREA for why: sub-threshold pieces are pillars
+    carrying a building over a ground-level passage, and extruding one to the
+    building's full height produces a spike, not a block. If every piece is
+    below the threshold the building genuinely is that small, so all are kept.
+    """
+    if len(loops) <= 1:
+        return loops
+    areas = [polygon_area_2d(lp) for lp in loops]
+    if max(areas) < LOD1_MIN_PIECE_AREA:
+        return loops
+    kept = [lp for lp, a in zip(loops, areas) if a >= LOD1_MIN_PIECE_AREA]
+    report.lod1_pieces_skipped += len(loops) - len(kept)
+    return kept
+
+
+def _piece_roof_heights(loop, typed, whole):
+    """(z_eave, z_ridge) from just the roof surfaces standing over one
+    footprint piece, falling back to the whole building's values when no roof
+    polygon's centroid lands inside it (a small piece, or a roof that overhangs
+    clear of the ground it covers). Wings of one building really do differ:
+    on the Hamburg sample one feature's second wing averages 34.9 m against
+    37.0 m for its main mass."""
+    poly2d = [(p[0], p[1]) for p in (loop[:-1] if loop[0] == loop[-1] else loop)]
+    pts = []
+    for roof in typed.get("RoofSurface", []):
+        rpts = _ring_points(roof)
+        if len(rpts) < 3:
+            continue
+        body = rpts[:-1] if rpts[0] == rpts[-1] else rpts
+        cx = sum(p[0] for p in body) / len(body)
+        cy = sum(p[1] for p in body) / len(body)
+        if _point_in_polygon_2d((cx, cy), poly2d):
+            pts.extend(rpts)
+    if not pts:
+        return whole[1], whole[2]
+    zs = [z for _, _, z in pts]
+    return min(zs), max(zs)
+
+
+def _lod1_solid_node(faces, id_seed):
+    """One gml:Solid prism, faces deterministically identified from id_seed."""
+    solid = etree.Element(q(GML, "Solid"))
+    comp = etree.SubElement(
+        etree.SubElement(solid, q(GML, "exterior")), q(GML, "CompositeSurface")
+    )
+    for i, face in enumerate(faces):
+        etree.SubElement(comp, q(GML, "surfaceMember")).append(
+            _make_polygon(face, _det_id(f"{id_seed}f{i}"))
+        )
+    return solid
+
+
 def _build_lod1(typed, feature_seed, report, height="average"):
-    """Return a bldg:lod1Solid prism node, or None if not derivable.
+    """Return a bldg:lod1Solid node, or None if not derivable.
 
     `height` selects the SIG3D-named top of the block:
       'eave'    Min. Eaves Height (the conservative, spec-literal LOD1 value)
       'ridge'   Max. Ridge Height (the tallest possible guess)
       'average' Average Roof Height = (Min. Eaves + Max. Ridge) / 2 (default,
                 the spec's own formula for approximating the real roof volume)
+
+    Normally one prism. A building whose ground plane comes in several
+    disjoint pieces (it spans a passage at ground level, so only the footprint
+    is split while the volume above is continuous) gets one prism per piece
+    inside a `gml:CompositeSolid`, which `bldg:lod1Solid` accepts since
+    `gml:CompositeSolid` substitutes for `gml:_Solid`. See docs/DESIGN.md.
     """
     ground = typed.get("GroundSurface", [])
-    if len(ground) != 1:
+    if not ground:
         report.lod1_skipped += 1
         return None
     hs = _heights(typed)
     if hs is None:
         report.lod1_skipped += 1
         return None
-    z_base, z_eave, z_ridge = hs
-    if height == "ridge":
-        z_top = z_ridge
-    elif height == "eave":
-        z_top = z_eave
-    else:
-        z_top = (z_eave + z_ridge) / 2
-    if z_top <= z_base:
-        z_top = z_ridge
-    if z_top <= z_base:
+    z_base = hs[0]
+
+    loops = _lod1_footprint_loops(ground)
+    single = len(loops) == 1
+    loops = _significant_loops(loops, report)
+    if not loops:
         report.lod1_skipped += 1
         return None
 
     seed = gml_id(ground[0]) or f"{feature_seed}:g0"
-    ring = _ring_points(ground[0])
-    footprint = [(x, y) for (x, y, _) in ring]
-    faces = extrude_prism(footprint, z_base, z_top)
+    prisms = []
+    for p_idx, loop in enumerate(loops):
+        z_eave, z_ridge = (hs[1], hs[2]) if single else _piece_roof_heights(loop, typed, hs)
+        if height == "ridge":
+            z_top = z_ridge
+        elif height == "eave":
+            z_top = z_eave
+        else:
+            z_top = (z_eave + z_ridge) / 2
+        if z_top <= z_base:
+            z_top = z_ridge
+        if z_top <= z_base:
+            continue
+        faces = extrude_prism([(x, y) for (x, y, _) in loop], z_base, z_top)
+        # The one-piece seed is kept exactly as it always was, so output for
+        # the ordinary single-GroundSurface building is unchanged.
+        prisms.append((f"{seed}:lod1" if single else f"{seed}:lod1p{p_idx}", faces))
+    if not prisms:
+        report.lod1_skipped += 1
+        return None
 
     solid_prop = etree.Element(q(BLDG, "lod1Solid"))
-    comp = etree.SubElement(
-        etree.SubElement(etree.SubElement(solid_prop, q(GML, "Solid")), q(GML, "exterior")),
-        q(GML, "CompositeSurface"),
-    )
-    for i, face in enumerate(faces):
-        pid = _det_id(f"{seed}:lod1f{i}")
-        etree.SubElement(comp, q(GML, "surfaceMember")).append(_make_polygon(face, pid))
+    if len(prisms) == 1:
+        solid_prop.append(_lod1_solid_node(prisms[0][1], prisms[0][0]))
+    else:
+        composite = etree.SubElement(solid_prop, q(GML, "CompositeSolid"))
+        composite.set(q(GML, "id"), _det_id(f"{seed}:lod1cs"))
+        for id_seed, faces in prisms:
+            etree.SubElement(composite, q(GML, "solidMember")).append(
+                _lod1_solid_node(faces, id_seed)
+            )
+        report.lod1_composite += 1
     report.lod1_added += 1
     return solid_prop
 
@@ -591,30 +707,26 @@ def _strip_source_geometry(root, poly_index, levels, new_nodes, *, keep_source: 
                 feat.remove(child)
 
 
-def _remove_empty_features(root) -> None:
-    """Drop any Building/BuildingPart left with no geometry-bearing content
-    after stripping, e.g. a BuildingPart with no GroundSurface, so LOD1/LOD0
-    couldn't be derived for it, and nothing else survived the strip, rather
-    than leaving an empty stub feature (or an empty consistsOfBuildingPart
-    wrapper on its parent) sitting in lower-only output. BuildingParts are
-    processed before their parent Building, since removing an empty part can
-    leave the parent with nothing left either.
+def _flag_empty_features(root, report) -> None:
+    """Record, but never remove, any Building/BuildingPart left with no
+    geometry-bearing content after stripping (e.g. a BuildingPart with no
+    GroundSurface, so LOD1/LOD0 couldn't be derived for it).
+
+    These used to be deleted outright from lower-only output. Silently
+    dropping a feature makes a run lose buildings with no trace of which ones
+    or why, which is the opposite of this project's "report, don't force"
+    stance everywhere else: an id in the summary is actionable, a missing
+    building is not. The attributes, appearances and generic properties of
+    such a feature are still meaningful, and any downstream consumer can
+    filter on the absence of geometry itself.
     """
-    features = [e for e in root.iter() if e.tag in _FEATURE_TAGS]
-    features.sort(key=lambda f: 0 if localname(f) == "BuildingPart" else 1)
-    keep_tags = _GEOMETRY_BEARING_PROPS | {"consistsOfBuildingPart"}
-    for feat in features:
-        if any(localname(c) in keep_tags for c in feat):
+    for feat in root.iter():
+        if feat.tag not in _FEATURE_TAGS:
             continue
-        parent = feat.getparent()
-        if parent is None:
+        if any(localname(c) in _GEOMETRY_BEARING_PROPS or
+               localname(c) == "consistsOfBuildingPart" for c in feat):
             continue
-        if localname(parent) == "consistsOfBuildingPart":
-            grandparent = parent.getparent()
-            if grandparent is not None:
-                grandparent.remove(parent)
-        else:
-            parent.remove(feat)
+        report.kept_empty_ids.append(gml_id(feat) or "(no id)")
 
 
 def _needs_lod2_build(source_level, groups) -> bool:
@@ -750,7 +862,7 @@ def enhance(input_path: str, output_path: str, *, levels=(2,), keep_source: bool
 
     _strip_source_geometry(root, poly_index, levels, new_nodes, keep_source=keep_source)
     if not keep_source:
-        _remove_empty_features(root)
+        _flag_empty_features(root, report)
 
     tree.write(output_path, xml_declaration=True, encoding="utf-8")
     return report

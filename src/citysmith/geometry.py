@@ -224,6 +224,21 @@ def cluster_coplanar_rings(rings, angle_tol: float = 0.05, dist_tol: float = 0.5
     return [groups[k] for k in sorted(groups, key=lambda k: min(groups[k]))]
 
 
+def polygon_area_2d(ring) -> float:
+    """Absolute area of a ring's horizontal (x, y) projection, by the shoelace
+    formula. Accepts 2D or 3D points, closed or not; any z is ignored, so for
+    a horizontal ring (a building footprint) this is its true ground area in
+    the CRS's units, and for a tilted one it is the footprint it covers.
+    Unsigned, so winding direction does not matter."""
+    loop = ring[:-1] if len(ring) > 1 and ring[0] == ring[-1] else ring
+    n = len(loop)
+    if n < 3:
+        return 0.0
+    total = sum(loop[i][0] * loop[(i + 1) % n][1] - loop[(i + 1) % n][0] * loop[i][1]
+                for i in range(n))
+    return abs(total) / 2.0
+
+
 def _point_in_polygon_2d(pt, loop) -> bool:
     """Even-odd ray cast. `loop` is a list of (x, y), not closed. Points
     exactly on the boundary are undefined, which is fine here: outer and hole

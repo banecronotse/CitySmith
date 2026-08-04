@@ -3,6 +3,7 @@
 Subcommands:
   inspect    read-only preflight: what geometry CitySmith found and what
              each capability can/can't do with it, without writing anything
+  crop       extract a named subset of buildings by gml:id out of a larger file
   lod        derive and embed lower LODs (LOD0/1/2) from an LOD3 or LOD2 source
   semantics  apply the easy-tier semantic fixes (ids, function, type, aggregate)
   convert    export CityGML to CityJSON 1.1
@@ -15,6 +16,7 @@ import sys
 
 from . import __version__
 from .core import enhance, inspect as inspect_source
+from .crop import crop as crop_source
 from .semantics import enhance_semantics
 from .cityjson import convert
 from .citydoctor import validate, CityDoctorNotFound, CityDoctorError
@@ -71,6 +73,42 @@ def _cmd_inspect(args) -> int:
     return 0
 
 
+# --- crop ----------------------------------------------------------------------
+
+def _read_ids(args) -> list[str]:
+    ids = []
+    if args.ids:
+        ids.extend(x.strip() for x in args.ids.split(",") if x.strip())
+    if args.ids_file:
+        with open(args.ids_file, encoding="utf-8") as fh:
+            ids.extend(line.strip() for line in fh if line.strip())
+    return ids
+
+
+def _cmd_crop(args) -> int:
+    ids = _read_ids(args)
+    if not ids:
+        print("error: no ids given, use --ids and/or --ids-file", file=sys.stderr)
+        return 2
+    out = args.output or _default_out(args.input, "_crop")
+    print(f"reading  : {args.input}")
+    report = crop_source(args.input, out, ids)
+    print(f"written  : {out}")
+    print(f"requested: {report.requested}   kept: {report.kept}")
+    if report.missing_ids:
+        print(f"  not found in source: {len(report.missing_ids)}")
+        for fid in report.missing_ids[:10]:
+            print(f"    {fid}")
+        if len(report.missing_ids) > 10:
+            print(f"    ... and {len(report.missing_ids) - 10} more")
+    if report.appearance_pruned:
+        print(f"  appearance references pruned (pointed at removed geometry): "
+              f"{report.appearance_pruned}")
+    if args.report:
+        _write_report(args.report, report.to_dict())
+    return 0 if not report.missing_ids else 1
+
+
 # --- lod ---------------------------------------------------------------------
 
 def _cmd_lod(args) -> int:
@@ -99,8 +137,20 @@ def _cmd_lod(args) -> int:
             print(f"    {k:16}: {report.quality_buckets[k]}")
     if 1 in levels:
         print(f"  LOD1 added/skipped: {report.lod1_added}/{report.lod1_skipped}")
+        if report.lod1_composite:
+            print(f"    of which multi-part (footprint split by a passage): "
+                  f"{report.lod1_composite}")
+        if report.lod1_pieces_skipped:
+            print(f"    ground pieces too small to extrude: {report.lod1_pieces_skipped}")
     if 0 in levels:
         print(f"  LOD0 added/skipped: {report.lod0_added}/{report.lod0_skipped}")
+    if report.kept_empty_ids:
+        print(f"  kept without geometry: {len(report.kept_empty_ids)} "
+              "(reported, never dropped)")
+        for fid in report.kept_empty_ids[:10]:
+            print(f"    {fid}")
+        if len(report.kept_empty_ids) > 10:
+            print(f"    ... and {len(report.kept_empty_ids) - 10} more")
     if args.report:
         _write_report(args.report, report.to_dict())
     return 0
@@ -118,7 +168,9 @@ def _cmd_semantics(args) -> int:
     print(f"functions added     : {report.functions_added}")
     print(f"type attrs added    : {report.types_added}")
     print(f"lod3Geometry added  : {report.lod3geometry_added}")
-    print(f"classified          : {report.classified}")
+    c = report.classified
+    print(f"classified          : {sum(c.values())} total "
+          f"({c['balcony']} balcony, {c['chimney']} chimney, {c['unknown']} unknown)")
     if args.report:
         _write_report(args.report, report.to_dict())
     return 0
@@ -170,21 +222,57 @@ def _cmd_validate(args) -> int:
     return 0 if report.num_error_buildings == 0 else 1
 
 
+# Every subcommand's --help ends with a runnable example, on the theory that
+# a copy-pasteable command teaches faster than a flag list on its own.
+# RawDescriptionHelpFormatter is required for the epilog's line breaks to
+# survive; argparse otherwise re-wraps and collapses them into one paragraph.
+_REPORT_HELP = "also write the full machine-readable result as JSON to this path"
+
+
+def _sub(sub, name, *, help, epilog, description=None):
+    return sub.add_parser(
+        name, help=help, epilog=epilog, description=description or help,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="citysmith", description="A CityGML enhancer.")
     p.add_argument("--version", action="version", version=f"citysmith {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
-    insp = sub.add_parser("inspect", help="read-only preflight: what's in this file and what "
-                          "each capability can do with it")
-    insp.add_argument("input")
-    insp.add_argument("--limit", type=int, default=None)
-    insp.add_argument("--report")
+    insp = _sub(sub, "inspect",
+                help="read-only preflight: what's in this file and what each capability "
+                     "can do with it",
+                epilog="example:\n  citysmith inspect unfamiliar_city_model.gml")
+    insp.add_argument("input", help="source CityGML file")
+    insp.add_argument("--limit", type=int, default=None,
+                       help="only look at the first N features (quick check on a huge file)")
+    insp.add_argument("--report", help=_REPORT_HELP)
     insp.set_defaults(func=_cmd_inspect)
 
-    lod = sub.add_parser("lod", help="derive and embed lower LODs from LOD3 or LOD2 source")
-    lod.add_argument("input")
-    lod.add_argument("-o", "--output")
+    crop = _sub(sub, "crop",
+                help="extract a named subset of buildings by gml:id",
+                epilog="examples:\n"
+                       "  citysmith crop citywide.gml --ids ID1,ID2,ID3 -o area.gml\n"
+                       "  citysmith crop citywide.gml --ids-file wanted_ids.txt -o area.gml")
+    crop.add_argument("input", help="source CityGML file")
+    crop.add_argument("-o", "--output",
+                       help="output file (default: <input>_crop.gml next to the source)")
+    crop.add_argument("--ids", help="comma-separated gml:id list to keep")
+    crop.add_argument("--ids-file", help="file with one gml:id per line to keep; combined "
+                       "with --ids if both are given")
+    crop.add_argument("--report", help=_REPORT_HELP)
+    crop.set_defaults(func=_cmd_crop)
+
+    lod = _sub(sub, "lod",
+               help="derive and embed lower LODs from LOD3 or LOD2 source",
+               epilog="examples:\n"
+                      "  citysmith lod city_lod3.gml --levels 0,1,2\n"
+                      "  citysmith lod city_lod3.gml --levels 2 --lower-only -o city_lod2.gml")
+    lod.add_argument("input", help="source CityGML file, LOD3 or LOD2")
+    lod.add_argument("-o", "--output",
+                      help="output file (default: <input>_lod.gml next to the source)")
     lod.add_argument("--levels", default="2",
                       help="comma list of LODs to derive, any of 0,1,2 (default 2). LOD1/LOD0 "
                            "work from an LOD3 or LOD2 source; LOD2 needs an LOD3 source.")
@@ -194,33 +282,60 @@ def build_parser() -> argparse.ArgumentParser:
                       help="LOD1 block top, per SIG3D Part 2 sec 2.4: 'average' (default, "
                            "(Min. Eaves + Max. Ridge) / 2), 'eave' (Min. Eaves Height) or "
                            "'ridge' (Max. Ridge Height)")
-    lod.add_argument("--limit", type=int, default=None)
-    lod.add_argument("--report")
+    lod.add_argument("--limit", type=int, default=None,
+                      help="only process the first N features")
+    lod.add_argument("--report", help=_REPORT_HELP)
     lod.set_defaults(func=_cmd_lod)
 
-    sem = sub.add_parser("semantics", help="apply easy-tier semantic fixes")
-    sem.add_argument("input")
-    sem.add_argument("-o", "--output")
-    sem.add_argument("--no-ids", action="store_true")
-    sem.add_argument("--no-classify", action="store_true")
-    sem.add_argument("--no-aggregate", action="store_true")
-    sem.add_argument("--report")
+    sem = _sub(sub, "semantics",
+               help="apply easy-tier semantic fixes",
+               description="Applies three fixes, all ON by default: a plain run with no flags\n"
+                           "does all three.\n"
+                           "  1) assigns gml:ids to anything missing one\n"
+                           "  2) classifies every BuildingInstallation as balcony or chimney\n"
+                           "     (an OuterFloorSurface means balcony outright; otherwise, below\n"
+                           "     the building's eave height is a balcony, above it a\n"
+                           "     chimney/roof structure)\n"
+                           "  3) builds the lod3Geometry aggregate element\n"
+                           "There is no flag that turns classification 'on'. It already runs\n"
+                           "unless you explicitly skip it with --no-classify.",
+               epilog="example:\n"
+                      "  citysmith semantics city_lod3.gml -o city_sem.gml --report sem.json")
+    sem.add_argument("input", help="source CityGML file (needs an LOD3 source)")
+    sem.add_argument("-o", "--output",
+                      help="output file (default: <input>_sem.gml next to the source)")
+    sem.add_argument("--no-ids", action="store_true",
+                      help="skip assigning gml:ids to features/surfaces that don't have one "
+                           "(runs by default)")
+    sem.add_argument("--no-classify", action="store_true",
+                      help="skip balcony/chimney classification of BuildingInstallations "
+                           "(runs by default)")
+    sem.add_argument("--no-aggregate", action="store_true",
+                      help="skip building the lod3Geometry aggregate element (runs by default)")
+    sem.add_argument("--report", help=_REPORT_HELP)
     sem.set_defaults(func=_cmd_semantics)
 
-    conv = sub.add_parser("convert", help="export CityGML to CityJSON 1.1")
-    conv.add_argument("input")
-    conv.add_argument("-o", "--output")
+    conv = _sub(sub, "convert",
+                help="export CityGML to CityJSON 1.1",
+                epilog="example:\n  citysmith convert city_multiLOD.gml -o city.city.json")
+    conv.add_argument("input", help="source CityGML file")
+    conv.add_argument("-o", "--output",
+                       help="output file (default: <input>.city.json next to the source)")
     conv.add_argument("--precision", type=int, default=3, help="coordinate decimals (default 3)")
-    conv.add_argument("--report")
+    conv.add_argument("--report", help=_REPORT_HELP)
     conv.set_defaults(func=_cmd_convert)
 
-    val = sub.add_parser("validate", help="run the CityDoctor2 external validator")
-    val.add_argument("input")
+    val = _sub(sub, "validate",
+               help="run the CityDoctor2 external validator",
+               epilog="example:\n"
+                      "  citysmith validate city.gml --pdf report.pdf --report report.json")
+    val.add_argument("input", help="CityGML file to validate")
     val.add_argument("--citydoctor-home", help="path to an unzipped CityDoctor2 release "
                      "(or set CITYSMITH_CITYDOCTOR_HOME)")
     val.add_argument("--config", help="CityDoctor2 validation plan YAML (default: bundled)")
-    val.add_argument("--timeout", type=int, default=600)
-    val.add_argument("--report")
+    val.add_argument("--timeout", type=int, default=600,
+                      help="seconds to wait for CityDoctor2 before giving up (default 600)")
+    val.add_argument("--report", help=_REPORT_HELP)
     val.add_argument("--pdf", help="also render a human-readable PDF validation report "
                      "at this path (CityDoctor2's own -pdfreport)")
     val.set_defaults(func=_cmd_validate)
