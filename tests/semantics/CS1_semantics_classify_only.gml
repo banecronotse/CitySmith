@@ -11,7 +11,7 @@
 				<gen:value>CS1</gen:value>
 			</gen:stringAttribute>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_325bca1e-ed80-5eeb-8b83-ec9e9c47634d">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0001">
 					<gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute><bldg:function>1030</bldg:function><bldg:boundedBy>
 						<bldg:RoofSurface>
 							<bldg:lod3MultiSurface>
@@ -97,7 +97,7 @@
 				</bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_e0e7e74a-4ebc-5162-b08e-ee0c4c6fddbc">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0002">
 					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:lod3Geometry>
 						<gml:MultiSurface>
 							<gml:surfaceMember>

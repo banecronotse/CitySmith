@@ -26,6 +26,19 @@ BOUNDARY_LOCALNAMES = frozenset({
     "OuterFloorSurface", "OuterCeilingSurface", "ClosureSurface",
 })
 
+# Feature/surface/opening local names that must carry a gml:id per the
+# SIG3D Modeling Guide for 3D Objects, Part 2 (gml:id is mandatory from GML
+# 3.2 onwards for every feature; the guide only spells that out explicitly
+# under Building and BuildingInstallation, but it applies to every one of
+# these via the shared gml:AbstractFeature base type). Shared between
+# core.py's inspect() and semantics.py's enhance_semantics() so the two
+# can't drift apart on what "required" means.
+ID_REQUIRED_LOCALNAMES = frozenset({
+    "Building", "BuildingPart", "BuildingInstallation",
+    *BOUNDARY_LOCALNAMES,
+    "Window", "Door",
+})
+
 
 def q(ns_uri: str, tag: str) -> str:
     """Build a Clark-notation qualified name, e.g. q(GML, 'Polygon')."""

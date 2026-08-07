@@ -54,6 +54,17 @@ def _cmd_inspect(args) -> int:
     print(f"  pattern: surfaces  : {report.pattern_surfaces}")
     print(f"  BuildingInstallations: {report.installations}")
     print()
+    print("gml:id coverage (mandatory per SIG3D Modeling Guide Part 2):")
+    missing_types = []
+    for name, counts in sorted(report.id_coverage.items()):
+        total, missing = counts["total"], counts["missing"]
+        print(f"  {name:22}: {total - missing}/{total} have gml:id")
+        if missing:
+            missing_types.append(name)
+    if missing_types:
+        print(f"  -> citysmith semantics will fill these in (run without --no-ids): "
+              f"{', '.join(missing_types)}")
+    print()
     print("What each capability will do with this file:")
     usable = report.source_lod3 + report.source_lod2
     print(f"  lod (LOD1/LOD0)    : {'yes, ' + str(usable) + ' feature(s)' if usable else 'no usable source'}")
@@ -162,15 +173,25 @@ def _cmd_semantics(args) -> int:
     out = args.output or _default_out(args.input, "_sem")
     print(f"reading  : {args.input}")
     report = enhance_semantics(args.input, out, add_ids=not args.no_ids,
-                               classify=not args.no_classify, aggregate=not args.no_aggregate)
+                               classify=not args.no_classify, aggregate=not args.no_aggregate,
+                               overwrite_ids=args.overwrite_ids)
     print(f"written  : {out}")
     print(f"ids added           : {report.ids_added}")
+    if report.ids_overwritten:
+        print(f"ids overwritten     : {report.ids_overwritten}")
     print(f"functions added     : {report.functions_added}")
     print(f"type attrs added    : {report.types_added}")
     print(f"lod3Geometry added  : {report.lod3geometry_added}")
     c = report.classified
     print(f"classified          : {sum(c.values())} total "
           f"({c['balcony']} balcony, {c['chimney']} chimney, {c['unknown']} unknown)")
+    if report.no_anchor_ids:
+        print(f"  ids with no owning Building/BuildingPart found, fell back to the old "
+              f"UUID scheme: {len(report.no_anchor_ids)}")
+        for fid in report.no_anchor_ids[:10]:
+            print(f"    {fid}")
+        if len(report.no_anchor_ids) > 10:
+            print(f"    ... and {len(report.no_anchor_ids) - 10} more")
     if args.report:
         _write_report(args.report, report.to_dict())
     return 0
@@ -291,7 +312,14 @@ def build_parser() -> argparse.ArgumentParser:
                help="apply easy-tier semantic fixes",
                description="Applies three fixes, all ON by default: a plain run with no flags\n"
                            "does all three.\n"
-                           "  1) assigns gml:ids to anything missing one\n"
+                           "  1) assigns gml:ids to anything missing one (Building, BuildingPart,\n"
+                           "     BuildingInstallation, every boundary surface type and every\n"
+                           "     Window/Door), readable and anchored to the owning building's own\n"
+                           "     id, e.g. JAPR34_wall_0001, JAPR34_window_0007 -- per SIG3D Part 2,\n"
+                           "     gml:id is mandatory on all of these, not just Building itself.\n"
+                           "     Existing ids (including old opaque UUID-style ones from an\n"
+                           "     earlier citysmith version) are left alone unless --overwrite-ids\n"
+                           "     is given.\n"
                            "  2) classifies every BuildingInstallation as balcony or chimney\n"
                            "     (an OuterFloorSurface means balcony outright; otherwise, below\n"
                            "     the building's eave height is a balcony, above it a\n"
@@ -299,14 +327,19 @@ def build_parser() -> argparse.ArgumentParser:
                            "  3) builds the lod3Geometry aggregate element\n"
                            "There is no flag that turns classification 'on'. It already runs\n"
                            "unless you explicitly skip it with --no-classify.",
-               epilog="example:\n"
-                      "  citysmith semantics city_lod3.gml -o city_sem.gml --report sem.json")
+               epilog="examples:\n"
+                      "  citysmith semantics city_lod3.gml -o city_sem.gml --report sem.json\n"
+                      "  citysmith semantics city_sem.gml -o city_sem2.gml --overwrite-ids")
     sem.add_argument("input", help="source CityGML file (needs an LOD3 source)")
     sem.add_argument("-o", "--output",
                       help="output file (default: <input>_sem.gml next to the source)")
     sem.add_argument("--no-ids", action="store_true",
                       help="skip assigning gml:ids to features/surfaces that don't have one "
                            "(runs by default)")
+    sem.add_argument("--overwrite-ids", action="store_true",
+                      help="also replace ids that already exist (including old UUID-style ones) "
+                           "with the readable scheme; default is to fill only what's missing and "
+                           "leave existing ids untouched")
     sem.add_argument("--no-classify", action="store_true",
                       help="skip balcony/chimney classification of BuildingInstallations "
                            "(runs by default)")

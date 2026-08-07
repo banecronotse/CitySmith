@@ -91,6 +91,30 @@ All notable changes to this project are documented here. The format follows
   tag, every other one indents into its next sibling, so naively keeping an
   earlier feature (the overwhelmingly common case) left its own mid-document
   indentation behind the closing tag instead.
+- `semantics` now gives every `WallSurface`/`RoofSurface`/`GroundSurface`/
+  `OuterFloorSurface`/`OuterCeilingSurface`/`ClosureSurface`/`Window`/`Door`/
+  `BuildingInstallation` a readable `gml:id` anchored to the owning
+  `Building`/`BuildingPart`'s own id (e.g. `CS1_wall_0001`,
+  `CS1_window_0007`, `CS1_installation_0001`) instead of an opaque
+  `UUID_<uuid5>`, per the SIG3D Modeling Guide for 3D Objects Part 2's
+  mandatory-id rule. `Window`/`Door`/`OuterCeilingSurface`/`ClosureSurface`
+  were previously not covered at all (0 of 25 windows had an id on the CS1
+  fixture; confirmed again on a real 500-building production CityGML export,
+  0 of 8851 windows and 0 of 89 doors had one). `BuildingInstallation` ids
+  stay independent of balcony/chimney classification (the id is assigned
+  before classification runs and must stay stable even as the classifier
+  heuristic improves), classification is still carried by `bldg:function`
+  and the `type` generic attribute as before. Ids that already exist
+  (including old UUID-style ones) are left untouched by default; new
+  `semantics --overwrite-ids` replaces them too, deterministically (same
+  document order produces the same ids on every re-run). A boundary surface
+  found outside any `Building`/`BuildingPart` (malformed, but source data
+  varies) falls back to the old UUID scheme rather than being left unnamed,
+  and is listed by id in the run summary (`SemanticReport.no_anchor_ids`)
+  rather than silently accepted.
+- `citysmith inspect` reports `gml:id` coverage per element type against the
+  same SIG3D mandatory-id rule (e.g. `Window: 0/25 have gml:id`), so a gap
+  is visible before running `semantics`, not discovered afterward.
 - `tests/` restructured into one folder per exporting capability (`lod/`,
   `semantics/`, `convert/`, `validate/`), each with a source file, one output
   file per flag/variant that isolates what that flag alone does, a final

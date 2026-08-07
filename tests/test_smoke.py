@@ -167,6 +167,20 @@ def _surface(kind, sid, polys):
             f'</bldg:lod3MultiSurface></bldg:{kind}></bldg:boundedBy>')
 
 
+def _window_wall(wall_poly_id, wall_pts, window_poly_id, window_pts):
+    """A WallSurface (no gml:id of its own) with one Window opening (no
+    gml:id either), for readable-id-assignment tests."""
+    return (
+        '<bldg:boundedBy><bldg:WallSurface><bldg:lod3MultiSurface>'
+        f'<gml:MultiSurface>{_poly(wall_poly_id, wall_pts)}</gml:MultiSurface>'
+        '</bldg:lod3MultiSurface>'
+        '<bldg:opening><bldg:Window><bldg:lod3MultiSurface>'
+        f'<gml:MultiSurface>{_poly(window_poly_id, window_pts)}</gml:MultiSurface>'
+        '</bldg:lod3MultiSurface></bldg:Window></bldg:opening>'
+        '</bldg:WallSurface></bldg:boundedBy>'
+    )
+
+
 def _building(bid, surfaces):
     return (f'<cityObjectMember><bldg:Building gml:id="{bid}">'
             f'{"".join(surfaces)}</bldg:Building></cityObjectMember>')
@@ -433,6 +447,101 @@ def test_semantics_classifies_installations(tmp_path):
     assert codes == ["1000", "1030"]   # balcony 1000, chimney 1030
     for inst in root.iter(q(BLDG, "BuildingInstallation")):
         assert inst.get(q(GML, "id")) is not None  # id was added
+
+
+def test_semantics_assigns_readable_ids_anchored_to_building(tmp_path):
+    """Wall/Window ids with no id of their own get <building>_<type>_000N,
+    not an opaque UUID; Window is a real gap this fixture exercises (it
+    wasn't in _ID_REQUIRED before this scheme existed)."""
+    from citysmith.semantics import enhance_semantics
+    wall_pts = [(0, 0, 0), (1, 0, 0), (1, 0, 5), (0, 0, 5), (0, 0, 0)]
+    win_pts = [(0.2, 0, 1), (0.5, 0, 1), (0.5, 0, 3), (0.2, 0, 3), (0.2, 0, 1)]
+    src = _write_gml(tmp_path, "readable.gml", _building("MYBLDG", [
+        _window_wall("wp", wall_pts, "wip", win_pts),
+    ]))
+    out = tmp_path / "readable_sem.gml"
+    report = enhance_semantics(str(src), str(out))
+    root = etree.parse(str(out)).getroot()
+    wall = root.find(f".//{q(BLDG, 'WallSurface')}")
+    window = root.find(f".//{q(BLDG, 'Window')}")
+    assert wall.get(q(GML, "id")) == "MYBLDG_wall_0001"
+    assert window.get(q(GML, "id")) == "MYBLDG_window_0001"
+    assert report.ids_added == 2
+    assert report.ids_overwritten == 0
+    assert report.no_anchor_ids == []
+
+
+def test_semantics_overwrite_ids_flag(tmp_path):
+    """Default run leaves already-set ids alone (byte-identical re-run);
+    --overwrite-ids replaces them, still deterministically (same document
+    order -> same ids both times it's re-run with the flag)."""
+    from citysmith.semantics import enhance_semantics
+    wall_pts = [(0, 0, 0), (1, 0, 0), (1, 0, 5), (0, 0, 5), (0, 0, 0)]
+    win_pts = [(0.2, 0, 1), (0.5, 0, 1), (0.5, 0, 3), (0.2, 0, 3), (0.2, 0, 1)]
+    src = _write_gml(tmp_path, "readable2.gml", _building("MYBLDG", [
+        _window_wall("wp", wall_pts, "wip", win_pts),
+    ]))
+    once = tmp_path / "once.gml"
+    enhance_semantics(str(src), str(once))
+
+    twice_fill = tmp_path / "twice_fill.gml"
+    report_fill = enhance_semantics(str(once), str(twice_fill))
+    assert report_fill.ids_added == 0
+    assert report_fill.ids_overwritten == 0
+    assert twice_fill.read_bytes() == once.read_bytes()
+
+    twice_overwrite = tmp_path / "twice_overwrite.gml"
+    report_ow = enhance_semantics(str(once), str(twice_overwrite), overwrite_ids=True)
+    assert report_ow.ids_overwritten == 2  # wall + window
+    assert twice_overwrite.read_bytes() == once.read_bytes()
+
+
+def test_semantics_no_anchor_falls_back_to_uuid_and_reports(tmp_path):
+    """A boundary surface outside any Building/BuildingPart (malformed, but
+    source data varies) can't be anchored to a readable id; falls back to
+    the old deterministic UUID scheme and is named in the report rather than
+    silently accepted or dropped."""
+    from citysmith.semantics import enhance_semantics
+    wall_pts = [(0, 0, 0), (1, 0, 0), (1, 0, 5), (0, 0, 5), (0, 0, 0)]
+    orphan_wall = (
+        '<bldg:WallSurface><bldg:lod3MultiSurface>'
+        f'<gml:MultiSurface>{_poly("op", wall_pts)}</gml:MultiSurface>'
+        '</bldg:lod3MultiSurface></bldg:WallSurface>'
+    )
+    src = tmp_path / "orphan.gml"
+    src.write_text(_GML_HEAD + orphan_wall + "</CityModel>", encoding="utf-8")
+    out = tmp_path / "orphan_sem.gml"
+    report = enhance_semantics(str(src), str(out))
+    assert len(report.no_anchor_ids) == 1
+
+    root = etree.parse(str(out)).getroot()
+    wall = root.find(f".//{q(BLDG, 'WallSurface')}")
+    assert wall.get(q(GML, "id")) == report.no_anchor_ids[0]
+    assert wall.get(q(GML, "id")).startswith("UUID_")
+
+
+def test_inspect_reports_id_coverage(tmp_path):
+    from citysmith.core import inspect
+    wall_pts = [(0, 0, 0), (1, 0, 0), (1, 0, 5), (0, 0, 5), (0, 0, 0)]
+    win_pts = [(0.2, 0, 1), (0.5, 0, 1), (0.5, 0, 3), (0.2, 0, 3), (0.2, 0, 1)]
+    src = _write_gml(tmp_path, "inspect_ids.gml", _building("MYBLDG", [
+        _window_wall("wp", wall_pts, "wip", win_pts),
+        _surface("GroundSurface", "g", [_poly("gA", _square(0, 0, 10, 0.0))]),
+    ]))
+    report = inspect(str(src))
+    assert report.id_coverage["WallSurface"] == {"total": 1, "missing": 1}
+    assert report.id_coverage["Window"] == {"total": 1, "missing": 1}
+    assert report.id_coverage["GroundSurface"] == {"total": 1, "missing": 0}
+    assert report.id_coverage["Building"] == {"total": 1, "missing": 0}
+
+
+def test_semantics_cli_accepts_overwrite_ids_flag():
+    from citysmith.cli import build_parser
+    parser = build_parser()
+    args = parser.parse_args(["semantics", "in.gml"])
+    assert args.overwrite_ids is False
+    args = parser.parse_args(["semantics", "in.gml", "--overwrite-ids"])
+    assert args.overwrite_ids is True
 
 
 # --- cityjson ----------------------------------------------------------------

@@ -11,9 +11,9 @@
 				<gen:value>CS1</gen:value>
 			</gen:stringAttribute>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_325bca1e-ed80-5eeb-8b83-ec9e9c47634d">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0001">
 					<gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute><bldg:function>1030</bldg:function><bldg:boundedBy>
-						<bldg:RoofSurface gml:id="UUID_033e2663-901e-52c3-9402-a57d65890105">
+						<bldg:RoofSurface gml:id="CS1_roof_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -34,7 +34,7 @@
 						</bldg:RoofSurface>
 					</bldg:boundedBy>
 					<bldg:boundedBy>
-						<bldg:WallSurface gml:id="UUID_bd3e489b-85c7-5e08-ba02-34f68b25439f">
+						<bldg:WallSurface gml:id="CS1_wall_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -97,7 +97,7 @@
 				<bldg:lod3Geometry><gml:MultiSurface><gml:surfaceMember xlink:href="#UUID_64f80573-7e17-416c-89bc-a3a6f0fe8394"/><gml:surfaceMember xlink:href="#UUID_b63e3821-8b80-46d8-9051-d67873d3b250"/><gml:surfaceMember xlink:href="#UUID_2cbf6f7f-31b7-41bd-8bfc-85d1678bbeea"/><gml:surfaceMember xlink:href="#UUID_17ab3950-784d-45cd-938c-2fbfd33780fa"/><gml:surfaceMember xlink:href="#UUID_f10338c3-2069-45db-8147-cc2231ed6427"/></gml:MultiSurface></bldg:lod3Geometry></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_e0e7e74a-4ebc-5162-b08e-ee0c4c6fddbc">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0002">
 					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:lod3Geometry>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -241,7 +241,7 @@
 				<bldg:function>1000</bldg:function></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_68cc57b0-7b96-5f76-9ab0-233c26c1a9de">
+				<bldg:RoofSurface gml:id="CS1_roof_0002">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -261,7 +261,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_d5dda38d-129a-50d1-a019-6b8ce8a623d9">
+				<bldg:RoofSurface gml:id="CS1_roof_0003">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -303,7 +303,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -324,7 +324,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0002">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -347,7 +347,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_3de97aa2-4183-5e1b-a406-eb24e566cc20">
+				<bldg:RoofSurface gml:id="CS1_roof_0004">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -369,7 +369,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_8f59e0bd-75cb-5d66-a907-407c64049c4c">
+				<bldg:RoofSurface gml:id="CS1_roof_0005">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -390,7 +390,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0003">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -413,7 +413,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_29f05003-4cd6-5e5d-b8e5-eb36cc2d0719">
+				<bldg:RoofSurface gml:id="CS1_roof_0006">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -436,7 +436,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_6c52ef7a-6870-554e-990d-ef7eea87edf2">
+				<bldg:RoofSurface gml:id="CS1_roof_0007">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -458,7 +458,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_1f7127b7-02cf-52df-a3e0-aac831eeac09">
+				<bldg:RoofSurface gml:id="CS1_roof_0008">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -480,7 +480,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_f40bf75a-2916-5400-b8b1-a9b7bb46d7b1">
+				<bldg:RoofSurface gml:id="CS1_roof_0009">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -501,7 +501,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_b42cc027-275a-5b8a-aa09-197c05f2fb4f">
+				<bldg:RoofSurface gml:id="CS1_roof_0010">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -521,7 +521,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_df86a857-1835-519c-890d-f0b2e225faae">
+				<bldg:RoofSurface gml:id="CS1_roof_0011">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -541,7 +541,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_6397b117-1c09-5416-960a-dd3020bc9696">
+				<bldg:RoofSurface gml:id="CS1_roof_0012">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -561,7 +561,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_de231682-3c71-51c9-8306-68264cd9a16e">
+				<bldg:RoofSurface gml:id="CS1_roof_0013">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -583,7 +583,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_b4fa2452-be6d-5eef-b6f3-8bc7cdd65128">
+				<bldg:RoofSurface gml:id="CS1_roof_0014">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -605,7 +605,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_4b8c760c-766b-54fd-96fd-7cd646e68c94">
+				<bldg:RoofSurface gml:id="CS1_roof_0015">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -626,7 +626,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_b22be1d5-df93-505c-9384-4883cbabddcd">
+				<bldg:RoofSurface gml:id="CS1_roof_0016">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -662,7 +662,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0004">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -683,7 +683,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0005">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -706,7 +706,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_d514d0b7-8ec0-5d49-b9d4-2e8e8473aa05">
+				<bldg:RoofSurface gml:id="CS1_roof_0017">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -726,7 +726,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_28ea3f38-a706-5590-9a3c-caaa88e33dca">
+				<bldg:RoofSurface gml:id="CS1_roof_0018">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -748,7 +748,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_34fb8910-4837-564c-85c1-591ffd3dd275">
+				<bldg:RoofSurface gml:id="CS1_roof_0019">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -771,7 +771,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:RoofSurface gml:id="UUID_f5d1e7a4-58fc-58c1-9ed8-fcff050b16bc">
+				<bldg:RoofSurface gml:id="CS1_roof_0020">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -925,7 +925,7 @@
 				</bldg:RoofSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_a2730fc3-0525-5587-b4d7-9171cda6611e">
+				<bldg:WallSurface gml:id="CS1_wall_0002">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -963,7 +963,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0006">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -984,7 +984,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0007">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1007,7 +1007,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_8156ef6b-70c6-5069-ae7f-96594f34294c">
+				<bldg:WallSurface gml:id="CS1_wall_0003">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1028,7 +1028,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_81a9b5c6-d928-5d66-b75d-b54f9491d15c">
+				<bldg:WallSurface gml:id="CS1_wall_0004">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1059,7 +1059,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0008">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1080,7 +1080,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0009">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1101,7 +1101,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0010">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1122,7 +1122,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0011">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1143,7 +1143,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0012">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1164,7 +1164,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0013">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1187,7 +1187,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_f219305f-6fa8-5fcf-899b-0ad9f9c1bb72">
+				<bldg:WallSurface gml:id="CS1_wall_0005">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1226,7 +1226,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0014">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1247,7 +1247,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0015">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1270,7 +1270,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_dad4c8af-2786-5192-8ee0-74ce0026c8d0">
+				<bldg:WallSurface gml:id="CS1_wall_0006">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1317,7 +1317,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0016">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1338,7 +1338,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0017">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1359,7 +1359,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0018">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1382,7 +1382,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_59a6a7f6-d2f3-54e0-9839-a436ab607e64">
+				<bldg:WallSurface gml:id="CS1_wall_0007">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1403,7 +1403,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_cca283ee-f9a8-5c22-b11a-5a1bfb6ff646">
+				<bldg:WallSurface gml:id="CS1_wall_0008">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1424,7 +1424,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_c7523969-7d3d-5950-b24b-114d1c354fa7">
+				<bldg:WallSurface gml:id="CS1_wall_0009">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1445,7 +1445,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_87873967-1b17-567d-9884-6dce23beea3b">
+				<bldg:WallSurface gml:id="CS1_wall_0010">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1467,7 +1467,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_0eb50cc3-1446-5b4c-ac9e-ecf3f1465d56">
+				<bldg:WallSurface gml:id="CS1_wall_0011">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1488,7 +1488,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_a28f30eb-41d3-5ff7-b5cc-4512fed24248">
+				<bldg:WallSurface gml:id="CS1_wall_0012">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1509,7 +1509,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_542ed2b3-6460-5308-81a8-7c887a48abd8">
+				<bldg:WallSurface gml:id="CS1_wall_0013">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1592,7 +1592,7 @@
 						</gml:MultiSurface>
 					</bldg:lod3MultiSurface>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0019">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1613,7 +1613,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0020">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1634,7 +1634,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0021">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1655,7 +1655,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0022">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1676,7 +1676,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0023">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1697,7 +1697,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0024">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1718,7 +1718,7 @@
 						</bldg:Window>
 					</bldg:opening>
 					<bldg:opening>
-						<bldg:Window>
+						<bldg:Window gml:id="CS1_window_0025">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1741,7 +1741,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_4c78ce0a-a3c9-5432-b28e-5dcaffeabc11">
+				<bldg:WallSurface gml:id="CS1_wall_0014">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1762,7 +1762,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_8a2e50ee-9bdd-58b1-a65d-6e98c3c58b00">
+				<bldg:WallSurface gml:id="CS1_wall_0015">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1791,7 +1791,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:WallSurface gml:id="UUID_e2ad7897-875c-5727-8d14-a3e63404ca37">
+				<bldg:WallSurface gml:id="CS1_wall_0016">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1816,7 +1816,7 @@
 				</bldg:WallSurface>
 			</bldg:boundedBy>
 			<bldg:boundedBy>
-				<bldg:GroundSurface gml:id="UUID_7b9ab9e6-6bf3-525e-aa10-9a31f66e8804">
+				<bldg:GroundSurface gml:id="CS1_ground_0001">
 					<bldg:lod3MultiSurface>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
@@ -1949,7 +1949,7 @@
 			<bldg:consistsOfBuildingPart>
 				<bldg:BuildingPart gml:id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965">
 					<bldg:boundedBy>
-						<bldg:RoofSurface gml:id="UUID_778ee73b-29fa-5f1c-8839-a0f42767df38">
+						<bldg:RoofSurface gml:id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965_roof_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -1984,7 +1984,7 @@
 						</bldg:RoofSurface>
 					</bldg:boundedBy>
 					<bldg:boundedBy>
-						<bldg:WallSurface gml:id="UUID_1bcebd12-4d76-5405-9fed-1cff178830d5">
+						<bldg:WallSurface gml:id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965_wall_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>
@@ -2057,7 +2057,7 @@
 						</bldg:WallSurface>
 					</bldg:boundedBy>
 					<bldg:boundedBy>
-						<bldg:GroundSurface gml:id="UUID_33795d05-2b66-560e-82f3-00d797092d3c">
+						<bldg:GroundSurface gml:id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965_ground_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
 									<gml:surfaceMember>

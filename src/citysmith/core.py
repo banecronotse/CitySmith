@@ -36,7 +36,8 @@ from dataclasses import dataclass, field
 
 from lxml import etree
 
-from .citygml import BLDG, GML, XLINK, BOUNDARY_LOCALNAMES, gml_id, href_target, localname, q
+from .citygml import (BLDG, GML, XLINK, BOUNDARY_LOCALNAMES, ID_REQUIRED_LOCALNAMES,
+                       gml_id, href_target, localname, q)
 from .geometry import (_point_in_polygon_2d, cluster_coplanar_rings, extrude_prism,
                        parse_pos_list, polygon_area_2d, shell_stats,
                        union_coplanar_polygons)
@@ -888,9 +889,43 @@ class InspectReport:
     pattern_surfaces: int = 0
     installations: int = 0
     feature_detail: list[dict] = field(default_factory=list)
+    id_coverage: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return self.__dict__.copy()
+
+
+def _iter_own_subtree(feature):
+    """Like feature.iter(), but doesn't descend into a nested
+    Building/BuildingPart's own content: that one is visited separately as
+    its own top-level feature by inspect()'s outer loop (both Building and
+    BuildingPart match _FEATURE_TAGS), so descending into it here would
+    double-count its walls/roofs/ids under both the parent and the nested
+    part."""
+    yield feature
+    for child in feature:
+        if child.tag in _FEATURE_TAGS:
+            continue
+        yield from _iter_own_subtree(child)
+
+
+def _tally_id_coverage(feature, id_coverage: dict) -> None:
+    """Total/missing gml:id counts per ID_REQUIRED_LOCALNAMES type, within
+    one feature's own subtree, accumulated across every feature `inspect()`
+    visits (so a --limit run tallies only what it actually looked at).
+    Per the SIG3D Modeling Guide for 3D Objects Part 2's mandatory-id rule.
+    Not per-building; feature_detail already covers per-feature detail for
+    anyone who wants it."""
+    for name in ID_REQUIRED_LOCALNAMES:
+        id_coverage.setdefault(name, {"total": 0, "missing": 0})
+    for el in _iter_own_subtree(feature):
+        ln = localname(el)
+        if ln not in ID_REQUIRED_LOCALNAMES:
+            continue
+        bucket = id_coverage[ln]
+        bucket["total"] += 1
+        if gml_id(el) is None:
+            bucket["missing"] += 1
 
 
 def inspect(input_path: str, *, limit: int | None = None) -> InspectReport:
@@ -910,6 +945,7 @@ def inspect(input_path: str, *, limit: int | None = None) -> InspectReport:
         if limit is not None and report.features >= limit:
             break
         report.features += 1
+        _tally_id_coverage(feature, report.id_coverage)
         n_inst = sum(1 for _ in feature.iter(q(BLDG, "BuildingInstallation")))
         report.installations += n_inst
 

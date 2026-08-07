@@ -2,8 +2,10 @@
 
 Applies the project's LoD3 rulebook fixes that need no geometry surgery:
 
-  * ensure every feature, building installation and thematic boundary surface
-    carries a persistent gml:id (UUID),
+  * ensure every feature, building installation, opening and thematic
+    boundary surface carries a persistent gml:id, readable and anchored to
+    its owning Building/BuildingPart's own id (e.g. `JAPR34_wall_0001`)
+    rather than an opaque UUID,
   * classify each building installation from its structure (an OuterFloorSurface
     means balcony; a roof-plus-wall box means chimney),
   * add the required bldg:function code and a `type` generic attribute,
@@ -18,11 +20,12 @@ of scope here and are left for a later tier.
 from __future__ import annotations
 
 import uuid
+from collections import defaultdict
 from dataclasses import dataclass, field
 
 from lxml import etree
 
-from .citygml import BLDG, GML, NS, gml_id, localname, q
+from .citygml import BLDG, GML, ID_REQUIRED_LOCALNAMES, NS, gml_id, localname, q
 from .geometry import parse_pos_list
 
 GEN = NS["gen"]
@@ -31,16 +34,38 @@ _ID_NAMESPACE = uuid.UUID("1b9d6bcd-0c6f-5a1e-9d0a-10b0c0ffee00")
 # CityGML BuildingInstallation_function codes (SIG3D standard code list).
 FUNCTION_CODES = {"chimney": "1030", "balcony": "1000"}
 
-# Elements that must carry a gml:id per the rulebook.
-_ID_REQUIRED = {
-    "Building", "BuildingPart", "BuildingInstallation",
-    "WallSurface", "RoofSurface", "GroundSurface", "OuterFloorSurface",
+# Building/BuildingPart are the anchor everything else is named from, not
+# something this scheme renames; they keep whatever id the source already
+# gives them (or fall back to the old deterministic UUID scheme if missing).
+_ANCHOR_LOCALNAMES = ("Building", "BuildingPart")
+
+# Readable id scheme: <anchor's own gml:id>_<type>_<counter, min. 4 digits>.
+_TYPE_LABEL = {
+    "WallSurface": "wall",
+    "RoofSurface": "roof",
+    "GroundSurface": "ground",
+    "OuterFloorSurface": "outerfloor",
+    "OuterCeilingSurface": "outerceiling",
+    "ClosureSurface": "closure",
+    "Window": "window",
+    "Door": "door",
+    "BuildingInstallation": "installation",
 }
+
+# Everything ID_REQUIRED_LOCALNAMES covers except BuildingInstallation, which
+# is handled in its own pass further down (its id is always assigned there,
+# regardless of the add_ids flag, matching the project's long-standing
+# behaviour: classification/function/type/lod3Geometry all need an
+# installation id to work with even when the caller only wants ids skipped
+# on everything else).
+_ID_REQUIRED_GENERAL = ID_REQUIRED_LOCALNAMES - {"BuildingInstallation"}
 
 
 @dataclass
 class SemanticReport:
     ids_added: int = 0
+    ids_overwritten: int = 0
+    no_anchor_ids: list = field(default_factory=list)
     functions_added: int = 0
     types_added: int = 0
     lod3geometry_added: int = 0
@@ -62,14 +87,55 @@ def _first_polygon_id(el):
     return None
 
 
-def _ensure_id(el, fallback_seed: str, report: SemanticReport) -> str:
+def _nearest_building_or_part(el):
+    """gml:id of the nearest ancestor Building/BuildingPart, skipping over
+    any enclosing BuildingInstallation (so e.g. a window on a dormer's own
+    wall still anchors to the real building, not the installation). None if
+    there isn't one, or if that ancestor itself has no id yet."""
+    for anc in el.iterancestors():
+        if localname(anc) in _ANCHOR_LOCALNAMES:
+            return gml_id(anc)
+    return None
+
+
+def _assign_id(el, ln: str, counters: dict, report: SemanticReport, *, overwrite_ids: bool) -> str:
+    """Ensure `el` (localname `ln`) has a gml:id.
+
+    Building/BuildingPart ids are the anchor everything else is named from
+    and are never rewritten by this scheme, only filled in if genuinely
+    missing (rare: most source data already keys buildings by their own
+    id). Everything else gets `<anchor>_<type>_<counter>`; if no anchor can
+    be found (a boundary surface outside any Building/BuildingPart, which
+    shouldn't happen in well-formed CityGML but source data varies), falls
+    back to the old deterministic UUID scheme and is reported by id rather
+    than silently accepted or dropped.
+    """
     existing = gml_id(el)
-    if existing:
+    if ln in _ANCHOR_LOCALNAMES:
+        if existing:
+            return existing
+        new = _det_id(f"{_first_polygon_id(el) or 'feature'}:{ln}:id")
+        el.set(q(GML, "id"), new)
+        report.ids_added += 1
+        return new
+
+    if existing and not overwrite_ids:
         return existing
-    seed = _first_polygon_id(el) or fallback_seed
-    new = _det_id(f"{seed}:{localname(el)}:id")
+
+    anchor = _nearest_building_or_part(el)
+    type_label = _TYPE_LABEL[ln]
+    if anchor:
+        counters[(anchor, type_label)] += 1
+        new = f"{anchor}_{type_label}_{counters[(anchor, type_label)]:04d}"
+    else:
+        seed = _first_polygon_id(el) or f"{ln}:{el.sourceline}"
+        new = _det_id(f"{seed}:{ln}:id")
+        report.no_anchor_ids.append(new)
     el.set(q(GML, "id"), new)
-    report.ids_added += 1
+    if existing:
+        report.ids_overwritten += 1
+    else:
+        report.ids_added += 1
     return new
 
 
@@ -180,23 +246,33 @@ def _add_lod3_geometry(inst) -> bool:
 
 
 def enhance_semantics(input_path: str, output_path: str, *, add_ids: bool = True,
-                      classify: bool = True, aggregate: bool = True) -> SemanticReport:
-    """Apply the easy-tier semantic fixes and write the result."""
+                      classify: bool = True, aggregate: bool = True,
+                      overwrite_ids: bool = False) -> SemanticReport:
+    """Apply the easy-tier semantic fixes and write the result.
+
+    overwrite_ids: when False (default), elements that already carry a
+    gml:id (including old opaque UUID-style ones) are left untouched; when
+    True, they're replaced with the readable scheme too.
+    """
     parser = etree.XMLParser(huge_tree=True, remove_blank_text=False)
     tree = etree.parse(input_path, parser)
     root = tree.getroot()
     report = SemanticReport()
+    counters: dict = defaultdict(int)
 
-    # 1) ids on every required element.
+    # 1) ids on every required element except BuildingInstallation (below).
     if add_ids:
-        elems = [e for e in root.iter() if localname(e) in _ID_REQUIRED]
-        for n, el in enumerate(elems):
-            _ensure_id(el, fallback_seed=f"seq{n}", report=report)
+        for el in root.iter():
+            ln = localname(el)
+            if ln in _ID_REQUIRED_GENERAL:
+                _assign_id(el, ln, counters, report, overwrite_ids=overwrite_ids)
 
-    # 2) installation semantics.
+    # 2) installation semantics. Ids are always assigned here regardless of
+    # add_ids: classification/function/type/lod3Geometry below all need an
+    # installation id to reference, even on an --no-ids run.
     feature_eave, building_eave = compute_eaves(root) if classify else ({}, {})
     for inst in root.iter(q(BLDG, "BuildingInstallation")):
-        _ensure_id(inst, fallback_seed="inst", report=report)
+        _assign_id(inst, "BuildingInstallation", counters, report, overwrite_ids=overwrite_ids)
         if classify:
             ext = _z_extent(inst)
             mid = (ext[0] + ext[1]) / 2 if ext else None

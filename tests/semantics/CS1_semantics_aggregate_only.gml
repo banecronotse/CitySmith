@@ -11,7 +11,7 @@
 				<gen:value>CS1</gen:value>
 			</gen:stringAttribute>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_325bca1e-ed80-5eeb-8b83-ec9e9c47634d">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0001">
 					<bldg:boundedBy>
 						<bldg:RoofSurface>
 							<bldg:lod3MultiSurface>
@@ -97,7 +97,7 @@
 				<bldg:lod3Geometry><gml:MultiSurface><gml:surfaceMember xlink:href="#UUID_64f80573-7e17-416c-89bc-a3a6f0fe8394"/><gml:surfaceMember xlink:href="#UUID_b63e3821-8b80-46d8-9051-d67873d3b250"/><gml:surfaceMember xlink:href="#UUID_2cbf6f7f-31b7-41bd-8bfc-85d1678bbeea"/><gml:surfaceMember xlink:href="#UUID_17ab3950-784d-45cd-938c-2fbfd33780fa"/><gml:surfaceMember xlink:href="#UUID_f10338c3-2069-45db-8147-cc2231ed6427"/></gml:MultiSurface></bldg:lod3Geometry></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:outerBuildingInstallation>
-				<bldg:BuildingInstallation gml:id="UUID_e0e7e74a-4ebc-5162-b08e-ee0c4c6fddbc">
+				<bldg:BuildingInstallation gml:id="CS1_installation_0002">
 					<bldg:lod3Geometry>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
