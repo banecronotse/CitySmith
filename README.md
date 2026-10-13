@@ -1,18 +1,24 @@
 # CitySmith
 
-A blacksmith for CityGML. It takes a building model and reshapes it: deriving
-lower levels of detail, filling in missing semantics, checking geometric
-quality, and converting to other encodings, all while leaving the original
-data intact.
+A blacksmith for CityGML. CitySmith is a command line toolkit for 3D city
+models in **CityGML 2.0**. It takes the buildings in a CityGML file and
+reshapes them: deriving lower levels of detail, filling in missing
+semantics, checking the file against the CityGML standard and its geometry,
+combining and cutting files, and converting to CityJSON. The input file is
+never changed; every result is written to a new file.
 
-Six capabilities: `crop` extracts a named subset of buildings out of a
-larger file, `merge` combines several files into one, `lod` derives lower levels of detail (LOD1 and LOD0 from either
-LOD2 or LOD3 data, a clean LOD2 from LOD3), `semantics` fills in missing ids
-and semantic attributes, `convert` exports to CityJSON, and `validate` checks
-geometric quality, natively or through the CityDoctor2 bridge.
+Seven commands: `inspect` reports what a file contains and what CitySmith
+can do with it, `crop` extracts a named subset of buildings out of a larger
+file, `merge` combines several files into one, `lod` derives lower levels of
+detail (LOD1 and LOD0 from either LOD2 or LOD3 data, a clean LOD2 from
+LOD3), `semantics` fills in missing ids and semantic attributes, `convert`
+exports to CityJSON, and `validate` checks the file against the official
+CityGML 2.0 XML schemas and its geometry, natively or through the
+CityDoctor2 bridge.
 
-> Status: early development. LOD derivation, semantics, CityJSON export and the
-> CityDoctor2 validation bridge all work end to end and are tested. See the
+> Status: early development. All seven commands work end to end and are
+> tested, and every file CitySmith writes is checked against the official
+> CityGML 2.0 schemas in its test suite. See the
 > [Roadmap](docs/DESIGN.md#roadmap) for what's planned next.
 
 ## Example output
@@ -29,10 +35,17 @@ export from CityGRID®, UVM Systems GmbH's software (see
 
 ## Why
 
-There aren't enough tools for editing CityGML building data. Depending on the
-use case, that data may need to be downgraded to a lower level of detail,
-enriched with the semantics it's missing, or converted to CityJSON. CitySmith
-produces those from what you already have.
+Detailed 3D city models in CityGML (LOD2 and, more and more, LOD3) are
+increasingly available, but many uses need something simpler or more
+complete than what was delivered: a lower level of
+detail for simulation or visualisation, missing ids and attributes, a
+smaller area, several deliveries combined, or a check that the file is
+valid before handing it on. Format tools such as citygml-tools convert and
+filter CityGML, but they do not derive lower levels of detail from the
+real geometry of a detailed model or complete its semantics. CitySmith does
+that, from the data you already have, without inventing detail that isn't
+there. See [Related work](docs/RELATED_WORK.md) for how it compares with
+the closest tools.
 
 ## Capabilities
 
@@ -53,9 +66,12 @@ CitySmith is deliberately narrow. It works on:
 - **CityGML 2.0**, the **Building module only** (`bldg:Building`,
   `bldg:BuildingPart`). CityGML also defines separate modules for bridges,
   tunnels, transportation, vegetation, water bodies, land use, city furniture
-  and terrain relief; none of those are read, written or even parsed, a
-  Bridge or Vegetation feature in the input file passes through completely
-  untouched. CityGML 1.0 and 3.0 are not supported.
+  and terrain relief; none of those are processed. A Bridge or Vegetation
+  feature in the input passes through unchanged (`inspect` counts it,
+  `validate` checks it, `merge` and `crop` carry it along). CityGML 1.0 and
+  3.0 are not supported; if you need CityGML 3.0, run
+  [citygml-tools](https://github.com/citygml4j/citygml-tools)' `upgrade`
+  on CitySmith's output.
 - **Downgrading only**: LOD3 to LOD0/1/2, or LOD2 to LOD0/1 when there's no
   LOD3 present. There is no LOD4 (interiors), and no path that upgrades a
   lower LOD into a higher one, see [Which LOD is my
@@ -68,23 +84,18 @@ CitySmith is deliberately narrow. It works on:
 
 And explicitly does **not** touch:
 
-- **Appearances, materials or textures.** This isn't a hypothetical gap:
-  real photogrammetric exports (like the one this was tested against) often
-  carry image-based `app:ParameterizedTexture` data with tens of thousands of
-  texture-coordinate entries per file. CitySmith neither reads nor writes any
-  of it, with two narrow exceptions: `crop` prunes texture references left
-  pointing at geometry it removed, but only if the file declares appearances
-  once at document level rather than nested per building (this project's own
-  reference data uses the latter, which needs no such cleanup); and `merge`
-  keeps texture references valid when it renames clashing ids, and rewrites
-  relative image paths so they still resolve from the output folder (the
-  images themselves are not copied).
-  Existing LOD3 textures survive untouched in the output because LOD3
-  geometry and ids are never modified, but every polygon CitySmith generates
-  for LOD0/1/2 gets a fresh id, so none of the generated geometry can ever be
-  textured (the source appearance's surface references only resolve against
-  the original LOD3 ids). CityJSON export drops materials/textures entirely
-  too. If you need textured lower LODs, this tool does not produce them.
+- **Appearances, materials or textures.** Real photogrammetric exports often
+  carry image textures with tens of thousands of texture coordinates per
+  file. CitySmith does not create, edit or convert them. Existing LOD3
+  textures survive unchanged, because LOD3 geometry and ids are never
+  modified. The lower LODs CitySmith generates get new ids, so they carry no
+  textures, and CityJSON export drops textures and materials entirely. If
+  you need textured lower LODs, this tool does not produce them. Three
+  commands only keep texture references consistent or report on them:
+  `inspect` lists themes, image files and their size; `crop` removes texture
+  references to geometry it cut away; `merge` updates them when it renames
+  clashing ids and rewrites relative image paths so they still resolve from
+  the output folder (the images themselves are not copied).
 - **Multiple coordinate reference systems in one file.** CitySmith assumes,
   per SIG3D Part 2 section 2.2's own recommendation, that `srsName` is
   declared once at the document level and inherited by every geometry; new
@@ -162,6 +173,10 @@ print(mr.duplicate_ids_skipped, mr.possible_duplicates)
 
 insp = citysmith.inspect("unfamiliar_city_model.gml")
 print(insp.source_lod3, insp.source_lod2, insp.source_unclassified)
+print(insp.file.citygml_version, insp.file.srs_names)
+
+sr = citysmith.validate_schema("out.gml")   # official CityGML 2.0 schemas, offline
+print(sr.valid, sr.error_count, sr.messages[:3])
 
 report = citysmith.enhance("city_lod3.gml", "out.gml", levels=(0, 1, 2), keep_source=True)
 print(report.quality_buckets)          # LOD2 watertightness breakdown
@@ -175,6 +190,8 @@ print(vr.error_counts, vr.pdf_report_path)
 ## Interoperability
 
 - CityGML 2.0 in and out. Namespaces, prefixes and generic attributes preserved.
+- Output checked against the official CityGML 2.0 XML schemas (in the test
+  suite for every command, and on demand with `validate --schema-only`).
 - Each LOD is self-contained (no fragile cross-LOD XLinks), which is friendlier
   to third-party readers.
 - Reproducible ids for clean diffs and CI.
@@ -200,7 +217,7 @@ downward from there, it never invents detail that isn't in the source:
   attributes.
 - **Your data is LOD2** (the overwhelming majority of real-world CityGML,
   national and municipal LOD2 datasets alone cover tens of millions of
-  buildings worldwide, against a few hundred public LOD3 buildings at most):
+  buildings worldwide, while public LOD3 data is still far rarer):
   `lod` still derives LOD1 and LOD0 from it directly, since both only need
   the Ground/Roof surface heights LOD2 already has. `semantics` needs LOD3
   specifically (its rulebook targets LOD3 installations), so it won't do
@@ -319,7 +336,7 @@ different heights merged into a single feature *sharing one connected
 footprint* (a common artifact of
 ALKIS-footprint-driven or address-driven exports, where several real
 buildings share one cadastral footprint or address and get exported as one
-`Building`), none of the three height choices is a correct answer: the
+`Building`), none of the four height choices is a correct answer: the
 guide's height model assumes one coherent roof, not a merger of unrelated
 structures. That is a source-data modelling issue, not a CitySmith defect,
 worth checking the export's metadata (in ours, the source description pointed
@@ -339,8 +356,10 @@ reasoning beyond that base height is needed, LOD0 has no vertical extent.
 `semantics` needs an LOD3 source (it targets `BuildingInstallation`s the way
 LOD3 CityGRID/UVM exports model them) and, without touching any geometry:
 
-- gives every `Building`, `BuildingPart`, `BuildingInstallation` and boundary
-  surface a reproducible `gml:id` if it's missing one,
+- gives every `Building`, `BuildingPart`, `BuildingInstallation`, boundary
+  surface, `Window` and `Door` a readable, reproducible `gml:id` if it's
+  missing one, anchored to the building's own id (e.g. `CS1_wall_0001`,
+  `CS1_window_0007`),
 - classifies each `BuildingInstallation` as a balcony or a chimney,
 - adds the matching `bldg:function` code (`1000` balcony, `1030` chimney) and
   a `type` attribute,
@@ -366,28 +385,35 @@ after, geometry trimmed to the boundary structure for readability:
 ```
 
 ```xml
-<!-- after -->
-<bldg:BuildingInstallation gml:id="UUID_5ca3b199-fef2-56fa-aa36-7c29381818ca">
+<!-- after (tests/semantics/CS1_lod3_enhanced.gml) -->
+<bldg:BuildingInstallation gml:id="CS1_installation_0001">
   <gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute>
   <bldg:function>1030</bldg:function>
+  <bldg:lod3Geometry>
+    <gml:MultiSurface>
+      <gml:surfaceMember xlink:href="#UUID_64f80573-7e17-416c-89bc-a3a6f0fe8394"/>
+      <gml:surfaceMember xlink:href="#UUID_b63e3821-8b80-46d8-9051-d67873d3b250"/>
+      ...
+    </gml:MultiSurface>
+  </bldg:lod3Geometry>
   <bldg:boundedBy>
-    <bldg:RoofSurface gml:id="UUID_e34bf5c2-5d5e-5333-a15d-86e6357fdd03">
+    <bldg:RoofSurface gml:id="CS1_roof_0001">
       <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
     </bldg:RoofSurface>
   </bldg:boundedBy>
   <bldg:boundedBy>
-    <bldg:WallSurface gml:id="UUID_619af64e-276a-5ac5-98e0-665da1f43790">
+    <bldg:WallSurface gml:id="CS1_wall_0001">
       <bldg:lod3MultiSurface>...</bldg:lod3MultiSurface>
     </bldg:WallSurface>
   </bldg:boundedBy>
-  <bldg:lod3Geometry>
-    <gml:MultiSurface>
-      <gml:surfaceMember xlink:href="#CH_ROOF"/>
-      <gml:surfaceMember xlink:href="#CH_WALL"/>
-    </gml:MultiSurface>
-  </bldg:lod3Geometry>
 </bldg:BuildingInstallation>
 ```
+
+The order is the one the CityGML 2.0 schema prescribes (`function`, then
+`lod3Geometry`, then the boundary surfaces). `lod3Geometry` points at the
+installation's existing polygons by their own ids (here the source export's
+`UUID_` polygon ids, which `semantics` leaves as they are), so no geometry is
+copied.
 
 The balcony/chimney call is made by **eave height**: an `OuterFloorSurface`
 is a decisive balcony signal on its own; otherwise, an installation whose
@@ -395,7 +421,7 @@ body sits below the building's own eave (the lowest point of its main roof,
 excluding the installation's own roof) is a balcony, above it a chimney or
 other roof structure. This catches real balconies that source CityGRID
 exports don't reliably tag with `OuterFloorSurface`, verified on real data:
-352 balconies and 2246 chimneys correctly separated, 0 left unknown. See
+352 balconies and 2246 chimneys classified, 0 left unknown. See
 [Semantic enrichment](docs/DESIGN.md#semantic-enrichment) in the design doc
 for the full classification order and the known limitation (no filter yet
 for low canopies/awnings misread as balconies).

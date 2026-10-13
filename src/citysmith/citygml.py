@@ -4,6 +4,8 @@ Kept deliberately free of transformation logic so it can be reused by the core
 engine, the geometry utilities and the tests.
 """
 
+from __future__ import annotations
+
 from lxml import etree
 
 # CityGML 2.0 namespace URIs.

@@ -5,12 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "citysmith"
 version = "0.1.0"
-description = "Derive a watertight LOD2 CityGML representation from LOD3 buildings."
+description = "Command line toolkit for CityGML 2.0 buildings: derive lower LODs, complete semantics, validate, crop, merge and convert to CityJSON."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "banecronotse" }]
-keywords = ["citygml", "lod", "3d-city-models", "gis", "gml", "level-of-detail"]
+keywords = ["citygml", "lod", "3d-city-models", "gis", "gml", "level-of-detail", "cityjson",
+            "validation", "semantic-enrichment"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
