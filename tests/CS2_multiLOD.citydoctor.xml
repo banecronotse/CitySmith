@@ -10,7 +10,7 @@
             <cd:os_name>Windows 11</cd:os_name>
             <cd:os_arch>amd64</cd:os_arch>
         </cd:environment>
-        <cd:date>2026-07-26T16:39:24.6788429+02:00</cd:date>
+        <cd:date>2026-10-13T13:42:39.560332+02:00</cd:date>
     </cd:header>
     <cd:global_statistics>
         <cd:model_statistics>
@@ -87,8 +87,43 @@
                 </cd:error_statistics>
             </cd:statistics>
             <cd:errors>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.21455815550702</cd:parameter>
+                        <cd:surface gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.1265690273205116</cd:parameter>
+                        <cd:surface gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.7143669599823472</cd:parameter>
+                        <cd:surface gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.1905734747112975</cd:parameter>
+                        <cd:surface gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.6861000126994398</cd:parameter>
+                        <cd:surface gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
                 <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785076767698_0" feature_type="Geometry"></cd:feature>
+                    <cd:feature gml_id="CityDoctor_1791891761699_0" feature_type="Geometry"></cd:feature>
                     <cd:error_details>
                         <cd:geometry type="SOLID" lod="LOD2">
                             <cd:parent gml_id="DEHHALKAJ0000ytX" type="BUILDING"></cd:parent>
@@ -754,13 +789,6 @@
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">0.6684815855071232</cd:parameter>
-                        <cd:surface gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
                     <cd:feature gml_id="UUID_aa9caf07-0d0f-4cab-af1b-5e2c26c41a6e" feature_type="BoundarySurface"></cd:feature>
                     <cd:error_details>
                         <cd:parameter name="angleDerivation">1.1378538280290198</cd:parameter>
@@ -768,17 +796,10 @@
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4" feature_type="BoundarySurface"></cd:feature>
+                    <cd:feature gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321" feature_type="BoundarySurface"></cd:feature>
                     <cd:error_details>
-                        <cd:parameter name="angleDerivation">0.6861000126994398</cd:parameter>
-                        <cd:surface gml_id="UUID_64354d6c-74fe-4613-8fec-c545889519c4"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">1.1905734747112975</cd:parameter>
-                        <cd:surface gml_id="UUID_294709d4-28ca-48e0-b0d9-950e74878228"></cd:surface>
+                        <cd:parameter name="angleDerivation">0.6684815855071232</cd:parameter>
+                        <cd:surface gml_id="UUID_f43fed72-3e7f-4f61-b96e-658d23875321"></cd:surface>
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
@@ -786,27 +807,6 @@
                     <cd:error_details>
                         <cd:parameter name="angleDerivation">0.3273626497798697</cd:parameter>
                         <cd:surface gml_id="UUID_d21a153c-7ff7-4778-a9f1-231243abbd80"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">1.1265690273205116</cd:parameter>
-                        <cd:surface gml_id="UUID_b858c531-4291-407b-8831-179bf8b8995c"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">1.21455815550702</cd:parameter>
-                        <cd:surface gml_id="UUID_7f643020-385b-4795-ab80-0813d115f6cc"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">0.7143669599823472</cd:parameter>
-                        <cd:surface gml_id="UUID_f95ce6bb-e62f-4332-a7c5-2dfa5e7b4fbb"></cd:surface>
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">

@@ -16,7 +16,7 @@ CityGRID-style export with a `Building` and a `BuildingPart`).
 | `CS1_lod1_average.gml` | `citysmith lod CS1_lod3.gml --levels 1 --lower-only --lod1-height average` | Block top = Average Roof Height (default), the midpoint between eave and ridge. |
 | `CS1_lod1_ridge.gml` | `citysmith lod CS1_lod3.gml --levels 1 --lower-only --lod1-height ridge` | Block top = Max. Ridge Height, the tallest option. |
 | `CS1_lod0.gml` | `citysmith lod CS1_lod3.gml --levels 0 --lower-only` | Footprint only, flattened to the base height. |
-| `CS1_multiLOD.gml` | `citysmith lod CS1_lod3.gml --levels 0,1,2` (final) | Everything at once: LOD3 source plus LOD2/LOD1/LOD0, all embedded together. |
+| `CS1_multiLOD.gml` | `citysmith lod ../semantics/CS1_lod3_enhanced.gml --levels 0,1,2` (final) | Everything at once: the semantics-enriched LOD3 source (readable ids, installation `function`/`type`, `lod3Geometry`) plus LOD2/LOD1/LOD0, all embedded together. The same file is the source in `convert/` and `validate/`. |
 
 The three `CS1_lod1_*` files are all derived from the exact same source and
 differ only in `--lod1-height`; on this building the block heights are
@@ -29,3 +29,6 @@ other file here is a documentation/inspection artifact, not asserted on by
 the test suite.
 
 See `../README.md` for the full `tests/` folder map.
+
+All files here were regenerated with the current code on 2026-10-13 and
+are valid against the CityGML 2.0 XML schemas (checked by the test suite).

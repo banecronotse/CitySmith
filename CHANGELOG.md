@@ -119,6 +119,17 @@ All notable changes to this project are documented here. The format follows
   meaning `average`. Checked on 19 real Bavarian LOD3 buildings: 18 used
   their stored height, 1 had none and fell back, none disagreed with the
   geometry.
+- XML schema validation (`schema.py`, `citysmith.validate_schema`):
+  `citysmith validate` now first checks the file against the official
+  CityGML 2.0 XML schemas, built in and offline (no Java), then runs
+  CityDoctor2 as before; `--schema-only` stops after the schema check,
+  `--schema-file` adds extension (ADE) schemas. The official schemas
+  (CityGML 2.0, GML 3.1.1, xLink, xAL; 48 files) ship unmodified under
+  `data/schemas/` with a NOTICE of their owners' terms. Errors are listed
+  once per line and column; namespaces without a schema are listed, never
+  downloaded; CityGML 1.0/3.0 files are reported as not checkable. The JSON
+  report keeps CityDoctor2's keys and adds a `schema` block. Approach follows
+  citygml-tools' `validate`.
 - `semantics` now gives every `WallSurface`/`RoofSurface`/`GroundSurface`/
   `OuterFloorSurface`/`OuterCeilingSurface`/`ClosureSurface`/`Window`/`Door`/
   `BuildingInstallation` a readable `gml:id` anchored to the owning
@@ -165,6 +176,26 @@ All notable changes to this project are documented here. The format follows
   since the source being kept isn't always LOD3 anymore.
 
 ### Fixed
+- Files written by `lod` and `semantics` could be invalid against the
+  CityGML 2.0 schema because of element order: a derived `lod2Solid` (and in
+  multi-LOD output `lod0FootPrint`) after the boundary surfaces, and in
+  building installations an added `lod3Geometry` or `function` after the
+  boundary surfaces. Found by the new schema check (11 of 23 committed test
+  files were affected). Writing commands now finish with
+  `sort_building_properties`, which puts each feature's `bldg:` properties
+  into schema order without touching anything else; the affected test files
+  were reordered the same way, with unchanged content. Generic attributes
+  added by `semantics` now go after any `gml:`/`core:` properties instead of
+  always first.
+- All test files regenerated with the current code from their documented
+  commands, so each is exactly what CitySmith writes today. Most came out
+  identical; the rest had gone stale: `lod/CS1_lod2.gml` (documented as LOD2
+  embedded next to LOD3) was in fact a lower-only output without LOD3; the
+  multi-LOD files and the CS2 enriched files still carried opaque `UUID_`
+  ids from an older `semantics` and now have the readable ones; the
+  multi-LOD file's README now names its real source (the enriched LOD3).
+  CityDoctor2 reports and the PDF were rerun with the same results as
+  before.
 - LOD2 walls/roofs modelled as many small panels (some real exports omit the
   panel where a window is instead of cutting a hole, so de-holing had nothing
   to fix) are now collapsed into a clean simplified surface: polygons are

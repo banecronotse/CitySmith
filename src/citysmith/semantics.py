@@ -25,7 +25,8 @@ from dataclasses import dataclass, field
 
 from lxml import etree
 
-from .citygml import BLDG, GML, ID_REQUIRED_LOCALNAMES, NS, gml_id, localname, q
+from .citygml import (BLDG, GML, ID_REQUIRED_LOCALNAMES, NS, gml_id, localname, q,
+                      sort_building_properties)
 from .geometry import parse_pos_list
 
 GEN = NS["gen"]
@@ -221,7 +222,11 @@ def _add_string_attribute(el, name: str, value: str) -> None:
     attr = etree.Element(q(GEN, "stringAttribute"))
     attr.set("name", name)
     etree.SubElement(attr, q(GEN, "value")).text = value
-    el.insert(0, attr)  # generic attributes come first
+    # Generic attributes follow the gml: and core: properties (name,
+    # description, creationDate, ...) and precede the feature's own ones.
+    idx = next((i for i, c in enumerate(el) if isinstance(c.tag, str)
+                and etree.QName(c).namespace not in (GML, NS["core"])), len(el))
+    el.insert(idx, attr)
 
 
 def _add_function(el, code: str) -> None:
@@ -241,7 +246,7 @@ def _add_lod3_geometry(inst) -> bool:
     for pid in ids:
         sm = etree.SubElement(ms, q(GML, "surfaceMember"))
         sm.set(q(NS["xlink"], "href"), f"#{pid}")
-    inst.append(prop)  # aggregate geometry after the boundary surfaces
+    inst.append(prop)  # moved into schema order (before boundedBy) on write
     return True
 
 
@@ -294,5 +299,6 @@ def enhance_semantics(input_path: str, output_path: str, *, add_ids: bool = True
             if _add_lod3_geometry(inst):
                 report.lod3geometry_added += 1
 
+    sort_building_properties(root)
     tree.write(output_path, xml_declaration=True, encoding="utf-8")
     return report

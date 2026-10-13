@@ -10,7 +10,7 @@
             <cd:os_name>Windows 11</cd:os_name>
             <cd:os_arch>amd64</cd:os_arch>
         </cd:environment>
-        <cd:date>2026-07-25T23:45:02.4334531+02:00</cd:date>
+        <cd:date>2026-10-13T13:42:28.3081+02:00</cd:date>
     </cd:header>
     <cd:global_statistics>
         <cd:model_statistics>
@@ -95,110 +95,31 @@
                 </cd:error_statistics>
             </cd:statistics>
             <cd:errors>
-                <cd:error id="GE_S_NON_MANIFOLD_VERTEX" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904763_0" feature_type="Geometry"></cd:feature>
+                <cd:error id="GE_S_NON_MANIFOLD_EDGE" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1791891751149_0" feature_type="Geometry"></cd:feature>
                     <cd:error_details>
-                        <cd:polygon gml_id="UUID_6312c1ec-aed0-53dc-8b0c-713653edfb0b">
-                            <cd:exterior_ring gml_id="UUID_b1969f35-9499-5c55-8981-51ac7a9e32f2" type="EXTERIOR">
-                                <cd:vertex x="458761.969" y="4962533.963" z="147.402"></cd:vertex>
-                                <cd:vertex x="458761.903" y="4962533.964" z="147.402"></cd:vertex>
-                                <cd:vertex x="458761.386" y="4962533.459" z="147.698"></cd:vertex>
-                                <cd:vertex x="458758.68" y="4962530.815" z="149.247"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
-                                <cd:vertex x="458762.117" y="4962530.79" z="149.247"></cd:vertex>
-                                <cd:vertex x="458762.174" y="4962533.959" z="147.402"></cd:vertex>
-                                <cd:vertex x="458761.969" y="4962533.963" z="147.402"></cd:vertex>
-                            </cd:exterior_ring>
-                        </cd:polygon>
-                        <cd:polygon gml_id="UUID_718623aa-eda6-563b-95c2-3515ce93e674">
-                            <cd:exterior_ring gml_id="UUID_869edceb-0c27-55e6-942c-78849df7afd8" type="EXTERIOR">
-                                <cd:vertex x="458761.854" y="4962527.645" z="147.402"></cd:vertex>
-                                <cd:vertex x="458762.059" y="4962527.641" z="147.402"></cd:vertex>
-                                <cd:vertex x="458762.117" y="4962530.79" z="149.247"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
-                                <cd:vertex x="458758.68" y="4962530.815" z="149.247"></cd:vertex>
-                                <cd:vertex x="458761.254" y="4962528.252" z="147.753"></cd:vertex>
-                                <cd:vertex x="458761.854" y="4962527.645" z="147.402"></cd:vertex>
-                            </cd:exterior_ring>
-                        </cd:polygon>
-                        <cd:polygon gml_id="UUID_46d96ae6-7102-5171-899d-af969630807c">
-                            <cd:exterior_ring gml_id="UUID_92d2b45f-9f83-547d-9114-bacf8482d1dd" type="EXTERIOR">
-                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="146.065"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="146.065"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="148.197"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="148.197"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="147.446"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="146.262"></cd:vertex>
-                                <cd:vertex x="458761.843" y="4962527.796" z="146.262"></cd:vertex>
-                                <cd:vertex x="458761.843" y="4962527.796" z="144.273"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="144.273"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="142.847"></cd:vertex>
-                                <cd:vertex x="458761.843" y="4962527.796" z="142.847"></cd:vertex>
-                                <cd:vertex x="458761.843" y="4962527.796" z="140.853"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="140.853"></cd:vertex>
-                                <cd:vertex x="458761.845" y="4962527.72" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="138.513"></cd:vertex>
-                                <cd:vertex x="458761.765" y="4962530.168" z="138.513"></cd:vertex>
-                                <cd:vertex x="458761.765" y="4962530.168" z="139.021"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="139.021"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="140.046"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="140.046"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="142.055"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="142.055"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="143.488"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="143.488"></cd:vertex>
-                                <cd:vertex x="458761.77" y="4962530.029" z="145.483"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
-                            </cd:exterior_ring>
-                        </cd:polygon>
-                        <cd:polygon gml_id="UUID_bb9c3d9c-d82e-5bfe-8089-09579c86a210">
-                            <cd:exterior_ring gml_id="UUID_4599dabc-a569-52c9-aec5-430369b7a300" type="EXTERIOR">
-                                <cd:vertex x="458761.758" y="4962531.562" z="139.021"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="138.513"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="138.513"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.788" y="4962533.371" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.788" y="4962533.371" z="147.747"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="148.197"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="148.197"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="146.065"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="146.065"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="145.483"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="143.488"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="143.488"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="142.055"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="142.055"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="140.046"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="140.046"></cd:vertex>
-                                <cd:vertex x="458761.745" y="4962530.793" z="139.021"></cd:vertex>
-                                <cd:vertex x="458761.758" y="4962531.562" z="139.021"></cd:vertex>
-                            </cd:exterior_ring>
-                        </cd:polygon>
                         <cd:geometry type="SOLID" lod="LOD2">
                             <cd:parent gml_id="CS1" type="BUILDING"></cd:parent>
                         </cd:geometry>
-                        <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
-                        <cd:parameter name="component nr: ">0</cd:parameter>
-                        <cd:parameter name="component nr: ">1</cd:parameter>
+                        <cd:edge>
+                            <cd:from x="458752.749" y="4962524.549" z="147.402"></cd:from>
+                            <cd:to x="458753.367" y="4962525.145" z="147.751"></cd:to>
+                        </cd:edge>
+                        <cd:edge>
+                            <cd:from x="458761.833" y="4962524.577" z="147.402"></cd:from>
+                            <cd:to x="458761.236" y="4962525.168" z="147.752"></cd:to>
+                        </cd:edge>
+                        <cd:edge>
+                            <cd:from x="458761.236" y="4962525.168" z="147.752"></cd:from>
+                            <cd:to x="458753.367" y="4962525.145" z="147.751"></cd:to>
+                        </cd:edge>
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_bf86bf5d-bcde-507f-bac4-1161ca31568b" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">1.2649535132474015</cd:parameter>
-                        <cd:surface gml_id="UUID_bf86bf5d-bcde-507f-bac4-1161ca31568b"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_f5d1e7a4-58fc-58c1-9ed8-fcff050b16bc" feature_type="BoundarySurface"></cd:feature>
+                    <cd:feature gml_id="CS1_roof_0020" feature_type="BoundarySurface"></cd:feature>
                     <cd:error_details>
                         <cd:parameter name="angleDerivation">0.6925756637541789</cd:parameter>
-                        <cd:surface gml_id="UUID_f5d1e7a4-58fc-58c1-9ed8-fcff050b16bc"></cd:surface>
+                        <cd:surface gml_id="CS1_roof_0020"></cd:surface>
                     </cd:error_details>
                 </cd:error>
                 <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
@@ -276,8 +197,429 @@
                         </cd:ring>
                     </cd:error_details>
                 </cd:error>
+                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
+                    <cd:feature gml_id="UUID_ebd078dd-1049-4a5d-bfa0-64681a22646a" feature_type="Polygon"></cd:feature>
+                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_ebd078dd-1049-4a5d-bfa0-64681a22646a">
+                            <cd:exterior_ring gml_id="UUID_6f49c518-0b7b-4386-8fb6-02f5681a8971" type="EXTERIOR">
+                                <cd:vertex x="458752.621" y="4962527.739" z="147.402"></cd:vertex>
+                                <cd:vertex x="458752.678" y="4962530.838" z="149.247"></cd:vertex>
+                                <cd:vertex x="458752.734" y="4962533.926" z="147.402"></cd:vertex>
+                                <cd:vertex x="458752.734" y="4962533.926" z="141.129"></cd:vertex>
+                                <cd:vertex x="458752.724" y="4962533.394" z="141.09"></cd:vertex>
+                                <cd:vertex x="458752.724" y="4962533.394" z="138.099"></cd:vertex>
+                                <cd:vertex x="458752.621" y="4962527.739" z="138.099"></cd:vertex>
+                                <cd:vertex x="458752.621" y="4962527.739" z="147.402"></cd:vertex>
+                            </cd:exterior_ring>
+                            <cd:interior_rings>
+                                <cd:ring gml_id="UUID_5f05fc46-2dc4-455d-802a-53799437cd8a" type="INTERIOR">
+                                    <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
+                                    <cd:vertex x="458752.645" y="4962529.038" z="141.535"></cd:vertex>
+                                    <cd:vertex x="458752.662" y="4962529.96" z="141.535"></cd:vertex>
+                                    <cd:vertex x="458752.662" y="4962529.96" z="140.618"></cd:vertex>
+                                    <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_6b45c547-4ec6-43f4-a957-2452415aea23" type="INTERIOR">
+                                    <cd:vertex x="458752.645" y="4962529.038" z="144.425"></cd:vertex>
+                                    <cd:vertex x="458752.662" y="4962529.96" z="144.425"></cd:vertex>
+                                    <cd:vertex x="458752.662" y="4962529.96" z="143.085"></cd:vertex>
+                                    <cd:vertex x="458752.645" y="4962529.038" z="143.085"></cd:vertex>
+                                    <cd:vertex x="458752.645" y="4962529.038" z="144.425"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_6a8cba80-a139-4e4f-9e3a-ae476225a999" type="INTERIOR">
+                                    <cd:vertex x="458752.681" y="4962531.019" z="147.828"></cd:vertex>
+                                    <cd:vertex x="458752.706" y="4962532.38" z="147.828"></cd:vertex>
+                                    <cd:vertex x="458752.706" y="4962532.38" z="146.625"></cd:vertex>
+                                    <cd:vertex x="458752.681" y="4962531.019" z="146.625"></cd:vertex>
+                                    <cd:vertex x="458752.681" y="4962531.019" z="147.828"></cd:vertex>
+                                </cd:ring>
+                            </cd:interior_rings>
+                        </cd:polygon>
+                        <cd:ring gml_id="UUID_5f05fc46-2dc4-455d-802a-53799437cd8a" type="INTERIOR">
+                            <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
+                            <cd:vertex x="458752.645" y="4962529.038" z="141.535"></cd:vertex>
+                            <cd:vertex x="458752.662" y="4962529.96" z="141.535"></cd:vertex>
+                            <cd:vertex x="458752.662" y="4962529.96" z="140.618"></cd:vertex>
+                            <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
+                        </cd:ring>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
+                    <cd:feature gml_id="UUID_e1487983-893b-4962-b640-f95b96d57054" feature_type="Polygon"></cd:feature>
+                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_e1487983-893b-4962-b640-f95b96d57054">
+                            <cd:exterior_ring gml_id="UUID_bd89900e-c59a-49a0-9726-260e0b510d5f" type="EXTERIOR">
+                                <cd:vertex x="458761.358" y="4962537.017" z="147.749"></cd:vertex>
+                                <cd:vertex x="458761.33" y="4962536.99" z="147.765"></cd:vertex>
+                                <cd:vertex x="458757.4" y="4962533.153" z="150.02"></cd:vertex>
+                                <cd:vertex x="458757.401" y="4962532.647" z="150.017"></cd:vertex>
+                                <cd:vertex x="458757.404" y="4962531.923" z="150.012"></cd:vertex>
+                                <cd:vertex x="458757.39" y="4962528.924" z="150.006"></cd:vertex>
+                                <cd:vertex x="458761.238" y="4962525.171" z="147.762"></cd:vertex>
+                                <cd:vertex x="458761.843" y="4962525.173" z="147.412"></cd:vertex>
+                                <cd:vertex x="458761.861" y="4962527.645" z="147.414"></cd:vertex>
+                                <cd:vertex x="458761.26" y="4962528.252" z="147.764"></cd:vertex>
+                                <cd:vertex x="458758.689" y="4962530.815" z="149.263"></cd:vertex>
+                                <cd:vertex x="458761.394" y="4962533.459" z="147.711"></cd:vertex>
+                                <cd:vertex x="458761.91" y="4962533.964" z="147.415"></cd:vertex>
+                                <cd:vertex x="458761.958" y="4962536.989" z="147.402"></cd:vertex>
+                                <cd:vertex x="458761.967" y="4962537.615" z="147.399"></cd:vertex>
+                                <cd:vertex x="458761.358" y="4962537.017" z="147.749"></cd:vertex>
+                            </cd:exterior_ring>
+                            <cd:interior_rings>
+                                <cd:ring gml_id="UUID_ff3e23c3-5825-4a4d-b797-f9809ceb258e" type="INTERIOR">
+                                    <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
+                                    <cd:vertex x="458760.955" y="4962527.23" z="147.936"></cd:vertex>
+                                    <cd:vertex x="458760.964" y="4962528.059" z="147.934"></cd:vertex>
+                                    <cd:vertex x="458759.693" y="4962528.067" z="148.669"></cd:vertex>
+                                    <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_e853a340-c1fc-4773-97ed-84120e5462a8" type="INTERIOR">
+                                    <cd:vertex x="458759.719" y="4962534.952" z="148.687"></cd:vertex>
+                                    <cd:vertex x="458759.71" y="4962534.172" z="148.689"></cd:vertex>
+                                    <cd:vertex x="458760.962" y="4962534.148" z="147.965"></cd:vertex>
+                                    <cd:vertex x="458760.97" y="4962534.929" z="147.964"></cd:vertex>
+                                    <cd:vertex x="458759.719" y="4962534.952" z="148.687"></cd:vertex>
+                                </cd:ring>
+                            </cd:interior_rings>
+                        </cd:polygon>
+                        <cd:ring gml_id="UUID_ff3e23c3-5825-4a4d-b797-f9809ceb258e" type="INTERIOR">
+                            <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
+                            <cd:vertex x="458760.955" y="4962527.23" z="147.936"></cd:vertex>
+                            <cd:vertex x="458760.964" y="4962528.059" z="147.934"></cd:vertex>
+                            <cd:vertex x="458759.693" y="4962528.067" z="148.669"></cd:vertex>
+                            <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
+                        </cd:ring>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
+                    <cd:feature gml_id="UUID_f0efea90-89fb-424b-8a8a-002a1ec53ec5" feature_type="Polygon"></cd:feature>
+                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_f0efea90-89fb-424b-8a8a-002a1ec53ec5">
+                            <cd:exterior_ring gml_id="UUID_cea4ef3f-fcc7-4609-ad75-3682013230fc" type="EXTERIOR">
+                                <cd:vertex x="458761.233" y="4962525.171" z="147.754"></cd:vertex>
+                                <cd:vertex x="458757.385" y="4962528.924" z="149.997"></cd:vertex>
+                                <cd:vertex x="458753.367" y="4962525.145" z="147.751"></cd:vertex>
+                                <cd:vertex x="458761.233" y="4962525.171" z="147.754"></cd:vertex>
+                            </cd:exterior_ring>
+                            <cd:interior_rings>
+                                <cd:ring gml_id="UUID_501e1c4c-8e2f-40b9-91dc-373da6ad5ad6" type="INTERIOR">
+                                    <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
+                                    <cd:vertex x="458758.546" y="4962525.459" z="147.93"></cd:vertex>
+                                    <cd:vertex x="458759.324" y="4962525.461" z="147.93"></cd:vertex>
+                                    <cd:vertex x="458759.32" y="4962526.839" z="148.751"></cd:vertex>
+                                    <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_db8e111d-e5f0-4adf-b4ee-3beee45c6248" type="INTERIOR">
+                                    <cd:vertex x="458756.071" y="4962526.747" z="148.701"></cd:vertex>
+                                    <cd:vertex x="458755.36" y="4962526.745" z="148.701"></cd:vertex>
+                                    <cd:vertex x="458755.363" y="4962525.458" z="147.934"></cd:vertex>
+                                    <cd:vertex x="458756.074" y="4962525.46" z="147.934"></cd:vertex>
+                                    <cd:vertex x="458756.071" y="4962526.747" z="148.701"></cd:vertex>
+                                </cd:ring>
+                            </cd:interior_rings>
+                        </cd:polygon>
+                        <cd:ring gml_id="UUID_501e1c4c-8e2f-40b9-91dc-373da6ad5ad6" type="INTERIOR">
+                            <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
+                            <cd:vertex x="458758.546" y="4962525.459" z="147.93"></cd:vertex>
+                            <cd:vertex x="458759.324" y="4962525.461" z="147.93"></cd:vertex>
+                            <cd:vertex x="458759.32" y="4962526.839" z="148.751"></cd:vertex>
+                            <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
+                        </cd:ring>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
+                    <cd:feature gml_id="UUID_f8ae3016-9a42-44f3-a52a-6bf5e3a2d4c8" feature_type="Polygon"></cd:feature>
+                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_f8ae3016-9a42-44f3-a52a-6bf5e3a2d4c8">
+                            <cd:exterior_ring gml_id="UUID_918cfabd-e621-444f-ac8b-ca4bb3583fa9" type="EXTERIOR">
+                                <cd:vertex x="458753.367" y="4962525.147" z="147.751"></cd:vertex>
+                                <cd:vertex x="458752.76" y="4962525.145" z="147.402"></cd:vertex>
+                                <cd:vertex x="458752.76" y="4962525.145" z="138.099"></cd:vertex>
+                                <cd:vertex x="458753.367" y="4962525.147" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.832" y="4962525.17" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.832" y="4962525.17" z="147.405"></cd:vertex>
+                                <cd:vertex x="458761.236" y="4962525.168" z="147.752"></cd:vertex>
+                                <cd:vertex x="458753.367" y="4962525.147" z="147.751"></cd:vertex>
+                            </cd:exterior_ring>
+                            <cd:interior_rings>
+                                <cd:ring gml_id="UUID_71e743f4-125c-4761-ad30-6417fc50575d" type="INTERIOR">
+                                    <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
+                                    <cd:vertex x="458754.646" y="4962525.15" z="144.245"></cd:vertex>
+                                    <cd:vertex x="458756.129" y="4962525.154" z="144.245"></cd:vertex>
+                                    <cd:vertex x="458756.129" y="4962525.154" z="145.307"></cd:vertex>
+                                    <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_b96dcab9-609e-48d1-8ba3-21011e7eb3f7" type="INTERIOR">
+                                    <cd:vertex x="458755.692" y="4962525.153" z="141.849"></cd:vertex>
+                                    <cd:vertex x="458754.646" y="4962525.15" z="141.849"></cd:vertex>
+                                    <cd:vertex x="458754.646" y="4962525.15" z="140.737"></cd:vertex>
+                                    <cd:vertex x="458755.692" y="4962525.153" z="140.737"></cd:vertex>
+                                    <cd:vertex x="458755.692" y="4962525.153" z="141.849"></cd:vertex>
+                                </cd:ring>
+                            </cd:interior_rings>
+                        </cd:polygon>
+                        <cd:ring gml_id="UUID_71e743f4-125c-4761-ad30-6417fc50575d" type="INTERIOR">
+                            <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
+                            <cd:vertex x="458754.646" y="4962525.15" z="144.245"></cd:vertex>
+                            <cd:vertex x="458756.129" y="4962525.154" z="144.245"></cd:vertex>
+                            <cd:vertex x="458756.129" y="4962525.154" z="145.307"></cd:vertex>
+                            <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
+                        </cd:ring>
+                    </cd:error_details>
+                </cd:error>
                 <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904763_0" feature_type="Geometry"></cd:feature>
+                    <cd:feature gml_id="CityDoctor_1791891751174_1" feature_type="Geometry"></cd:feature>
+                    <cd:error_details>
+                        <cd:geometry type="SOLID" lod="LOD2">
+                            <cd:parent gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965" type="BUILDING_PART"></cd:parent>
+                        </cd:geometry>
+                        <cd:edges name="open edges">
+                            <cd:edge>
+                                <cd:from x="458752.831" y="4962537.006" z="141.408"></cd:from>
+                                <cd:to x="458750.712" y="4962537.034" z="141.401"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458750.712" y="4962537.034" z="141.401"></cd:from>
+                                <cd:to x="458750.659" y="4962532.931" z="141.014"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458750.659" y="4962532.931" z="141.014"></cd:from>
+                                <cd:to x="458751.224" y="4962532.925" z="141.016"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458751.224" y="4962532.925" z="141.016"></cd:from>
+                                <cd:to x="458751.233" y="4962533.42" z="141.063"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458751.233" y="4962533.42" z="141.063"></cd:from>
+                                <cd:to x="458752.278" y="4962533.4" z="141.066"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.278" y="4962533.4" z="141.066"></cd:from>
+                                <cd:to x="458752.724" y="4962533.396" z="141.067"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.724" y="4962533.396" z="141.067"></cd:from>
+                                <cd:to x="458752.734" y="4962533.927" z="141.117"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.734" y="4962533.927" z="141.117"></cd:from>
+                                <cd:to x="458752.792" y="4962533.927" z="141.118"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.792" y="4962533.927" z="141.118"></cd:from>
+                                <cd:to x="458752.806" y="4962535.048" z="141.223"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.806" y="4962535.048" z="141.223"></cd:from>
+                                <cd:to x="458752.831" y="4962537.006" z="141.408"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.278" y="4962533.401" z="141.057"></cd:from>
+                                <cd:to x="458751.233" y="4962533.42" z="141.057"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.724" y="4962533.394" z="138.099"></cd:from>
+                                <cd:to x="458752.724" y="4962533.394" z="141.09"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.724" y="4962533.394" z="141.09"></cd:from>
+                                <cd:to x="458752.278" y="4962533.401" z="141.057"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458751.224" y="4962532.925" z="141.012"></cd:from>
+                                <cd:to x="458750.659" y="4962532.931" z="141.012"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458750.659" y="4962532.931" z="141.012"></cd:from>
+                                <cd:to x="458750.712" y="4962537.034" z="141.402"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458750.712" y="4962537.034" z="141.402"></cd:from>
+                                <cd:to x="458752.831" y="4962537.007" z="141.402"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.831" y="4962537.007" z="141.402"></cd:from>
+                                <cd:to x="458752.831" y="4962537.007" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458751.233" y="4962533.42" z="141.057"></cd:from>
+                                <cd:to x="458751.224" y="4962532.925" z="141.012"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.734" y="4962533.926" z="138.099"></cd:from>
+                                <cd:to x="458752.724" y="4962533.394" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.831" y="4962537.007" z="138.099"></cd:from>
+                                <cd:to x="458752.792" y="4962533.925" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.792" y="4962533.925" z="138.099"></cd:from>
+                                <cd:to x="458752.734" y="4962533.926" z="138.099"></cd:to>
+                            </cd:edge>
+                        </cd:edges>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_S_MULTIPLE_CONNECTED_COMPONENTS" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1791891751149_0" feature_type="Geometry"></cd:feature>
+                    <cd:error_details>
+                        <cd:geometry type="SOLID" lod="LOD2">
+                            <cd:parent gml_id="CS1" type="BUILDING"></cd:parent>
+                        </cd:geometry>
+                        <cd:polygons name="component nr: 1">
+                            <cd:polygon gml_id="UUID_57bf1a76-8152-5149-9715-b7f3fbe8a45c"></cd:polygon>
+                            <cd:polygon gml_id="UUID_bb9c3d9c-d82e-5bfe-8089-09579c86a210"></cd:polygon>
+                            <cd:polygon gml_id="UUID_6312c1ec-aed0-53dc-8b0c-713653edfb0b"></cd:polygon>
+                            <cd:polygon gml_id="UUID_af9b635c-d21b-5e7c-8b36-b5e4734ab58b"></cd:polygon>
+                            <cd:polygon gml_id="UUID_576c7c98-de3d-5c20-89b2-422f4615f034"></cd:polygon>
+                            <cd:polygon gml_id="UUID_22989ffe-a9c8-5347-8b91-574597432ac8"></cd:polygon>
+                            <cd:polygon gml_id="UUID_5fcc6c11-e274-5b57-a42e-784c9be9b398"></cd:polygon>
+                            <cd:polygon gml_id="UUID_9c2416da-4b48-5426-bc7e-83331792e0dc"></cd:polygon>
+                            <cd:polygon gml_id="UUID_14c45c1e-a9e0-5b57-a058-be005f71a880"></cd:polygon>
+                            <cd:polygon gml_id="UUID_9d4032e0-0437-5435-a12b-ae65f93a626a"></cd:polygon>
+                            <cd:polygon gml_id="UUID_989e51b6-ab43-5744-a07a-b7775a9f3408"></cd:polygon>
+                            <cd:polygon gml_id="UUID_48a9ecd4-5498-5d2f-a49f-7e79b5f930ec"></cd:polygon>
+                            <cd:polygon gml_id="UUID_dea8d279-c9d4-53ee-8896-7585f140b3c8"></cd:polygon>
+                            <cd:polygon gml_id="UUID_0bc60956-df32-5177-b662-a5f9f5e7adf9"></cd:polygon>
+                            <cd:polygon gml_id="UUID_035ea7fc-3116-5328-a6a0-704a8207f7cb"></cd:polygon>
+                            <cd:polygon gml_id="UUID_42129454-a44e-528b-b321-5eaa5a71bf9f"></cd:polygon>
+                            <cd:polygon gml_id="UUID_82da8112-72ab-506a-90ef-dc8298145285"></cd:polygon>
+                            <cd:polygon gml_id="UUID_ce8eab25-58f9-572a-9994-2de0448e52b9"></cd:polygon>
+                            <cd:polygon gml_id="UUID_73f709c0-6117-5ee6-a2c9-c40f8f11709a"></cd:polygon>
+                            <cd:polygon gml_id="UUID_eb3964c0-3669-50d3-a815-ada19ec75c8a"></cd:polygon>
+                            <cd:polygon gml_id="UUID_089c024d-a73e-56e6-abfd-784a0bb498a5"></cd:polygon>
+                            <cd:polygon gml_id="UUID_f5328ecc-c598-5191-aa34-334b958bc934"></cd:polygon>
+                            <cd:polygon gml_id="UUID_9e1cd10a-340f-5cd9-89a2-a5988d475a37"></cd:polygon>
+                            <cd:polygon gml_id="UUID_58e20b29-9498-5a8f-888b-a3202fe0afa7"></cd:polygon>
+                            <cd:polygon gml_id="UUID_1a121ff6-20bf-5afd-b6fb-0a09b312af61"></cd:polygon>
+                            <cd:polygon gml_id="UUID_9f8aaec0-c78c-5d81-8357-9cdb3997af8c"></cd:polygon>
+                            <cd:polygon gml_id="UUID_951cf62a-7f13-5384-9dcb-1ac5cc090dc4"></cd:polygon>
+                            <cd:polygon gml_id="UUID_c1033a04-42ba-54e8-b8a7-2ca49afda780"></cd:polygon>
+                            <cd:polygon gml_id="UUID_2b7e91e9-6bb9-56df-9e0f-2b72abe2a77b"></cd:polygon>
+                            <cd:polygon gml_id="UUID_c4f0c86f-f09c-5534-9d21-6965c85cd026"></cd:polygon>
+                            <cd:polygon gml_id="UUID_1383597c-0fcb-54a1-b53c-f8b2f4e3188d"></cd:polygon>
+                            <cd:polygon gml_id="UUID_84e3b995-0661-586b-a812-c7eb0ec6d54f"></cd:polygon>
+                            <cd:polygon gml_id="UUID_cfd8d0dc-b3af-5074-bcf6-c68f7456849f"></cd:polygon>
+                            <cd:polygon gml_id="UUID_12a95bc0-e321-542c-a88d-9648c652574d"></cd:polygon>
+                            <cd:polygon gml_id="UUID_b591c46d-6150-54b7-94e9-d27908d0f433"></cd:polygon>
+                            <cd:polygon gml_id="UUID_0e4d77a2-c80e-5dc8-b4f4-ac359f797aad"></cd:polygon>
+                            <cd:polygon gml_id="UUID_718623aa-eda6-563b-95c2-3515ce93e674"></cd:polygon>
+                            <cd:polygon gml_id="UUID_2348daea-b94e-5dc4-bfe7-49792672db85"></cd:polygon>
+                            <cd:polygon gml_id="UUID_ad690498-f44f-5b67-b883-96215bc7eff8"></cd:polygon>
+                            <cd:polygon gml_id="UUID_46d96ae6-7102-5171-899d-af969630807c"></cd:polygon>
+                        </cd:polygons>
+                        <cd:polygons name="component nr: 2">
+                            <cd:polygon gml_id="UUID_5ca865f5-43e4-5870-b95d-2d5bc5442872"></cd:polygon>
+                            <cd:polygon gml_id="UUID_b1938329-f725-5121-84fe-4c0aa7921883"></cd:polygon>
+                        </cd:polygons>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1791891751177_2" feature_type="Geometry"></cd:feature>
+                    <cd:error_details>
+                        <cd:geometry type="SOLID" lod="LOD3">
+                            <cd:parent gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965" type="BUILDING_PART"></cd:parent>
+                        </cd:geometry>
+                        <cd:edges name="open edges">
+                            <cd:edge>
+                                <cd:from x="458752.806" y="4962535.049" z="141.215"></cd:from>
+                                <cd:to x="458752.831" y="4962537.007" z="141.402"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.724" y="4962533.394" z="141.09"></cd:from>
+                                <cd:to x="458752.734" y="4962533.926" z="141.129"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.734" y="4962533.926" z="141.129"></cd:from>
+                                <cd:to x="458752.792" y="4962533.925" z="141.134"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.792" y="4962533.925" z="141.134"></cd:from>
+                                <cd:to x="458752.806" y="4962535.049" z="141.215"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.724" y="4962533.394" z="138.099"></cd:from>
+                                <cd:to x="458752.724" y="4962533.394" z="141.09"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.831" y="4962537.007" z="141.402"></cd:from>
+                                <cd:to x="458752.831" y="4962537.007" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.734" y="4962533.926" z="138.099"></cd:from>
+                                <cd:to x="458752.724" y="4962533.394" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.831" y="4962537.007" z="138.099"></cd:from>
+                                <cd:to x="458752.792" y="4962533.925" z="138.099"></cd:to>
+                            </cd:edge>
+                            <cd:edge>
+                                <cd:from x="458752.792" y="4962533.925" z="138.099"></cd:from>
+                                <cd:to x="458752.734" y="4962533.926" z="138.099"></cd:to>
+                            </cd:edge>
+                        </cd:edges>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_5189c3fe-88e7-568b-a6ac-9287a59857d4" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">1.2649535132474015</cd:parameter>
+                        <cd:surface gml_id="UUID_5189c3fe-88e7-568b-a6ac-9287a59857d4"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
+                    <cd:feature gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965_roof_0001" feature_type="BoundarySurface"></cd:feature>
+                    <cd:error_details>
+                        <cd:parameter name="angleDerivation">0.05567504970923848</cd:parameter>
+                        <cd:surface gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965_roof_0001"></cd:surface>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
+                    <cd:feature gml_id="UUID_f7f9a86d-2ac0-40a6-9bbb-b878cf66fdc8" feature_type="Polygon"></cd:feature>
+                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_f7f9a86d-2ac0-40a6-9bbb-b878cf66fdc8">
+                            <cd:exterior_ring gml_id="UUID_1dd176f9-8a8d-4c5f-858d-3ed0d39680ff" type="EXTERIOR">
+                                <cd:vertex x="458761.425" y="4962536.78" z="147.708"></cd:vertex>
+                                <cd:vertex x="458761.424" y="4962536.678" z="147.707"></cd:vertex>
+                                <cd:vertex x="458761.391" y="4962533.872" z="147.696"></cd:vertex>
+                                <cd:vertex x="458761.387" y="4962533.459" z="147.698"></cd:vertex>
+                                <cd:vertex x="458761.386" y="4962533.372" z="147.748"></cd:vertex>
+                                <cd:vertex x="458761.385" y="4962533.372" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.425" y="4962536.78" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.427" y="4962536.99" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.428" y="4962536.99" z="147.709"></cd:vertex>
+                                <cd:vertex x="458761.425" y="4962536.78" z="147.708"></cd:vertex>
+                            </cd:exterior_ring>
+                            <cd:interior_rings>
+                                <cd:ring gml_id="UUID_06947f39-6e66-4d34-9ac3-21bf5434f9bc" type="INTERIOR">
+                                    <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
+                                    <cd:vertex x="458761.41" y="4962535.47" z="140.26"></cd:vertex>
+                                    <cd:vertex x="458761.41" y="4962535.47" z="142.236"></cd:vertex>
+                                    <cd:vertex x="458761.392" y="4962533.888" z="142.236"></cd:vertex>
+                                    <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
+                                </cd:ring>
+                                <cd:ring gml_id="UUID_daf6a701-d6b5-4480-8b33-6c5f654c2e9b" type="INTERIOR">
+                                    <cd:vertex x="458761.392" y="4962533.888" z="145.652"></cd:vertex>
+                                    <cd:vertex x="458761.392" y="4962533.888" z="143.663"></cd:vertex>
+                                    <cd:vertex x="458761.41" y="4962535.47" z="143.663"></cd:vertex>
+                                    <cd:vertex x="458761.41" y="4962535.47" z="145.652"></cd:vertex>
+                                    <cd:vertex x="458761.392" y="4962533.888" z="145.652"></cd:vertex>
+                                </cd:ring>
+                            </cd:interior_rings>
+                        </cd:polygon>
+                        <cd:ring gml_id="UUID_06947f39-6e66-4d34-9ac3-21bf5434f9bc" type="INTERIOR">
+                            <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
+                            <cd:vertex x="458761.41" y="4962535.47" z="140.26"></cd:vertex>
+                            <cd:vertex x="458761.41" y="4962535.47" z="142.236"></cd:vertex>
+                            <cd:vertex x="458761.392" y="4962533.888" z="142.236"></cd:vertex>
+                            <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
+                        </cd:ring>
+                    </cd:error_details>
+                </cd:error>
+                <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1791891751149_0" feature_type="Geometry"></cd:feature>
                     <cd:error_details>
                         <cd:geometry type="SOLID" lod="LOD2">
                             <cd:parent gml_id="CS1" type="BUILDING"></cd:parent>
@@ -1046,438 +1388,96 @@
                         </cd:edges>
                     </cd:error_details>
                 </cd:error>
-                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
-                    <cd:feature gml_id="UUID_f0efea90-89fb-424b-8a8a-002a1ec53ec5" feature_type="Polygon"></cd:feature>
+                <cd:error id="GE_S_NON_MANIFOLD_VERTEX" status="ERROR">
+                    <cd:feature gml_id="CityDoctor_1791891751149_0" feature_type="Geometry"></cd:feature>
                     <cd:error_details>
-                        <cd:polygon gml_id="UUID_f0efea90-89fb-424b-8a8a-002a1ec53ec5">
-                            <cd:exterior_ring gml_id="UUID_cea4ef3f-fcc7-4609-ad75-3682013230fc" type="EXTERIOR">
-                                <cd:vertex x="458761.233" y="4962525.171" z="147.754"></cd:vertex>
-                                <cd:vertex x="458757.385" y="4962528.924" z="149.997"></cd:vertex>
-                                <cd:vertex x="458753.367" y="4962525.145" z="147.751"></cd:vertex>
-                                <cd:vertex x="458761.233" y="4962525.171" z="147.754"></cd:vertex>
+                        <cd:polygon gml_id="UUID_bb9c3d9c-d82e-5bfe-8089-09579c86a210">
+                            <cd:exterior_ring gml_id="UUID_4599dabc-a569-52c9-aec5-430369b7a300" type="EXTERIOR">
+                                <cd:vertex x="458761.758" y="4962531.562" z="139.021"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="138.513"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="138.513"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.788" y="4962533.371" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.788" y="4962533.371" z="147.747"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="148.197"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="148.197"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="146.065"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="146.065"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="145.483"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="143.488"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="143.488"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="142.055"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="142.055"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="140.046"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="140.046"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="139.021"></cd:vertex>
+                                <cd:vertex x="458761.758" y="4962531.562" z="139.021"></cd:vertex>
                             </cd:exterior_ring>
-                            <cd:interior_rings>
-                                <cd:ring gml_id="UUID_501e1c4c-8e2f-40b9-91dc-373da6ad5ad6" type="INTERIOR">
-                                    <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
-                                    <cd:vertex x="458758.546" y="4962525.459" z="147.93"></cd:vertex>
-                                    <cd:vertex x="458759.324" y="4962525.461" z="147.93"></cd:vertex>
-                                    <cd:vertex x="458759.32" y="4962526.839" z="148.751"></cd:vertex>
-                                    <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_db8e111d-e5f0-4adf-b4ee-3beee45c6248" type="INTERIOR">
-                                    <cd:vertex x="458756.071" y="4962526.747" z="148.701"></cd:vertex>
-                                    <cd:vertex x="458755.36" y="4962526.745" z="148.701"></cd:vertex>
-                                    <cd:vertex x="458755.363" y="4962525.458" z="147.934"></cd:vertex>
-                                    <cd:vertex x="458756.074" y="4962525.46" z="147.934"></cd:vertex>
-                                    <cd:vertex x="458756.071" y="4962526.747" z="148.701"></cd:vertex>
-                                </cd:ring>
-                            </cd:interior_rings>
                         </cd:polygon>
-                        <cd:ring gml_id="UUID_501e1c4c-8e2f-40b9-91dc-373da6ad5ad6" type="INTERIOR">
-                            <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
-                            <cd:vertex x="458758.546" y="4962525.459" z="147.93"></cd:vertex>
-                            <cd:vertex x="458759.324" y="4962525.461" z="147.93"></cd:vertex>
-                            <cd:vertex x="458759.32" y="4962526.839" z="148.751"></cd:vertex>
-                            <cd:vertex x="458758.543" y="4962526.837" z="148.751"></cd:vertex>
-                        </cd:ring>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
-                    <cd:feature gml_id="UUID_f8ae3016-9a42-44f3-a52a-6bf5e3a2d4c8" feature_type="Polygon"></cd:feature>
-                    <cd:error_details>
-                        <cd:polygon gml_id="UUID_f8ae3016-9a42-44f3-a52a-6bf5e3a2d4c8">
-                            <cd:exterior_ring gml_id="UUID_918cfabd-e621-444f-ac8b-ca4bb3583fa9" type="EXTERIOR">
-                                <cd:vertex x="458753.367" y="4962525.147" z="147.751"></cd:vertex>
-                                <cd:vertex x="458752.76" y="4962525.145" z="147.402"></cd:vertex>
-                                <cd:vertex x="458752.76" y="4962525.145" z="138.099"></cd:vertex>
-                                <cd:vertex x="458753.367" y="4962525.147" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.832" y="4962525.17" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.832" y="4962525.17" z="147.405"></cd:vertex>
-                                <cd:vertex x="458761.236" y="4962525.168" z="147.752"></cd:vertex>
-                                <cd:vertex x="458753.367" y="4962525.147" z="147.751"></cd:vertex>
+                        <cd:polygon gml_id="UUID_46d96ae6-7102-5171-899d-af969630807c">
+                            <cd:exterior_ring gml_id="UUID_92d2b45f-9f83-547d-9114-bacf8482d1dd" type="EXTERIOR">
+                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="146.065"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="146.065"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="148.197"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="148.197"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="147.446"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="146.262"></cd:vertex>
+                                <cd:vertex x="458761.843" y="4962527.796" z="146.262"></cd:vertex>
+                                <cd:vertex x="458761.843" y="4962527.796" z="144.273"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="144.273"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="142.847"></cd:vertex>
+                                <cd:vertex x="458761.843" y="4962527.796" z="142.847"></cd:vertex>
+                                <cd:vertex x="458761.843" y="4962527.796" z="140.853"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="140.853"></cd:vertex>
+                                <cd:vertex x="458761.845" y="4962527.72" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="138.099"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="138.513"></cd:vertex>
+                                <cd:vertex x="458761.765" y="4962530.168" z="138.513"></cd:vertex>
+                                <cd:vertex x="458761.765" y="4962530.168" z="139.021"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="139.021"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="140.046"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="140.046"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="142.055"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="142.055"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="143.488"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="143.488"></cd:vertex>
+                                <cd:vertex x="458761.77" y="4962530.029" z="145.483"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="145.483"></cd:vertex>
                             </cd:exterior_ring>
-                            <cd:interior_rings>
-                                <cd:ring gml_id="UUID_71e743f4-125c-4761-ad30-6417fc50575d" type="INTERIOR">
-                                    <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
-                                    <cd:vertex x="458754.646" y="4962525.15" z="144.245"></cd:vertex>
-                                    <cd:vertex x="458756.129" y="4962525.154" z="144.245"></cd:vertex>
-                                    <cd:vertex x="458756.129" y="4962525.154" z="145.307"></cd:vertex>
-                                    <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_b96dcab9-609e-48d1-8ba3-21011e7eb3f7" type="INTERIOR">
-                                    <cd:vertex x="458755.692" y="4962525.153" z="141.849"></cd:vertex>
-                                    <cd:vertex x="458754.646" y="4962525.15" z="141.849"></cd:vertex>
-                                    <cd:vertex x="458754.646" y="4962525.15" z="140.737"></cd:vertex>
-                                    <cd:vertex x="458755.692" y="4962525.153" z="140.737"></cd:vertex>
-                                    <cd:vertex x="458755.692" y="4962525.153" z="141.849"></cd:vertex>
-                                </cd:ring>
-                            </cd:interior_rings>
                         </cd:polygon>
-                        <cd:ring gml_id="UUID_71e743f4-125c-4761-ad30-6417fc50575d" type="INTERIOR">
-                            <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
-                            <cd:vertex x="458754.646" y="4962525.15" z="144.245"></cd:vertex>
-                            <cd:vertex x="458756.129" y="4962525.154" z="144.245"></cd:vertex>
-                            <cd:vertex x="458756.129" y="4962525.154" z="145.307"></cd:vertex>
-                            <cd:vertex x="458754.646" y="4962525.15" z="145.307"></cd:vertex>
-                        </cd:ring>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
-                    <cd:feature gml_id="UUID_f7f9a86d-2ac0-40a6-9bbb-b878cf66fdc8" feature_type="Polygon"></cd:feature>
-                    <cd:error_details>
-                        <cd:polygon gml_id="UUID_f7f9a86d-2ac0-40a6-9bbb-b878cf66fdc8">
-                            <cd:exterior_ring gml_id="UUID_1dd176f9-8a8d-4c5f-858d-3ed0d39680ff" type="EXTERIOR">
-                                <cd:vertex x="458761.425" y="4962536.78" z="147.708"></cd:vertex>
-                                <cd:vertex x="458761.424" y="4962536.678" z="147.707"></cd:vertex>
-                                <cd:vertex x="458761.391" y="4962533.872" z="147.696"></cd:vertex>
-                                <cd:vertex x="458761.387" y="4962533.459" z="147.698"></cd:vertex>
-                                <cd:vertex x="458761.386" y="4962533.372" z="147.748"></cd:vertex>
-                                <cd:vertex x="458761.385" y="4962533.372" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.425" y="4962536.78" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.427" y="4962536.99" z="138.099"></cd:vertex>
-                                <cd:vertex x="458761.428" y="4962536.99" z="147.709"></cd:vertex>
-                                <cd:vertex x="458761.425" y="4962536.78" z="147.708"></cd:vertex>
+                        <cd:polygon gml_id="UUID_6312c1ec-aed0-53dc-8b0c-713653edfb0b">
+                            <cd:exterior_ring gml_id="UUID_b1969f35-9499-5c55-8981-51ac7a9e32f2" type="EXTERIOR">
+                                <cd:vertex x="458761.969" y="4962533.963" z="147.402"></cd:vertex>
+                                <cd:vertex x="458761.903" y="4962533.964" z="147.402"></cd:vertex>
+                                <cd:vertex x="458761.386" y="4962533.459" z="147.698"></cd:vertex>
+                                <cd:vertex x="458758.68" y="4962530.815" z="149.247"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
+                                <cd:vertex x="458762.117" y="4962530.79" z="149.247"></cd:vertex>
+                                <cd:vertex x="458762.174" y="4962533.959" z="147.402"></cd:vertex>
+                                <cd:vertex x="458761.969" y="4962533.963" z="147.402"></cd:vertex>
                             </cd:exterior_ring>
-                            <cd:interior_rings>
-                                <cd:ring gml_id="UUID_06947f39-6e66-4d34-9ac3-21bf5434f9bc" type="INTERIOR">
-                                    <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
-                                    <cd:vertex x="458761.41" y="4962535.47" z="140.26"></cd:vertex>
-                                    <cd:vertex x="458761.41" y="4962535.47" z="142.236"></cd:vertex>
-                                    <cd:vertex x="458761.392" y="4962533.888" z="142.236"></cd:vertex>
-                                    <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_daf6a701-d6b5-4480-8b33-6c5f654c2e9b" type="INTERIOR">
-                                    <cd:vertex x="458761.392" y="4962533.888" z="145.652"></cd:vertex>
-                                    <cd:vertex x="458761.392" y="4962533.888" z="143.663"></cd:vertex>
-                                    <cd:vertex x="458761.41" y="4962535.47" z="143.663"></cd:vertex>
-                                    <cd:vertex x="458761.41" y="4962535.47" z="145.652"></cd:vertex>
-                                    <cd:vertex x="458761.392" y="4962533.888" z="145.652"></cd:vertex>
-                                </cd:ring>
-                            </cd:interior_rings>
                         </cd:polygon>
-                        <cd:ring gml_id="UUID_06947f39-6e66-4d34-9ac3-21bf5434f9bc" type="INTERIOR">
-                            <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
-                            <cd:vertex x="458761.41" y="4962535.47" z="140.26"></cd:vertex>
-                            <cd:vertex x="458761.41" y="4962535.47" z="142.236"></cd:vertex>
-                            <cd:vertex x="458761.392" y="4962533.888" z="142.236"></cd:vertex>
-                            <cd:vertex x="458761.392" y="4962533.888" z="140.26"></cd:vertex>
-                        </cd:ring>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904787_1" feature_type="Geometry"></cd:feature>
-                    <cd:error_details>
-                        <cd:geometry type="SOLID" lod="LOD3">
-                            <cd:parent gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965" type="BUILDING_PART"></cd:parent>
-                        </cd:geometry>
-                        <cd:edges name="open edges">
-                            <cd:edge>
-                                <cd:from x="458752.806" y="4962535.049" z="141.215"></cd:from>
-                                <cd:to x="458752.831" y="4962537.007" z="141.402"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.724" y="4962533.394" z="141.09"></cd:from>
-                                <cd:to x="458752.734" y="4962533.926" z="141.129"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.734" y="4962533.926" z="141.129"></cd:from>
-                                <cd:to x="458752.792" y="4962533.925" z="141.134"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.792" y="4962533.925" z="141.134"></cd:from>
-                                <cd:to x="458752.806" y="4962535.049" z="141.215"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.724" y="4962533.394" z="138.099"></cd:from>
-                                <cd:to x="458752.724" y="4962533.394" z="141.09"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.831" y="4962537.007" z="141.402"></cd:from>
-                                <cd:to x="458752.831" y="4962537.007" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.734" y="4962533.926" z="138.099"></cd:from>
-                                <cd:to x="458752.724" y="4962533.394" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.831" y="4962537.007" z="138.099"></cd:from>
-                                <cd:to x="458752.792" y="4962533.925" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.792" y="4962533.925" z="138.099"></cd:from>
-                                <cd:to x="458752.734" y="4962533.926" z="138.099"></cd:to>
-                            </cd:edge>
-                        </cd:edges>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_S_NON_MANIFOLD_EDGE" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904763_0" feature_type="Geometry"></cd:feature>
-                    <cd:error_details>
+                        <cd:polygon gml_id="UUID_718623aa-eda6-563b-95c2-3515ce93e674">
+                            <cd:exterior_ring gml_id="UUID_869edceb-0c27-55e6-942c-78849df7afd8" type="EXTERIOR">
+                                <cd:vertex x="458761.854" y="4962527.645" z="147.402"></cd:vertex>
+                                <cd:vertex x="458762.059" y="4962527.641" z="147.402"></cd:vertex>
+                                <cd:vertex x="458762.117" y="4962530.79" z="149.247"></cd:vertex>
+                                <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
+                                <cd:vertex x="458758.68" y="4962530.815" z="149.247"></cd:vertex>
+                                <cd:vertex x="458761.254" y="4962528.252" z="147.753"></cd:vertex>
+                                <cd:vertex x="458761.854" y="4962527.645" z="147.402"></cd:vertex>
+                            </cd:exterior_ring>
+                        </cd:polygon>
                         <cd:geometry type="SOLID" lod="LOD2">
                             <cd:parent gml_id="CS1" type="BUILDING"></cd:parent>
                         </cd:geometry>
-                        <cd:edge>
-                            <cd:from x="458752.749" y="4962524.549" z="147.402"></cd:from>
-                            <cd:to x="458753.367" y="4962525.145" z="147.751"></cd:to>
-                        </cd:edge>
-                        <cd:edge>
-                            <cd:from x="458761.833" y="4962524.577" z="147.402"></cd:from>
-                            <cd:to x="458761.236" y="4962525.168" z="147.752"></cd:to>
-                        </cd:edge>
-                        <cd:edge>
-                            <cd:from x="458761.236" y="4962525.168" z="147.752"></cd:from>
-                            <cd:to x="458753.367" y="4962525.145" z="147.751"></cd:to>
-                        </cd:edge>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="SE_BS_UNFRAGMENTED" status="ERROR">
-                    <cd:feature gml_id="UUID_778ee73b-29fa-5f1c-8839-a0f42767df38" feature_type="BoundarySurface"></cd:feature>
-                    <cd:error_details>
-                        <cd:parameter name="angleDerivation">0.05567504970923848</cd:parameter>
-                        <cd:surface gml_id="UUID_778ee73b-29fa-5f1c-8839-a0f42767df38"></cd:surface>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_S_NOT_CLOSED" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904787_2" feature_type="Geometry"></cd:feature>
-                    <cd:error_details>
-                        <cd:geometry type="SOLID" lod="LOD2">
-                            <cd:parent gml_id="UUID_4a9691a0-985c-5245-9ac2-8ad61ece0965" type="BUILDING_PART"></cd:parent>
-                        </cd:geometry>
-                        <cd:edges name="open edges">
-                            <cd:edge>
-                                <cd:from x="458752.831" y="4962537.006" z="141.408"></cd:from>
-                                <cd:to x="458750.712" y="4962537.034" z="141.401"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458750.712" y="4962537.034" z="141.401"></cd:from>
-                                <cd:to x="458750.659" y="4962532.931" z="141.014"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458750.659" y="4962532.931" z="141.014"></cd:from>
-                                <cd:to x="458751.224" y="4962532.925" z="141.016"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458751.224" y="4962532.925" z="141.016"></cd:from>
-                                <cd:to x="458751.233" y="4962533.42" z="141.063"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458751.233" y="4962533.42" z="141.063"></cd:from>
-                                <cd:to x="458752.278" y="4962533.4" z="141.066"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.278" y="4962533.4" z="141.066"></cd:from>
-                                <cd:to x="458752.724" y="4962533.396" z="141.067"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.724" y="4962533.396" z="141.067"></cd:from>
-                                <cd:to x="458752.734" y="4962533.927" z="141.117"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.734" y="4962533.927" z="141.117"></cd:from>
-                                <cd:to x="458752.792" y="4962533.927" z="141.118"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.792" y="4962533.927" z="141.118"></cd:from>
-                                <cd:to x="458752.806" y="4962535.048" z="141.223"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.806" y="4962535.048" z="141.223"></cd:from>
-                                <cd:to x="458752.831" y="4962537.006" z="141.408"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.278" y="4962533.401" z="141.057"></cd:from>
-                                <cd:to x="458751.233" y="4962533.42" z="141.057"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.724" y="4962533.394" z="138.099"></cd:from>
-                                <cd:to x="458752.724" y="4962533.394" z="141.09"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.724" y="4962533.394" z="141.09"></cd:from>
-                                <cd:to x="458752.278" y="4962533.401" z="141.057"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458751.224" y="4962532.925" z="141.012"></cd:from>
-                                <cd:to x="458750.659" y="4962532.931" z="141.012"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458750.659" y="4962532.931" z="141.012"></cd:from>
-                                <cd:to x="458750.712" y="4962537.034" z="141.402"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458750.712" y="4962537.034" z="141.402"></cd:from>
-                                <cd:to x="458752.831" y="4962537.007" z="141.402"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.831" y="4962537.007" z="141.402"></cd:from>
-                                <cd:to x="458752.831" y="4962537.007" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458751.233" y="4962533.42" z="141.057"></cd:from>
-                                <cd:to x="458751.224" y="4962532.925" z="141.012"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.734" y="4962533.926" z="138.099"></cd:from>
-                                <cd:to x="458752.724" y="4962533.394" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.831" y="4962537.007" z="138.099"></cd:from>
-                                <cd:to x="458752.792" y="4962533.925" z="138.099"></cd:to>
-                            </cd:edge>
-                            <cd:edge>
-                                <cd:from x="458752.792" y="4962533.925" z="138.099"></cd:from>
-                                <cd:to x="458752.734" y="4962533.926" z="138.099"></cd:to>
-                            </cd:edge>
-                        </cd:edges>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
-                    <cd:feature gml_id="UUID_ebd078dd-1049-4a5d-bfa0-64681a22646a" feature_type="Polygon"></cd:feature>
-                    <cd:error_details>
-                        <cd:polygon gml_id="UUID_ebd078dd-1049-4a5d-bfa0-64681a22646a">
-                            <cd:exterior_ring gml_id="UUID_6f49c518-0b7b-4386-8fb6-02f5681a8971" type="EXTERIOR">
-                                <cd:vertex x="458752.621" y="4962527.739" z="147.402"></cd:vertex>
-                                <cd:vertex x="458752.678" y="4962530.838" z="149.247"></cd:vertex>
-                                <cd:vertex x="458752.734" y="4962533.926" z="147.402"></cd:vertex>
-                                <cd:vertex x="458752.734" y="4962533.926" z="141.129"></cd:vertex>
-                                <cd:vertex x="458752.724" y="4962533.394" z="141.09"></cd:vertex>
-                                <cd:vertex x="458752.724" y="4962533.394" z="138.099"></cd:vertex>
-                                <cd:vertex x="458752.621" y="4962527.739" z="138.099"></cd:vertex>
-                                <cd:vertex x="458752.621" y="4962527.739" z="147.402"></cd:vertex>
-                            </cd:exterior_ring>
-                            <cd:interior_rings>
-                                <cd:ring gml_id="UUID_5f05fc46-2dc4-455d-802a-53799437cd8a" type="INTERIOR">
-                                    <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
-                                    <cd:vertex x="458752.645" y="4962529.038" z="141.535"></cd:vertex>
-                                    <cd:vertex x="458752.662" y="4962529.96" z="141.535"></cd:vertex>
-                                    <cd:vertex x="458752.662" y="4962529.96" z="140.618"></cd:vertex>
-                                    <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_6b45c547-4ec6-43f4-a957-2452415aea23" type="INTERIOR">
-                                    <cd:vertex x="458752.645" y="4962529.038" z="144.425"></cd:vertex>
-                                    <cd:vertex x="458752.662" y="4962529.96" z="144.425"></cd:vertex>
-                                    <cd:vertex x="458752.662" y="4962529.96" z="143.085"></cd:vertex>
-                                    <cd:vertex x="458752.645" y="4962529.038" z="143.085"></cd:vertex>
-                                    <cd:vertex x="458752.645" y="4962529.038" z="144.425"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_6a8cba80-a139-4e4f-9e3a-ae476225a999" type="INTERIOR">
-                                    <cd:vertex x="458752.681" y="4962531.019" z="147.828"></cd:vertex>
-                                    <cd:vertex x="458752.706" y="4962532.38" z="147.828"></cd:vertex>
-                                    <cd:vertex x="458752.706" y="4962532.38" z="146.625"></cd:vertex>
-                                    <cd:vertex x="458752.681" y="4962531.019" z="146.625"></cd:vertex>
-                                    <cd:vertex x="458752.681" y="4962531.019" z="147.828"></cd:vertex>
-                                </cd:ring>
-                            </cd:interior_rings>
-                        </cd:polygon>
-                        <cd:ring gml_id="UUID_5f05fc46-2dc4-455d-802a-53799437cd8a" type="INTERIOR">
-                            <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
-                            <cd:vertex x="458752.645" y="4962529.038" z="141.535"></cd:vertex>
-                            <cd:vertex x="458752.662" y="4962529.96" z="141.535"></cd:vertex>
-                            <cd:vertex x="458752.662" y="4962529.96" z="140.618"></cd:vertex>
-                            <cd:vertex x="458752.645" y="4962529.038" z="140.618"></cd:vertex>
-                        </cd:ring>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_S_MULTIPLE_CONNECTED_COMPONENTS" status="ERROR">
-                    <cd:feature gml_id="CityDoctor_1785015904763_0" feature_type="Geometry"></cd:feature>
-                    <cd:error_details>
-                        <cd:geometry type="SOLID" lod="LOD2">
-                            <cd:parent gml_id="CS1" type="BUILDING"></cd:parent>
-                        </cd:geometry>
-                        <cd:polygons name="component nr: 1">
-                            <cd:polygon gml_id="UUID_871061f3-e899-5a54-a599-47c774f8e57c"></cd:polygon>
-                            <cd:polygon gml_id="UUID_4efa53d6-a474-5223-8b77-3e53f1c890b8"></cd:polygon>
-                        </cd:polygons>
-                        <cd:polygons name="component nr: 2">
-                            <cd:polygon gml_id="UUID_af9b635c-d21b-5e7c-8b36-b5e4734ab58b"></cd:polygon>
-                            <cd:polygon gml_id="UUID_12a95bc0-e321-542c-a88d-9648c652574d"></cd:polygon>
-                            <cd:polygon gml_id="UUID_5fcc6c11-e274-5b57-a42e-784c9be9b398"></cd:polygon>
-                            <cd:polygon gml_id="UUID_22989ffe-a9c8-5347-8b91-574597432ac8"></cd:polygon>
-                            <cd:polygon gml_id="UUID_989e51b6-ab43-5744-a07a-b7775a9f3408"></cd:polygon>
-                            <cd:polygon gml_id="UUID_48a9ecd4-5498-5d2f-a49f-7e79b5f930ec"></cd:polygon>
-                            <cd:polygon gml_id="UUID_98c76b18-6a7f-5d37-890c-891609cf2b26"></cd:polygon>
-                            <cd:polygon gml_id="UUID_ce8eab25-58f9-572a-9994-2de0448e52b9"></cd:polygon>
-                            <cd:polygon gml_id="UUID_035ea7fc-3116-5328-a6a0-704a8207f7cb"></cd:polygon>
-                            <cd:polygon gml_id="UUID_82da8112-72ab-506a-90ef-dc8298145285"></cd:polygon>
-                            <cd:polygon gml_id="UUID_0bc60956-df32-5177-b662-a5f9f5e7adf9"></cd:polygon>
-                            <cd:polygon gml_id="UUID_42129454-a44e-528b-b321-5eaa5a71bf9f"></cd:polygon>
-                            <cd:polygon gml_id="UUID_73f709c0-6117-5ee6-a2c9-c40f8f11709a"></cd:polygon>
-                            <cd:polygon gml_id="UUID_089c024d-a73e-56e6-abfd-784a0bb498a5"></cd:polygon>
-                            <cd:polygon gml_id="UUID_eb3964c0-3669-50d3-a815-ada19ec75c8a"></cd:polygon>
-                            <cd:polygon gml_id="UUID_9c2416da-4b48-5426-bc7e-83331792e0dc"></cd:polygon>
-                            <cd:polygon gml_id="UUID_14c45c1e-a9e0-5b57-a058-be005f71a880"></cd:polygon>
-                            <cd:polygon gml_id="UUID_574522a5-6d36-520f-9f5f-b65dc4023265"></cd:polygon>
-                            <cd:polygon gml_id="UUID_f5328ecc-c598-5191-aa34-334b958bc934"></cd:polygon>
-                            <cd:polygon gml_id="UUID_e8410677-129d-50fb-af8a-5b37bb928830"></cd:polygon>
-                            <cd:polygon gml_id="UUID_bb9c3d9c-d82e-5bfe-8089-09579c86a210"></cd:polygon>
-                            <cd:polygon gml_id="UUID_0e4d77a2-c80e-5dc8-b4f4-ac359f797aad"></cd:polygon>
-                            <cd:polygon gml_id="UUID_6312c1ec-aed0-53dc-8b0c-713653edfb0b"></cd:polygon>
-                            <cd:polygon gml_id="UUID_57bf1a76-8152-5149-9715-b7f3fbe8a45c"></cd:polygon>
-                            <cd:polygon gml_id="UUID_b591c46d-6150-54b7-94e9-d27908d0f433"></cd:polygon>
-                            <cd:polygon gml_id="UUID_ad690498-f44f-5b67-b883-96215bc7eff8"></cd:polygon>
-                            <cd:polygon gml_id="UUID_718623aa-eda6-563b-95c2-3515ce93e674"></cd:polygon>
-                            <cd:polygon gml_id="UUID_22ccc9a7-f71d-5588-97de-913f2c35ae24"></cd:polygon>
-                            <cd:polygon gml_id="UUID_46d96ae6-7102-5171-899d-af969630807c"></cd:polygon>
-                            <cd:polygon gml_id="UUID_c1033a04-42ba-54e8-b8a7-2ca49afda780"></cd:polygon>
-                            <cd:polygon gml_id="UUID_951cf62a-7f13-5384-9dcb-1ac5cc090dc4"></cd:polygon>
-                            <cd:polygon gml_id="UUID_576c7c98-de3d-5c20-89b2-422f4615f034"></cd:polygon>
-                            <cd:polygon gml_id="UUID_c4f0c86f-f09c-5534-9d21-6965c85cd026"></cd:polygon>
-                            <cd:polygon gml_id="UUID_58e20b29-9498-5a8f-888b-a3202fe0afa7"></cd:polygon>
-                            <cd:polygon gml_id="UUID_2348daea-b94e-5dc4-bfe7-49792672db85"></cd:polygon>
-                            <cd:polygon gml_id="UUID_1383597c-0fcb-54a1-b53c-f8b2f4e3188d"></cd:polygon>
-                            <cd:polygon gml_id="UUID_9f8aaec0-c78c-5d81-8357-9cdb3997af8c"></cd:polygon>
-                            <cd:polygon gml_id="UUID_9e1cd10a-340f-5cd9-89a2-a5988d475a37"></cd:polygon>
-                            <cd:polygon gml_id="UUID_fd417d08-1d4b-5c1b-9997-989ad8ccc2df"></cd:polygon>
-                            <cd:polygon gml_id="UUID_25bab437-49d3-5d04-8e30-c787eebe1a19"></cd:polygon>
-                        </cd:polygons>
-                    </cd:error_details>
-                </cd:error>
-                <cd:error id="GE_P_ORIENTATION_RINGS_SAME" status="ERROR">
-                    <cd:feature gml_id="UUID_e1487983-893b-4962-b640-f95b96d57054" feature_type="Polygon"></cd:feature>
-                    <cd:error_details>
-                        <cd:polygon gml_id="UUID_e1487983-893b-4962-b640-f95b96d57054">
-                            <cd:exterior_ring gml_id="UUID_bd89900e-c59a-49a0-9726-260e0b510d5f" type="EXTERIOR">
-                                <cd:vertex x="458761.358" y="4962537.017" z="147.749"></cd:vertex>
-                                <cd:vertex x="458761.33" y="4962536.99" z="147.765"></cd:vertex>
-                                <cd:vertex x="458757.4" y="4962533.153" z="150.02"></cd:vertex>
-                                <cd:vertex x="458757.401" y="4962532.647" z="150.017"></cd:vertex>
-                                <cd:vertex x="458757.404" y="4962531.923" z="150.012"></cd:vertex>
-                                <cd:vertex x="458757.39" y="4962528.924" z="150.006"></cd:vertex>
-                                <cd:vertex x="458761.238" y="4962525.171" z="147.762"></cd:vertex>
-                                <cd:vertex x="458761.843" y="4962525.173" z="147.412"></cd:vertex>
-                                <cd:vertex x="458761.861" y="4962527.645" z="147.414"></cd:vertex>
-                                <cd:vertex x="458761.26" y="4962528.252" z="147.764"></cd:vertex>
-                                <cd:vertex x="458758.689" y="4962530.815" z="149.263"></cd:vertex>
-                                <cd:vertex x="458761.394" y="4962533.459" z="147.711"></cd:vertex>
-                                <cd:vertex x="458761.91" y="4962533.964" z="147.415"></cd:vertex>
-                                <cd:vertex x="458761.958" y="4962536.989" z="147.402"></cd:vertex>
-                                <cd:vertex x="458761.967" y="4962537.615" z="147.399"></cd:vertex>
-                                <cd:vertex x="458761.358" y="4962537.017" z="147.749"></cd:vertex>
-                            </cd:exterior_ring>
-                            <cd:interior_rings>
-                                <cd:ring gml_id="UUID_ff3e23c3-5825-4a4d-b797-f9809ceb258e" type="INTERIOR">
-                                    <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
-                                    <cd:vertex x="458760.955" y="4962527.23" z="147.936"></cd:vertex>
-                                    <cd:vertex x="458760.964" y="4962528.059" z="147.934"></cd:vertex>
-                                    <cd:vertex x="458759.693" y="4962528.067" z="148.669"></cd:vertex>
-                                    <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
-                                </cd:ring>
-                                <cd:ring gml_id="UUID_e853a340-c1fc-4773-97ed-84120e5462a8" type="INTERIOR">
-                                    <cd:vertex x="458759.719" y="4962534.952" z="148.687"></cd:vertex>
-                                    <cd:vertex x="458759.71" y="4962534.172" z="148.689"></cd:vertex>
-                                    <cd:vertex x="458760.962" y="4962534.148" z="147.965"></cd:vertex>
-                                    <cd:vertex x="458760.97" y="4962534.929" z="147.964"></cd:vertex>
-                                    <cd:vertex x="458759.719" y="4962534.952" z="148.687"></cd:vertex>
-                                </cd:ring>
-                            </cd:interior_rings>
-                        </cd:polygon>
-                        <cd:ring gml_id="UUID_ff3e23c3-5825-4a4d-b797-f9809ceb258e" type="INTERIOR">
-                            <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
-                            <cd:vertex x="458760.955" y="4962527.23" z="147.936"></cd:vertex>
-                            <cd:vertex x="458760.964" y="4962528.059" z="147.934"></cd:vertex>
-                            <cd:vertex x="458759.693" y="4962528.067" z="148.669"></cd:vertex>
-                            <cd:vertex x="458759.684" y="4962527.238" z="148.671"></cd:vertex>
-                        </cd:ring>
+                        <cd:vertex x="458761.745" y="4962530.793" z="149.247"></cd:vertex>
+                        <cd:parameter name="component nr: ">0</cd:parameter>
+                        <cd:parameter name="component nr: ">1</cd:parameter>
                     </cd:error_details>
                 </cd:error>
             </cd:errors>

@@ -12,7 +12,8 @@
 			</gen:stringAttribute>
 			<bldg:outerBuildingInstallation>
 				<bldg:BuildingInstallation gml:id="CS1_installation_0001">
-					<gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute><bldg:function>1030</bldg:function><bldg:boundedBy>
+					<gen:stringAttribute name="type"><gen:value>chimney</gen:value></gen:stringAttribute><bldg:function>1030</bldg:function><bldg:lod3Geometry><gml:MultiSurface><gml:surfaceMember xlink:href="#UUID_64f80573-7e17-416c-89bc-a3a6f0fe8394"/><gml:surfaceMember xlink:href="#UUID_b63e3821-8b80-46d8-9051-d67873d3b250"/><gml:surfaceMember xlink:href="#UUID_2cbf6f7f-31b7-41bd-8bfc-85d1678bbeea"/><gml:surfaceMember xlink:href="#UUID_17ab3950-784d-45cd-938c-2fbfd33780fa"/><gml:surfaceMember xlink:href="#UUID_f10338c3-2069-45db-8147-cc2231ed6427"/></gml:MultiSurface></bldg:lod3Geometry>
+					<bldg:boundedBy>
 						<bldg:RoofSurface gml:id="CS1_roof_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
@@ -33,7 +34,7 @@
 							</bldg:lod3MultiSurface>
 						</bldg:RoofSurface>
 					</bldg:boundedBy>
-					<bldg:boundedBy>
+				<bldg:boundedBy>
 						<bldg:WallSurface gml:id="CS1_wall_0001">
 							<bldg:lod3MultiSurface>
 								<gml:MultiSurface>
@@ -93,12 +94,12 @@
 								</gml:MultiSurface>
 							</bldg:lod3MultiSurface>
 						</bldg:WallSurface>
-					</bldg:boundedBy>
-				<bldg:lod3Geometry><gml:MultiSurface><gml:surfaceMember xlink:href="#UUID_64f80573-7e17-416c-89bc-a3a6f0fe8394"/><gml:surfaceMember xlink:href="#UUID_b63e3821-8b80-46d8-9051-d67873d3b250"/><gml:surfaceMember xlink:href="#UUID_2cbf6f7f-31b7-41bd-8bfc-85d1678bbeea"/><gml:surfaceMember xlink:href="#UUID_17ab3950-784d-45cd-938c-2fbfd33780fa"/><gml:surfaceMember xlink:href="#UUID_f10338c3-2069-45db-8147-cc2231ed6427"/></gml:MultiSurface></bldg:lod3Geometry></bldg:BuildingInstallation>
+					</bldg:boundedBy></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:outerBuildingInstallation>
 				<bldg:BuildingInstallation gml:id="CS1_installation_0002">
-					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:lod3Geometry>
+					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:function>1000</bldg:function>
+				<bldg:lod3Geometry>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="UUID_759ca8ea-0d2a-47a5-af10-c5b1b20184d3">
@@ -237,8 +238,7 @@
 								</gml:Polygon>
 							</gml:surfaceMember>
 						</gml:MultiSurface>
-					</bldg:lod3Geometry>
-				<bldg:function>1000</bldg:function></bldg:BuildingInstallation>
+					</bldg:lod3Geometry></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:boundedBy>
 				<bldg:RoofSurface gml:id="CS1_roof_0002">

@@ -445,6 +445,14 @@ annotations. So the bridge is validate-and-report, not auto-heal.
   `lod3Geometry` aggregation, eave-height-based balcony/chimney classification.
 - Native CityJSON 1.1 writer.
 - CityDoctor2 external validation bridge.
+- XML schema validation against the bundled official CityGML 2.0 schemas
+  (`schema.py`, `validate --schema-only`), offline through an lxml resolver
+  that maps the schema URLs onto the local copies, network access disabled.
+  The test suite checks every committed fixture and the output of every
+  writing command against it. Writing commands finish with
+  `citygml.sort_building_properties`, which puts the `bldg:` properties of
+  each feature into the order building.xsd prescribes, moving only those
+  elements among the positions they already hold.
 
 ### Planned
 
@@ -476,10 +484,6 @@ annotations. So the bridge is validate-and-report, not auto-heal.
 - **Geometric healing**: an optional pass to make LOD2 itself watertight
   (T-junction resolution, soffit closing), rather than relying on LOD1 as the
   only guaranteed-closed output.
-- **Schema validation**: check input and CitySmith's own output against the
-  CityGML 2.0 XML schemas (`validate --schema`, lxml with bundled XSDs).
-  CityDoctor2 checks geometry and semantics, but nothing currently confirms
-  that written files are schema-valid.
 - **LOD1 guard for fragmented ground surfaces**: a real LOD3 building with
   110,096 thin, non-coplanar ground strips currently gets one prism per
   strip, because the footprint union refuses and the fallback keeps every

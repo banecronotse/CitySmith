@@ -44,7 +44,7 @@ produces those from what you already have.
 | `lod` | Derive and embed lower LODs: LOD1 block and LOD0 footprint from LOD3 or LOD2 data, a clean LOD2 shell from LOD3 | done |
 | `semantics` | Fill missing ids, `function`, `type` attributes and `lod3Geometry` aggregates per a rulebook (needs LOD3) | easy tier done |
 | `convert` | Emit CityJSON 1.1 (validated through cjio, upgrades cleanly to 2.0) | done |
-| `validate` | Native watertightness report, plus a bridge to the CityDoctor2 external validator | done |
+| `validate` | Built-in check against the official CityGML 2.0 XML schemas, native watertightness report, plus a bridge to the CityDoctor2 external validator | done |
 
 ## Scope
 
@@ -136,7 +136,10 @@ citysmith semantics city_lod3.gml -o city_sem.gml --report sem.json
 # Export to CityJSON 1.1
 citysmith convert city_multiLOD.gml -o city.city.json
 
-# Validate with CityDoctor2 (needs a separate download, see Validation below)
+# Check the XML against the official CityGML 2.0 schemas (built in, offline, no Java)
+citysmith validate city_lod3.gml --schema-only
+
+# Schema check, then CityDoctor2 (needs a separate download, see Validation below)
 citysmith validate city_lod3.gml --citydoctor-home /path/to/CityDoctorValidation-3.18.3
 
 # ...and optionally render a human-readable PDF report alongside the XML one
@@ -404,6 +407,30 @@ every building rather than guaranteeing it. If you need a guaranteed-closed
 solid, LOD1 (extruded from the footprint) is watertight by construction; a
 guaranteed-closed LOD2 would need geometric healing, which is out of scope for
 this tool (see Validation below).
+
+### Validation: XML schema check
+
+`citysmith validate` first checks the file against the official CityGML 2.0
+XML schemas: which elements may appear where, in which order, with which
+content. This catches files that other software may reject or read only
+partly, even when the geometry is fine. It is built in and works offline:
+the official schemas (CityGML 2.0, GML 3.1.1, xLink, xAL) ship with CitySmith
+unmodified, see [their notice](src/citysmith/data/schemas/NOTICE.md). No Java
+is needed for this part; `--schema-only` stops here.
+
+Errors are listed once per position, with line and column. Content from
+extensions (ADEs) needs its own schema: local ones named in the file's
+`xsi:schemaLocation` are picked up automatically, others can be given with
+`--schema-file ade.xsd`; namespaces without a schema are listed rather than
+fetched from the internet. Only CityGML 2.0 is checked; for 1.0 and 3.0 use
+[citygml-tools](https://github.com/citygml4j/citygml-tools)' `validate`,
+whose approach this follows.
+
+Every file CitySmith writes is checked this way in its test suite. Files
+written by CitySmith before this check existed could contain elements in a
+non-schema order (new LODs after the boundary surfaces, `lod3Geometry` after
+an installation's boundary surfaces); running them through any CitySmith
+command again puts them in order.
 
 ### Validation: bridging to CityDoctor2
 

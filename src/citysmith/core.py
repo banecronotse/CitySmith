@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from lxml import etree
 
 from .citygml import (BLDG, GML, XLINK, BOUNDARY_LOCALNAMES, ID_REQUIRED_LOCALNAMES,
-                       gml_id, href_target, localname, q)
+                       gml_id, href_target, localname, q, sort_building_properties)
 from .geometry import (_point_in_polygon_2d, cluster_coplanar_rings, extrude_prism,
                        parse_pos_list, polygon_area_2d, shell_stats,
                        union_coplanar_polygons)
@@ -940,6 +940,9 @@ def enhance(input_path: str, output_path: str, *, levels=(2,), keep_source: bool
     if not keep_source:
         _flag_empty_features(root, report)
 
+    # New LODs are inserted next to the source geometry; the schema wants
+    # them in a fixed order (LOD0, LOD1, LOD2, boundary surfaces, LOD3).
+    sort_building_properties(root)
     tree.write(output_path, xml_declaration=True, encoding="utf-8")
     return report
 

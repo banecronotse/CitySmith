@@ -81,6 +81,9 @@ benchmark of 27 LoD3 buildings.
   texture handling. Both have a `merge` command; CitySmith's stops on
   different coordinate reference systems and reports duplicate buildings,
   while citygml-tools streams very large inputs and copies textures along.
+  CitySmith's schema check follows citygml-tools' `validate`: official
+  schemas built in, extension schemas added on request, each error reported
+  once per position. citygml-tools also checks CityGML 1.0 and 3.0.
 - [CityDoctor2](https://github.com/CityDoctor/CityDoctor2) validates CityGML.
   CitySmith calls it and reports its findings without changing the data.
 

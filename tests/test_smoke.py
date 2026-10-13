@@ -873,3 +873,138 @@ def test_cli_merge_expands_wildcards_itself(tmp_path):
     assert _expand_inputs([str(tmp_path / "part_*.gml")]) == [
         str(tmp_path / "part_a.gml"), str(tmp_path / "part_b.gml")]
     assert _expand_inputs(["missing_*.gml"]) == ["missing_*.gml"]
+
+
+# --- XML schema validation -------------------------------------------------------
+
+TESTS = Path(__file__).parent
+
+
+@pytest.mark.parametrize("fixture", sorted(
+    str(p.relative_to(TESTS)) for p in TESTS.rglob("*.gml")))
+def test_every_committed_fixture_is_schema_valid(fixture):
+    from citysmith.schema import validate_schema
+    report = validate_schema(str(TESTS / fixture))
+    assert report.checked and report.citygml_version == "2.0"
+    assert report.valid, report.messages[:3]
+
+
+def _schema_ok(path):
+    from citysmith.schema import validate_schema
+    report = validate_schema(str(path))
+    assert report.valid, report.messages[:3]
+
+
+@pytest.mark.parametrize("levels,keep_source,height", [
+    ((0,), False, "average"), ((1,), False, "eave"), ((2,), True, "average"),
+    ((2,), False, "average"), ((0, 1, 2), True, "ridge"), ((1,), True, "measured"),
+])
+def test_lod_output_is_schema_valid(tmp_path, levels, keep_source, height):
+    """Every LOD combination CitySmith writes must be valid CityGML 2.0:
+    the new LODs have a fixed place in the schema's element order."""
+    out = tmp_path / "out.gml"
+    citysmith.enhance(str(DATA), str(out), levels=levels, keep_source=keep_source,
+                      lod1_height=height)
+    _schema_ok(out)
+
+
+@pytest.mark.parametrize("flags", [{}, {"add_ids": False}, {"classify": False},
+                                   {"aggregate": False}])
+def test_semantics_output_is_schema_valid(tmp_path, flags):
+    from citysmith.semantics import enhance_semantics
+    out = tmp_path / "sem.gml"
+    enhance_semantics(str(DATA), str(out), **flags)
+    _schema_ok(out)
+
+
+def test_full_pipeline_output_is_schema_valid(tmp_path):
+    """semantics, then lod, then crop and merge: the order the README uses."""
+    from citysmith.semantics import enhance_semantics
+    from citysmith.crop import crop
+    from citysmith.merge import merge
+    sem, multi = tmp_path / "sem.gml", tmp_path / "multi.gml"
+    enhance_semantics(str(DATA), str(sem))
+    citysmith.enhance(str(sem), str(multi), levels=(0, 1, 2))
+    _schema_ok(multi)
+    cropped = tmp_path / "crop.gml"
+    crop(str(multi), str(cropped), ["CS1"])
+    _schema_ok(cropped)
+    merged = tmp_path / "merged.gml"
+    # Same building twice, kept under renamed ids: exercises id renaming too.
+    merge([str(cropped), str(TESTS / "lod" / "CS1_lod2.gml")], str(merged),
+          on_duplicate_id="rename")
+    _schema_ok(merged)
+
+
+def test_schema_order_fix_moves_only_building_properties(tmp_path):
+    """An lod2Solid placed after the boundary surfaces is moved before them;
+    generic attributes and the rest of the file stay where they are."""
+    from citysmith.citygml import sort_building_properties
+    src = _write_gml(tmp_path, "o.gml", (
+        '<cityObjectMember><bldg:Building gml:id="B">'
+        '<bldg:function>1000</bldg:function>'
+        + _surface("GroundSurface", "g", [_poly("ga", _square(0, 0, 5, 0.0))])
+        + '<bldg:lod2Solid/><bldg:lod1Solid/></bldg:Building></cityObjectMember>'))
+    root = etree.parse(str(src)).getroot()
+    assert sort_building_properties(root) == 1
+    building = root.find(f".//{q(BLDG, 'Building')}")
+    assert [etree.QName(c).localname for c in building] == [
+        "function", "lod1Solid", "lod2Solid", "boundedBy"]
+    assert sort_building_properties(root) == 0  # already in order: untouched
+
+
+def test_schema_errors_reported_with_line_numbers(tmp_path):
+    from citysmith.schema import validate_schema
+    bad = _write_gml(tmp_path, "bad.gml", (
+        '<cityObjectMember><bldg:Building gml:id="B">\n'
+        + _surface("GroundSurface", "g", [_poly("ga", _square(0, 0, 5, 0.0))])
+        + '\n<bldg:function>1000</bldg:function>\n'
+        '<bldg:notAProperty/></bldg:Building></cityObjectMember>'))
+    report = validate_schema(str(bad))
+    assert report.checked and not report.valid
+    assert report.error_count >= 1
+    assert all(m["line"] > 0 for m in report.messages)
+    assert "function" in report.messages[0]["message"]
+
+
+def test_schema_unknown_namespace_reported_not_fatal(tmp_path):
+    from citysmith.schema import validate_schema
+    path = tmp_path / "ade.gml"
+    path.write_text(
+        _GML_HEAD.replace('xmlns:bldg=', 'xmlns:x="urn:example:ade" xmlns:bldg=')
+        + '<cityObjectMember><bldg:Building gml:id="B"><x:energy>5</x:energy>'
+        '</bldg:Building></cityObjectMember></CityModel>', encoding="utf-8")
+    report = validate_schema(str(path))
+    assert report.unknown_namespaces == ["urn:example:ade"]
+    assert not report.valid
+    assert "--schema-file" in report.note
+
+
+def test_schema_other_citygml_version_not_checked(tmp_path):
+    from citysmith.schema import validate_schema
+    path = tmp_path / "v1.gml"
+    path.write_text('<CityModel xmlns="http://www.opengis.net/citygml/1.0"/>',
+                    encoding="utf-8")
+    report = validate_schema(str(path))
+    assert report.citygml_version == "1.0"
+    assert not report.checked
+    assert "only CityGML 2.0" in report.note
+
+
+def test_schema_not_well_formed_reported(tmp_path):
+    from citysmith.schema import validate_schema
+    path = tmp_path / "broken.gml"
+    path.write_text("<CityModel><unclosed></CityModel>", encoding="utf-8")
+    report = validate_schema(str(path))
+    assert report.checked and not report.valid
+    assert "not well-formed" in report.messages[0]["message"]
+
+
+def test_cli_validate_schema_only_needs_no_citydoctor(tmp_path, monkeypatch, capsys):
+    from citysmith.cli import main
+    monkeypatch.delenv("CITYSMITH_CITYDOCTOR_HOME", raising=False)
+    report = tmp_path / "r.json"
+    assert main(["validate", str(DATA), "--schema-only", "--report", str(report)]) == 0
+    assert "schema              : valid" in capsys.readouterr().out
+    import json
+    assert json.loads(report.read_text())["schema"]["valid"] is True

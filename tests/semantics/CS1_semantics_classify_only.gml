@@ -98,7 +98,8 @@
 			</bldg:outerBuildingInstallation>
 			<bldg:outerBuildingInstallation>
 				<bldg:BuildingInstallation gml:id="CS1_installation_0002">
-					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:lod3Geometry>
+					<gen:stringAttribute name="type"><gen:value>balcony</gen:value></gen:stringAttribute><bldg:function>1000</bldg:function>
+				<bldg:lod3Geometry>
 						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="UUID_759ca8ea-0d2a-47a5-af10-c5b1b20184d3">
@@ -237,8 +238,7 @@
 								</gml:Polygon>
 							</gml:surfaceMember>
 						</gml:MultiSurface>
-					</bldg:lod3Geometry>
-				<bldg:function>1000</bldg:function></bldg:BuildingInstallation>
+					</bldg:lod3Geometry></bldg:BuildingInstallation>
 			</bldg:outerBuildingInstallation>
 			<bldg:boundedBy>
 				<bldg:RoofSurface>

@@ -8,7 +8,8 @@ Subcommands:
   lod        derive and embed lower LODs (LOD0/1/2) from an LOD3 or LOD2 source
   semantics  apply the easy-tier semantic fixes (ids, function, type, aggregate)
   convert    export CityGML to CityJSON 1.1
-  validate   run the CityDoctor2 external validator and report the results
+  validate   check the XML against the CityGML 2.0 schemas, then run the
+             CityDoctor2 external validator and report the results
 """
 
 import argparse
@@ -23,6 +24,7 @@ from .merge import merge as merge_sources, MergeError
 from .semantics import enhance_semantics
 from .cityjson import convert
 from .citydoctor import validate, CityDoctorNotFound, CityDoctorError
+from .schema import validate_schema, SchemaError
 
 
 def _default_out(path, suffix, ext=None):
@@ -297,14 +299,48 @@ def _cmd_convert(args) -> int:
 
 # --- validate ------------------------------------------------------------------
 
+def _print_schema_report(sr) -> None:
+    if not sr.checked:
+        print(f"schema              : not checked ({sr.note})")
+        return
+    if sr.valid:
+        print("schema              : valid (CityGML 2.0)")
+    else:
+        print(f"schema              : INVALID, {sr.error_count} error(s)")
+        for m in sr.messages[:10]:
+            print(f"    line {m['line']}, col {m['column']}: {m['message']}")
+        if sr.error_count > 10:
+            print(f"    ... and {sr.error_count - 10} more (all of them in --report)")
+    if sr.unknown_namespaces:
+        print("  namespaces without a schema (extensions, give one with --schema-file):")
+        for ns in sr.unknown_namespaces:
+            print(f"    {ns}")
+    if sr.note and sr.checked:
+        print(f"  note: {sr.note}")
+
+
 def _cmd_validate(args) -> int:
     print(f"reading  : {args.input}")
+    try:
+        sr = validate_schema(args.input, extra_schemas=args.schema_file)
+    except SchemaError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    _print_schema_report(sr)
+    schema_failed = sr.checked and not sr.valid
+    if args.schema_only:
+        if args.report:
+            _write_report(args.report, {"schema": sr.to_dict()})
+        return 1 if schema_failed else 0
+
     try:
         report = validate(args.input, citydoctor_home=args.citydoctor_home,
                           config_path=args.config, timeout=args.timeout,
                           pdf_path=args.pdf)
     except CityDoctorNotFound as exc:
         print(f"error: {exc}", file=sys.stderr)
+        print("(the schema check above ran anyway; use --schema-only to skip CityDoctor2)",
+              file=sys.stderr)
         return 2
     except CityDoctorError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -321,8 +357,10 @@ def _cmd_validate(args) -> int:
         for name, count in sorted(report.error_counts.items(), key=lambda kv: -kv[1]):
             print(f"    {name:44}: {count}")
     if args.report:
-        _write_report(args.report, report.to_dict())
-    return 0 if report.num_error_buildings == 0 else 1
+        # CityDoctor2 keys stay at the top level as before; the schema result
+        # is added alongside.
+        _write_report(args.report, {**report.to_dict(), "schema": sr.to_dict()})
+    return 0 if report.num_error_buildings == 0 and not schema_failed else 1
 
 
 # Every subcommand's --help ends with a runnable example, on the theory that
@@ -464,10 +502,25 @@ def build_parser() -> argparse.ArgumentParser:
     conv.set_defaults(func=_cmd_convert)
 
     val = _sub(sub, "validate",
-               help="run the CityDoctor2 external validator",
-               epilog="example:\n"
+               help="check XML structure against the CityGML 2.0 schemas, then run "
+                    "the CityDoctor2 external validator",
+               description="Two checks, in this order:\n"
+                           "  1) schema: is the file valid XML for CityGML 2.0 (which elements,\n"
+                           "     in which order)? Built in, offline, no Java needed; the\n"
+                           "     official schemas ship with CitySmith.\n"
+                           "  2) CityDoctor2: geometry and semantics (closed solids, planarity,\n"
+                           "     ring orientation, ...). Needs a separate CityDoctor2 download.\n"
+                           "Use --schema-only to run just the first.",
+               epilog="examples:\n"
+                      "  citysmith validate city.gml --schema-only\n"
                       "  citysmith validate city.gml --pdf report.pdf --report report.json")
     val.add_argument("input", help="CityGML file to validate")
+    val.add_argument("--schema-only", action="store_true",
+                     help="only check against the CityGML 2.0 schemas, skip CityDoctor2")
+    val.add_argument("--schema-file", action="append", default=[], metavar="XSD",
+                     help="extra XML schema for extension (ADE) content in the file; "
+                          "repeatable. Local ADE schemas named in the file itself are "
+                          "found automatically")
     val.add_argument("--citydoctor-home", help="path to an unzipped CityDoctor2 release "
                      "(or set CITYSMITH_CITYDOCTOR_HOME)")
     val.add_argument("--config", help="CityDoctor2 validation plan YAML (default: bundled)")

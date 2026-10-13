@@ -23,6 +23,10 @@ own `README.md` with the exact command and effect of every file in it.
 - [`convert/`](convert/README.md): export to CityJSON 1.1.
 - [`validate/`](validate/README.md): run the CityDoctor2 external validator.
 
+Every `.gml` file in this folder is also checked against the official
+CityGML 2.0 XML schemas by the test suite, and so is the output of every
+writing command, so a change that breaks the XML structure fails the tests.
+
 `crop` (extract a named subset of buildings by `gml:id`) and `merge`
 (combine several files into one) don't have a folder here yet; their tests
 build small synthetic files on the fly.
