@@ -56,6 +56,21 @@ _ID_NAMESPACE = uuid.UUID("1b9d6bcd-0c6f-5a1e-9d0a-10b0c0ffee00")
 # docs/DESIGN.md, LOD1 section.
 LOD1_MIN_PIECE_AREA = 10.0
 
+# `--lod1-height measured`: a bldg:measuredHeight that differs from the
+# geometry's own height (Max. Ridge minus Min. Relief) by more than this many
+# metres, or this share of the geometric height if larger, is reported as a
+# mismatch. It is still used: the user asked for the stored value.
+LOD1_MEASURED_TOLERANCE_M = 1.0
+LOD1_MEASURED_TOLERANCE_SHARE = 0.10
+
+# uom spellings accepted for bldg:measuredHeight. CityGML 2.0 makes uom
+# mandatory on gml:LengthType, but files write metres many ways; a value with
+# no uom at all is read as metres, the unit of every projected CRS in use.
+_METRE_UOMS = {"", "m", "#m", "metre", "meter", "urn:adv:uom:m",
+               "urn:ogc:def:uom:epsg::9001", "http://www.opengis.net/def/uom/epsg/0/9001"}
+_FOOT_UOMS = {"ft", "#ft", "foot", "urn:ogc:def:uom:epsg::9002",
+              "http://www.opengis.net/def/uom/epsg/0/9002"}
+
 _LOD3_GEOMETRY_PROPS = {
     "lod3Solid", "lod3MultiSurface", "lod3Geometry",
     "lod3TerrainIntersection", "lod3MultiCurve",
@@ -96,6 +111,9 @@ class Report:
     lod1_skipped: int = 0
     lod1_composite: int = 0
     lod1_pieces_skipped: int = 0
+    lod1_measured_used: int = 0
+    lod1_measured_missing_ids: list[str] = field(default_factory=list)
+    lod1_measured_mismatch: list[dict] = field(default_factory=list)
     lod0_added: int = 0
     lod0_skipped: int = 0
     closed: int = 0
@@ -555,7 +573,27 @@ def _lod1_solid_node(faces, id_seed):
     return solid
 
 
-def _build_lod1(typed, feature_seed, report, height="average"):
+def _measured_height(feature):
+    """The feature's own bldg:measuredHeight in metres, or None if it has
+    none, it is not a positive number, or its uom is not a length unit we
+    know. A BuildingPart never inherits its parent Building's value: the
+    parent's height describes the tallest part, not this one."""
+    elem = feature.find(q(BLDG, "measuredHeight"))
+    if elem is None or not (elem.text or "").strip():
+        return None
+    try:
+        value = float(elem.text.strip())
+    except ValueError:
+        return None
+    uom = (elem.get("uom") or "").strip().lower()
+    if uom in _FOOT_UOMS:
+        value *= 0.3048
+    elif uom not in _METRE_UOMS:
+        return None
+    return value if value > 0 else None
+
+
+def _build_lod1(typed, feature_seed, report, height="average", measured=None):
     """Return a bldg:lod1Solid node, or None if not derivable.
 
     `height` selects the SIG3D-named top of the block:
@@ -563,6 +601,12 @@ def _build_lod1(typed, feature_seed, report, height="average"):
       'ridge'   Max. Ridge Height (the tallest possible guess)
       'average' Average Roof Height = (Min. Eaves + Max. Ridge) / 2 (default,
                 the spec's own formula for approximating the real roof volume)
+      'measured' Min. Relief Height + the feature's bldg:measuredHeight, passed
+                in as `measured` (metres). CityGML 2.0 defines measuredHeight
+                as highest point minus lowest point, so it sits on the same
+                base as the other three. Every piece of a split footprint
+                gets this one value, since it describes the whole feature.
+                Callers fall back to 'average' when `measured` is None.
 
     Normally one prism. A building whose ground plane comes in several
     disjoint pieces (it spans a passage at ground level, so only the footprint
@@ -591,7 +635,9 @@ def _build_lod1(typed, feature_seed, report, height="average"):
     prisms = []
     for p_idx, loop in enumerate(loops):
         z_eave, z_ridge = (hs[1], hs[2]) if single else _piece_roof_heights(loop, typed, hs)
-        if height == "ridge":
+        if height == "measured" and measured is not None:
+            z_top = z_base + measured
+        elif height == "ridge":
             z_top = z_ridge
         elif height == "eave":
             z_top = z_eave
@@ -755,6 +801,26 @@ def _needs_lod2_build(source_level, groups) -> bool:
     return False
 
 
+def _record_measured(feature, typed, measured, report) -> None:
+    """Report how `--lod1-height measured` went for one feature: used, missing
+    (the block falls back to 'average'), or used but far from what the
+    geometry itself says (worth a look, often a different height reference
+    or an outdated attribute)."""
+    fid = gml_id(feature) or "(no id)"
+    if measured is None:
+        report.lod1_measured_missing_ids.append(fid)
+        return
+    report.lod1_measured_used += 1
+    hs = _heights(typed)
+    if hs is None:
+        return
+    geometric = hs[2] - hs[0]
+    tolerance = max(LOD1_MEASURED_TOLERANCE_M, LOD1_MEASURED_TOLERANCE_SHARE * geometric)
+    if abs(measured - geometric) > tolerance:
+        report.lod1_measured_mismatch.append({
+            "id": fid, "measured_m": round(measured, 3), "geometric_m": round(geometric, 3)})
+
+
 def _process_feature(feature, groups, typed, source_level, anchor, emitted_ids, report, levels,
                       lod1_height, new_nodes_out):
     # Stable seed from source ids (never id(obj): lxml reuses proxy addresses).
@@ -770,7 +836,11 @@ def _process_feature(feature, groups, typed, source_level, anchor, emitted_ids, 
         if node is not None:
             prepend.append(node)
     if 1 in levels:
-        node = _build_lod1(typed, feature_seed, report, height=lod1_height)
+        measured = None
+        if lod1_height == "measured":
+            measured = _measured_height(feature)
+            _record_measured(feature, typed, measured, report)
+        node = _build_lod1(typed, feature_seed, report, height=lod1_height, measured=measured)
         if node is not None:
             prepend.append(node)
 
@@ -818,9 +888,14 @@ def enhance(input_path: str, output_path: str, *, levels=(2,), keep_source: bool
     keep_source: keep the feature's original source geometry (embed) or strip
         it, leaving only the newly derived lower LODs.
     lod1_height: 'average' (default, SIG3D Average Roof Height), 'eave'
-        (Min. Eaves Height) or 'ridge' (Max. Ridge Height) for the LOD1 block
-        top. See docs/DESIGN.md#lod1-extruded-block.
+        (Min. Eaves Height), 'ridge' (Max. Ridge Height) or 'measured' (the
+        feature's own bldg:measuredHeight above Min. Relief Height, 'average'
+        where it has none) for the LOD1 block top. See
+        docs/DESIGN.md#lod1-extruded-block.
     """
+    if lod1_height not in ("average", "eave", "ridge", "measured"):
+        raise ValueError(f"unsupported lod1_height {lod1_height!r}: use average, eave, "
+                         "ridge or measured")
     levels = tuple(sorted(set(levels)))
     invalid = [lv for lv in levels if lv not in (0, 1, 2)]
     if invalid:

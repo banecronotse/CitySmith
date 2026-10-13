@@ -216,9 +216,20 @@ Heights follow the vocabulary defined in the same guide, section 2.4
   CitySmith uses unless told otherwise.
 - `eave`: Min. Eaves Height, the most conservative (lowest) option.
 - `ridge`: Max. Ridge Height, the tallest option.
+- `measured`: Min. Relief Height plus the feature's own `bldg:measuredHeight`.
+  This is the one option not read from geometry: CityGML 2.0 defines
+  measuredHeight as highest minus lowest point, so it is the provider's
+  stored version of `ridge`. Every piece of a split footprint (below) gets
+  this one value, since the attribute describes the whole feature; a
+  `BuildingPart` never inherits its parent's value. Missing or unreadable
+  values fall back to `average` and are listed by id; values more than
+  `LOD1_MEASURED_TOLERANCE_M` (1 m) or `LOD1_MEASURED_TOLERANCE_SHARE` (10 %)
+  away from `ridge - base` are used but reported. The attribute is trusted,
+  not corrected: if the user asks for the stored height, they get it, and the
+  report shows where it disagrees with the geometry.
 
-All three are literal min/max over the shell's points, no clustering or area
-weighting, matching how the guide itself defines them.
+The first three are literal min/max over the shell's points, no clustering or
+area weighting, matching how the guide itself defines them.
 
 #### Footprints that come in several pieces
 
@@ -465,6 +476,33 @@ annotations. So the bridge is validate-and-report, not auto-heal.
 - **Geometric healing**: an optional pass to make LOD2 itself watertight
   (T-junction resolution, soffit closing), rather than relying on LOD1 as the
   only guaranteed-closed output.
+- **Schema validation**: check input and CitySmith's own output against the
+  CityGML 2.0 XML schemas (`validate --schema`, lxml with bundled XSDs).
+  CityDoctor2 checks geometry and semantics, but nothing currently confirms
+  that written files are schema-valid.
+- **LOD1 guard for fragmented ground surfaces**: a real LOD3 building with
+  110,096 thin, non-coplanar ground strips currently gets one prism per
+  strip, because the footprint union refuses and the fallback keeps every
+  piece. Union in 2D ignoring z, or fall back to one outer outline when the
+  piece count is implausible.
+- **LOD0 to LOD1 upward path**: a footprint-only (LOD0) feature with a
+  `measuredHeight` becomes an LOD1 prism. Deliberately no further: roof
+  templates for LOD2 would invent geometry.
+- **Provenance note** (opt-in): a `gml:description` on derived features
+  naming the tool, version and settings, without a date so output stays
+  reproducible.
+- **`crop --bbox`** (`intersects` / `within`) and `--invert`.
+- **File-level facts in `inspect`**: CityGML version, srsName, extent,
+  appearance themes and texture counts, generic attribute names, several
+  files at once.
+- **CityJSON 2.0** output in `convert`, keeping 1.1 as an option.
+- **Batch input** for the per-file commands (several files or a folder, `-o`
+  as a folder), and optional texture copying for `merge`.
+- **Optional appearance removal** for analysis and simulation uses where
+  textures are only weight.
+- Left to [citygml-tools](https://github.com/citygml4j/citygml-tools) on
+  purpose, as the companion tool: reprojection, CityGML 3.0 upgrade, XSLT,
+  texture clipping.
 - CityGML 3.0 support; recessed (non-hole) openings; optional LOD2.0 footprint
   extrusion as an alternative to the "keep the LOD3 roof" target; a
   `--keep-installations` switch; LOD0 RoofEdge; installations exported as their

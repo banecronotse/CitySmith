@@ -91,6 +91,34 @@ All notable changes to this project are documented here. The format follows
   tag, every other one indents into its next sibling, so naively keeping an
   earlier feature (the overwhelmingly common case) left its own mid-document
   indentation behind the closing tag instead.
+- `citysmith merge` (`merge.py`, `citysmith.merge`): combine two or more
+  CityGML files into one, e.g. a dataset delivered in parts. The first input
+  is the base; later inputs' features and appearances are appended. Inputs
+  must be CityGML 2.0 and name the same CRS (`EPSG:32634`, the URN and the
+  URL forms count as the same); otherwise the merge stops, nothing is
+  reprojected. A feature whose `gml:id` is already taken is skipped as the
+  same object delivered twice (`--on-duplicate-id rename` keeps it under an
+  `m<N>_` prefixed id instead). Any other clashing `gml:id` is renamed in the
+  incoming file and every local reference to it follows (`xlink:href`,
+  appearance targets, texture coordinate rings). Relative texture paths are
+  rewritten to resolve from the output folder, and missing images are
+  listed. Features from different inputs with nearly the same 2D bounding
+  box (intersection over union of at least 0.8) are reported as possible
+  duplicates with different ids, never removed. The envelope is recomputed.
+  Checked on a real 505-building LOD3 model split into two overlapping
+  halves: the merge gives back the original buildings, ids and coordinate
+  lists exactly, skipping the 10 shared buildings.
+- `lod --lod1-height measured` (`lod1_height="measured"`): the LOD1 block top
+  is the feature's own `bldg:measuredHeight` above Min. Relief Height instead
+  of a value read from the roof geometry. Metre and foot `uom` spellings are
+  recognised; features without a usable value fall back to `average` and are
+  listed (`lod1_measured_missing_ids`); a `BuildingPart` never inherits its
+  parent's value; values more than 1 m or 10 % away from the geometry's own
+  height are used but reported (`lod1_measured_mismatch`). Existing modes are
+  unchanged, and an unknown `lod1_height` now raises instead of silently
+  meaning `average`. Checked on 19 real Bavarian LOD3 buildings: 18 used
+  their stored height, 1 had none and fell back, none disagreed with the
+  geometry.
 - `semantics` now gives every `WallSurface`/`RoofSurface`/`GroundSurface`/
   `OuterFloorSurface`/`OuterCeilingSurface`/`ClosureSurface`/`Window`/`Door`/
   `BuildingInstallation` a readable `gml:id` anchored to the owning

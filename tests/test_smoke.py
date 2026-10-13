@@ -635,3 +635,241 @@ def test_validate_cli_accepts_pdf_flag():
     assert args.pdf is None
     args = parser.parse_args(["validate", "in.gml", "--pdf", "out.pdf"])
     assert args.pdf == "out.pdf"
+
+
+# --- merge ---------------------------------------------------------------------
+
+_MERGE_HEAD = (
+    '<?xml version="1.0" encoding="UTF-8"?>\n'
+    '<CityModel xmlns="http://www.opengis.net/citygml/2.0" '
+    'xmlns:gml="http://www.opengis.net/gml" '
+    'xmlns:xlink="http://www.w3.org/1999/xlink" '
+    'xmlns:app="http://www.opengis.net/citygml/appearance/2.0" '
+    'xmlns:bldg="http://www.opengis.net/citygml/building/2.0">'
+    '<gml:boundedBy><gml:Envelope srsName="{srs}" srsDimension="3">'
+    '<gml:lowerCorner>0 0 0</gml:lowerCorner><gml:upperCorner>1 1 1</gml:upperCorner>'
+    '</gml:Envelope></gml:boundedBy>'
+)
+
+
+def _write_srs_gml(path, srs, *members):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(_MERGE_HEAD.format(srs=srs) + "".join(members) + "</CityModel>",
+                    encoding="utf-8")
+    return path
+
+
+def _ground_building(bid, poly_id, x0):
+    return _building(bid, [_surface("GroundSurface", f"{bid}_g",
+                                    [_poly(poly_id, _square(x0, 0, 5, 0.0))])])
+
+
+def test_merge_combines_inputs_and_recomputes_envelope(tmp_path):
+    from citysmith.merge import merge
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0))
+    b = _write_srs_gml(tmp_path / "b.gml", "urn:ogc:def:crs:EPSG::32634",
+                       _ground_building("B1", "pb", 100))
+    out = tmp_path / "ab.gml"
+    report = merge([str(a), str(b)], str(out))
+    assert report.members_written == 2
+    assert report.srs_name == "EPSG:32634"
+    assert report.duplicate_ids_skipped == []
+    assert report.possible_duplicates == []
+
+    root = etree.parse(str(out)).getroot()
+    assert [b.get(q(GML, "id")) for b in root.iter(q(BLDG, "Building"))] == ["A1", "B1"]
+    env = root.find(q(GML, "boundedBy") + "/" + q(GML, "Envelope"))
+    assert env.get("srsName") == "EPSG:32634"
+    assert env.find(q(GML, "lowerCorner")).text == "0.0 0.0 0.0"
+    assert env.find(q(GML, "upperCorner")).text == "105.0 5.0 0.0"
+
+
+def test_merge_refuses_different_crs(tmp_path):
+    from citysmith.merge import merge, MergeError
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0))
+    b = _write_srs_gml(tmp_path / "b.gml", "EPSG:25832", _ground_building("B1", "pb", 100))
+    with pytest.raises(MergeError, match="different coordinate reference systems"):
+        merge([str(a), str(b)], str(tmp_path / "ab.gml"))
+    assert not (tmp_path / "ab.gml").exists()
+
+
+def test_merge_duplicate_feature_id_skipped_or_renamed(tmp_path):
+    from citysmith.merge import merge
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("SAME", "pa", 0))
+    b = _write_srs_gml(tmp_path / "b.gml", "EPSG:32634", _ground_building("SAME", "pb", 50))
+
+    report = merge([str(a), str(b)], str(tmp_path / "skip.gml"))
+    assert report.duplicate_ids_skipped == ["SAME"]
+    assert report.members_written == 1
+
+    report = merge([str(a), str(b)], str(tmp_path / "rename.gml"), on_duplicate_id="rename")
+    assert report.duplicate_ids_renamed == {"SAME": "m2_SAME"}
+    root = etree.parse(str(tmp_path / "rename.gml")).getroot()
+    assert [x.get(q(GML, "id")) for x in root.iter(q(BLDG, "Building"))] == [
+        "SAME", "m2_SAME"]
+    ids = _ids(root)
+    assert len(ids) == len(set(ids))
+
+
+def test_merge_renames_clashing_inner_ids_and_their_references(tmp_path):
+    """Two different buildings that happen to reuse a polygon id: the
+    incoming one is renamed, and the xlink reference and texture target in
+    the same file follow it."""
+    from citysmith.merge import merge
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "p1", 0))
+    b_member = (
+        '<cityObjectMember><bldg:Building gml:id="B1">'
+        '<bldg:lod3Solid><gml:Solid><gml:exterior><gml:CompositeSurface>'
+        '<gml:surfaceMember xlink:href="#p1"/>'
+        '</gml:CompositeSurface></gml:exterior></gml:Solid></bldg:lod3Solid>'
+        + _surface("GroundSurface", "B1_g", [_poly("p1", _square(50, 0, 5, 0.0))])
+        + '</bldg:Building></cityObjectMember>'
+        '<app:appearanceMember><app:Appearance><app:surfaceDataMember>'
+        '<app:ParameterizedTexture><app:imageURI>tex/b.jpg</app:imageURI>'
+        '<app:target uri="#p1"/></app:ParameterizedTexture>'
+        '</app:surfaceDataMember></app:Appearance></app:appearanceMember>'
+    )
+    b = _write_srs_gml(tmp_path / "b.gml", "EPSG:32634", b_member)
+    out = tmp_path / "ab.gml"
+    report = merge([str(a), str(b)], str(out))
+    assert report.ids_renamed == 1
+    assert report.id_renames[str(b)] == {"p1": "m2_p1"}
+
+    root = etree.parse(str(out)).getroot()
+    ids = _ids(root)
+    assert len(ids) == len(set(ids))
+    assert "p1" in ids and "m2_p1" in ids
+    hrefs = [e.get("{http://www.w3.org/1999/xlink}href") for e in root.iter()
+             if e.get("{http://www.w3.org/1999/xlink}href")]
+    assert hrefs == ["#m2_p1"]
+    target = root.find(".//{http://www.opengis.net/citygml/appearance/2.0}target")
+    assert target.get("uri") == "#m2_p1"
+
+
+def test_merge_reports_overlapping_features_without_removing_them(tmp_path):
+    from citysmith.merge import merge
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0))
+    b = _write_srs_gml(tmp_path / "b.gml", "EPSG:32634", _ground_building("B9", "pb", 0.2))
+    report = merge([str(a), str(b)], str(tmp_path / "ab.gml"))
+    assert report.members_written == 2
+    assert len(report.possible_duplicates) == 1
+    dup = report.possible_duplicates[0]
+    assert (dup["id"], dup["overlaps_id"]) == ("B9", "A1")
+    assert dup["bbox_overlap"] == 0.923
+
+
+def test_merge_rewrites_relative_texture_paths_for_output_folder(tmp_path):
+    from citysmith.merge import merge
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0))
+    b = _write_srs_gml(
+        tmp_path / "part_b" / "b.gml", "EPSG:32634",
+        _ground_building("B1", "pb", 50),
+        '<app:appearanceMember><app:Appearance><app:surfaceDataMember>'
+        '<app:ParameterizedTexture><app:imageURI>tex/b.jpg</app:imageURI>'
+        '<app:target uri="#pb"/></app:ParameterizedTexture>'
+        '</app:surfaceDataMember></app:Appearance></app:appearanceMember>')
+    out = tmp_path / "ab.gml"
+    report = merge([str(a), str(b)], str(out))
+    assert report.texture_paths_rewritten == 1
+    assert len(report.texture_files_missing) == 1
+    root = etree.parse(str(out)).getroot()
+    uri = root.find(".//{http://www.opengis.net/citygml/appearance/2.0}imageURI").text
+    assert uri == "part_b/tex/b.jpg"
+
+
+def test_cli_merge_parses_inputs():
+    from citysmith.cli import build_parser
+    args = build_parser().parse_args(["merge", "a.gml", "b.gml", "c.gml", "-o", "m.gml"])
+    assert args.inputs == ["a.gml", "b.gml", "c.gml"]
+    assert args.on_duplicate_id == "skip"
+
+
+# --- LOD1 from measuredHeight ----------------------------------------------------
+
+def _box_building(bid, measured=None, uom="m", part=None):
+    """A 10 x 10 m building, ground at z=0, flat roof at z=10, optionally with
+    a bldg:measuredHeight and one nested BuildingPart."""
+    mh = (f'<bldg:measuredHeight uom="{uom}">{measured}</bldg:measuredHeight>'
+          if measured is not None else "")
+    return (f'<cityObjectMember><bldg:Building gml:id="{bid}">{mh}'
+            + _surface("GroundSurface", f"{bid}_g", [_poly(f"{bid}_ga", _square(0, 0, 10, 0.0))])
+            + _surface("RoofSurface", f"{bid}_r", [_poly(f"{bid}_ra", _square(0, 0, 10, 10.0))])
+            + (part or "") + '</bldg:Building></cityObjectMember>')
+
+
+def _lod1_tops(path):
+    root = etree.parse(str(path)).getroot()
+    tops = {}
+    for feat in root.iter(q(BLDG, "Building"), q(BLDG, "BuildingPart")):
+        solid = feat.find(q(BLDG, "lod1Solid"))
+        if solid is None:
+            continue
+        zs = [z for pl in solid.iter(q(GML, "posList")) for _, _, z in parse_pos_list(pl.text)]
+        tops[feat.get(q(GML, "id"))] = max(zs)
+    return tops
+
+
+def test_lod1_measured_height_sets_block_top(tmp_path):
+    src = _write_gml(tmp_path, "m.gml", _box_building("B1", measured=10.5))
+    out = tmp_path / "m_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), lod1_height="measured")
+    assert report.lod1_measured_used == 1
+    assert report.lod1_measured_missing_ids == []
+    assert report.lod1_measured_mismatch == []
+    assert _lod1_tops(out) == {"B1": 10.5}
+
+
+def test_lod1_measured_height_missing_falls_back_to_average(tmp_path):
+    src = _write_gml(tmp_path, "m.gml", _box_building("NOMH"),
+                     _box_building("BADUOM", measured=5, uom="furlong"))
+    out = tmp_path / "m_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), lod1_height="measured")
+    assert report.lod1_measured_used == 0
+    assert report.lod1_measured_missing_ids == ["NOMH", "BADUOM"]
+    assert _lod1_tops(out) == {"NOMH": 10.0, "BADUOM": 10.0}
+
+
+def test_lod1_measured_height_in_feet_and_mismatch_reported(tmp_path):
+    src = _write_gml(tmp_path, "m.gml", _box_building("FT", measured=50, uom="ft"))
+    out = tmp_path / "m_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), lod1_height="measured")
+    assert _lod1_tops(out) == {"FT": pytest.approx(15.24)}
+    assert report.lod1_measured_mismatch == [
+        {"id": "FT", "measured_m": 15.24, "geometric_m": 10.0}]
+
+
+def test_lod1_measured_height_not_inherited_by_building_part(tmp_path):
+    part = ('<bldg:consistsOfBuildingPart><bldg:BuildingPart gml:id="P1">'
+            + _surface("GroundSurface", "P1_g", [_poly("P1_ga", _square(20, 0, 10, 0.0))])
+            + _surface("RoofSurface", "P1_r", [_poly("P1_ra", _square(20, 0, 10, 4.0))])
+            + '</bldg:BuildingPart></bldg:consistsOfBuildingPart>')
+    src = _write_gml(tmp_path, "m.gml", _box_building("B1", measured=12.5, part=part))
+    out = tmp_path / "m_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,), lod1_height="measured")
+    assert report.lod1_measured_missing_ids == ["P1"]
+    assert _lod1_tops(out) == {"B1": 12.5, "P1": 4.0}
+
+
+def test_lod1_default_ignores_measured_height(tmp_path):
+    src = _write_gml(tmp_path, "m.gml", _box_building("B1", measured=30))
+    out = tmp_path / "m_lod1.gml"
+    report = citysmith.enhance(str(src), str(out), levels=(1,))
+    assert report.lod1_measured_used == 0
+    assert report.lod1_measured_missing_ids == []
+    assert _lod1_tops(out) == {"B1": 10.0}
+
+
+def test_unknown_lod1_height_rejected(tmp_path):
+    src = _write_gml(tmp_path, "m.gml", _box_building("B1"))
+    with pytest.raises(ValueError, match="unsupported lod1_height"):
+        citysmith.enhance(str(src), str(tmp_path / "x.gml"), levels=(1,), lod1_height="tallest")
+
+
+def test_cli_merge_expands_wildcards_itself(tmp_path):
+    """Windows shells pass `part_*.gml` through literally; the CLI expands it."""
+    from citysmith.cli import _expand_inputs
+    for name in ("part_b.gml", "part_a.gml"):
+        (tmp_path / name).write_text("", encoding="utf-8")
+    assert _expand_inputs([str(tmp_path / "part_*.gml")]) == [
+        str(tmp_path / "part_a.gml"), str(tmp_path / "part_b.gml")]
+    assert _expand_inputs(["missing_*.gml"]) == ["missing_*.gml"]

@@ -5,8 +5,8 @@ lower levels of detail, filling in missing semantics, checking geometric
 quality, and converting to other encodings, all while leaving the original
 data intact.
 
-Five capabilities: `crop` extracts a named subset of buildings out of a
-larger file, `lod` derives lower levels of detail (LOD1 and LOD0 from either
+Six capabilities: `crop` extracts a named subset of buildings out of a
+larger file, `merge` combines several files into one, `lod` derives lower levels of detail (LOD1 and LOD0 from either
 LOD2 or LOD3 data, a clean LOD2 from LOD3), `semantics` fills in missing ids
 and semantic attributes, `convert` exports to CityJSON, and `validate` checks
 geometric quality, natively or through the CityDoctor2 bridge.
@@ -40,6 +40,7 @@ produces those from what you already have.
 | --- | --- | --- |
 | `inspect` | Read-only preflight: what geometry was found and what each capability can/can't do with it, no output written | done |
 | `crop` | Extract a named subset of buildings by `gml:id` out of a larger file | done |
+| `merge` | Combine several CityGML files into one: CRS check, duplicate and id clash handling, texture paths kept valid | done |
 | `lod` | Derive and embed lower LODs: LOD1 block and LOD0 footprint from LOD3 or LOD2 data, a clean LOD2 shell from LOD3 | done |
 | `semantics` | Fill missing ids, `function`, `type` attributes and `lod3Geometry` aggregates per a rulebook (needs LOD3) | easy tier done |
 | `convert` | Emit CityJSON 1.1 (validated through cjio, upgrades cleanly to 2.0) | done |
@@ -71,10 +72,13 @@ And explicitly does **not** touch:
   real photogrammetric exports (like the one this was tested against) often
   carry image-based `app:ParameterizedTexture` data with tens of thousands of
   texture-coordinate entries per file. CitySmith neither reads nor writes any
-  of it, with one narrow exception: `crop` prunes texture references left
+  of it, with two narrow exceptions: `crop` prunes texture references left
   pointing at geometry it removed, but only if the file declares appearances
   once at document level rather than nested per building (this project's own
-  reference data uses the latter, which needs no such cleanup).
+  reference data uses the latter, which needs no such cleanup); and `merge`
+  keeps texture references valid when it renames clashing ids, and rewrites
+  relative image paths so they still resolve from the output folder (the
+  images themselves are not copied).
   Existing LOD3 textures survive untouched in the output because LOD3
   geometry and ids are never modified, but every polygon CitySmith generates
   for LOD0/1/2 gets a fresh id, so none of the generated geometry can ever be
@@ -115,6 +119,9 @@ citysmith inspect unfamiliar_city_model.gml
 citysmith crop citywide.gml --ids BLDG_001,BLDG_002,BLDG_003 -o area.gml
 citysmith crop citywide.gml --ids-file wanted_ids.txt -o area.gml
 
+# Combine a dataset delivered in parts into one file (same CRS required)
+citysmith merge part_a.gml part_b.gml -o area.gml --report merge.json
+
 # Derive lower LODs and embed them next to the source
 citysmith lod city_lod3.gml --levels 0,1,2          # complete multi-LOD file
 citysmith lod city_lod3.gml --levels 2              # just LOD2 (default)
@@ -142,6 +149,9 @@ Python API:
 import citysmith
 from citysmith.semantics import enhance_semantics
 from citysmith.cityjson import convert
+
+mr = citysmith.merge(["part_a.gml", "part_b.gml"], "area.gml")
+print(mr.duplicate_ids_skipped, mr.possible_duplicates)
 
 insp = citysmith.inspect("unfamiliar_city_model.gml")
 print(insp.source_lod3, insp.source_lod2, insp.source_unclassified)
@@ -264,8 +274,22 @@ is chosen with `--lod1-height`, using the same section's named heights:
   most conservative option.
 - **`ridge`**: **Max. Ridge Height**, the highest point anywhere in the shell,
   the tallest option.
+- **`measured`**: the building's own `bldg:measuredHeight` attribute, added
+  to the same base. CityGML 2.0 defines it as the difference between the
+  highest and the lowest point of the building, so it is the stored
+  counterpart of `ridge`, typically filled in by the data provider (cadastral
+  LoD2/LoD3 data usually has it). Use it when the LOD1 block has to match the
+  official height rather than CitySmith's reading of the roof. Metres and
+  feet are recognised in their common `uom` spellings (`m`, `urn:adv:uom:m`,
+  EPSG unit codes, ...). A feature without a usable value, or with a unit
+  CitySmith doesn't know, falls back to `average` and is listed by id. A
+  `BuildingPart` only uses its own value, never its parent's, since the
+  parent's height describes the tallest part. Values that differ from the
+  geometry's own height by more than 1 m (or 10 %, whichever is larger) are
+  still used, but listed, since that usually means a different height
+  reference or an outdated attribute.
 
-All three are plain min/max over the shell's points, exactly as the guide
+The first three are plain min/max over the shell's points, exactly as the guide
 defines them, no clustering or weighting on top. See
 [LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) in the design doc
 for the full section reference.

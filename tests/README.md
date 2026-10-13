@@ -23,8 +23,9 @@ own `README.md` with the exact command and effect of every file in it.
 - [`convert/`](convert/README.md): export to CityJSON 1.1.
 - [`validate/`](validate/README.md): run the CityDoctor2 external validator.
 
-`crop` (extract a named subset of buildings by `gml:id`) doesn't have a
-folder here yet.
+`crop` (extract a named subset of buildings by `gml:id`) and `merge`
+(combine several files into one) don't have a folder here yet; their tests
+build small synthetic files on the fly.
 
 ## What are the `CS2_*` files?
 

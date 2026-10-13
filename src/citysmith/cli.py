@@ -4,6 +4,7 @@ Subcommands:
   inspect    read-only preflight: what geometry CitySmith found and what
              each capability can/can't do with it, without writing anything
   crop       extract a named subset of buildings by gml:id out of a larger file
+  merge      combine several CityGML files into one
   lod        derive and embed lower LODs (LOD0/1/2) from an LOD3 or LOD2 source
   semantics  apply the easy-tier semantic fixes (ids, function, type, aggregate)
   convert    export CityGML to CityJSON 1.1
@@ -11,12 +12,14 @@ Subcommands:
 """
 
 import argparse
+import glob
 import json
 import sys
 
 from . import __version__
 from .core import enhance, inspect as inspect_source
 from .crop import crop as crop_source
+from .merge import merge as merge_sources, MergeError
 from .semantics import enhance_semantics
 from .cityjson import convert
 from .citydoctor import validate, CityDoctorNotFound, CityDoctorError
@@ -120,6 +123,67 @@ def _cmd_crop(args) -> int:
     return 0 if not report.missing_ids else 1
 
 
+# --- merge -------------------------------------------------------------------
+
+def _expand_inputs(patterns):
+    """Expand wildcards ourselves: cmd.exe and PowerShell pass `tile_*.gml`
+    through literally, unlike POSIX shells. A pattern matching nothing is
+    kept as given so the later read fails with the user's own path."""
+    paths = []
+    for pattern in patterns:
+        matches = sorted(glob.glob(pattern)) if glob.has_magic(pattern) else []
+        paths.extend(matches or [pattern])
+    return paths
+
+
+def _cmd_merge(args) -> int:
+    inputs = _expand_inputs(args.inputs)
+    out = args.output or _default_out(inputs[0], "_merged")
+    for path in inputs:
+        print(f"reading  : {path}")
+    try:
+        report = merge_sources(inputs, out, on_duplicate_id=args.on_duplicate_id)
+    except MergeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    print(f"written  : {out}")
+    print(f"srsName  : {report.srs_name or 'not declared'}")
+    if report.srs_unknown:
+        print(f"  no srsName declared in: {', '.join(report.srs_unknown)}")
+    for path, count in report.members_per_input.items():
+        print(f"  {count:7} features in {path}")
+    print(f"features written    : {report.members_written}")
+    if report.duplicate_ids_skipped:
+        print(f"duplicate ids skipped (already in an earlier input): "
+              f"{len(report.duplicate_ids_skipped)}")
+        for fid in report.duplicate_ids_skipped[:10]:
+            print(f"    {fid}")
+        if len(report.duplicate_ids_skipped) > 10:
+            print(f"    ... and {len(report.duplicate_ids_skipped) - 10} more")
+    if report.duplicate_ids_renamed:
+        print(f"duplicate feature ids kept under a new id: {len(report.duplicate_ids_renamed)}")
+    if report.ids_renamed:
+        print(f"clashing gml:ids renamed (references updated): {report.ids_renamed}")
+    if report.possible_duplicates:
+        print(f"possible duplicates (bounding boxes overlap, different ids, "
+              f"NOT removed): {len(report.possible_duplicates)}")
+        for d in report.possible_duplicates[:10]:
+            print(f"    {d['id']}  overlaps  {d['overlaps_id']}  ({d['bbox_overlap']:.0%})")
+        if len(report.possible_duplicates) > 10:
+            print(f"    ... and {len(report.possible_duplicates) - 10} more")
+    if report.texture_paths_rewritten:
+        print(f"texture paths rewritten to resolve from the output folder: "
+              f"{report.texture_paths_rewritten}")
+    if report.texture_files_missing:
+        print(f"texture files not found: {len(report.texture_files_missing)}")
+    if report.appearance_pruned:
+        print(f"appearance references pruned (pointed at skipped features): "
+              f"{report.appearance_pruned}")
+    if args.report:
+        _write_report(args.report, report.to_dict())
+    return 0
+
+
 # --- lod ---------------------------------------------------------------------
 
 def _cmd_lod(args) -> int:
@@ -153,6 +217,24 @@ def _cmd_lod(args) -> int:
                   f"{report.lod1_composite}")
         if report.lod1_pieces_skipped:
             print(f"    ground pieces too small to extrude: {report.lod1_pieces_skipped}")
+        if args.lod1_height == "measured":
+            print(f"    height from bldg:measuredHeight: {report.lod1_measured_used}")
+            missing = report.lod1_measured_missing_ids
+            if missing:
+                print(f"    no usable measuredHeight, used 'average' instead: {len(missing)}")
+                for fid in missing[:10]:
+                    print(f"      {fid}")
+                if len(missing) > 10:
+                    print(f"      ... and {len(missing) - 10} more")
+            mismatch = report.lod1_measured_mismatch
+            if mismatch:
+                print(f"    measuredHeight far from the geometry's own height "
+                      f"(used anyway): {len(mismatch)}")
+                for m in mismatch[:10]:
+                    print(f"      {m['id']}: measured {m['measured_m']} m, "
+                          f"geometry {m['geometric_m']} m")
+                if len(mismatch) > 10:
+                    print(f"      ... and {len(mismatch) - 10} more")
     if 0 in levels:
         print(f"  LOD0 added/skipped: {report.lod0_added}/{report.lod0_skipped}")
     if report.kept_empty_ids:
@@ -286,6 +368,27 @@ def build_parser() -> argparse.ArgumentParser:
     crop.add_argument("--report", help=_REPORT_HELP)
     crop.set_defaults(func=_cmd_crop)
 
+    merge = _sub(sub, "merge",
+                 help="combine several CityGML files into one",
+                 description="Appends every later input to the first one. Inputs must be\n"
+                             "CityGML 2.0 with the same srsName (no reprojection). A feature\n"
+                             "whose gml:id already exists is skipped as a duplicate (or kept\n"
+                             "under a new id with --on-duplicate-id rename); any other clashing\n"
+                             "gml:id is renamed with an m<N>_ prefix and its references follow.\n"
+                             "Features from different files whose bounding boxes overlap are\n"
+                             "reported as possible duplicates, never removed.",
+                 epilog="examples:\n"
+                        "  citysmith merge part_a.gml part_b.gml -o area.gml\n"
+                        "  citysmith merge tile_*.gml -o city.gml --report merge.json")
+    merge.add_argument("inputs", nargs="+", help="two or more CityGML files; the first is the base")
+    merge.add_argument("-o", "--output",
+                        help="output file (default: <first input>_merged.gml next to it)")
+    merge.add_argument("--on-duplicate-id", choices=["skip", "rename"], default="skip",
+                        help="a feature whose gml:id is already in an earlier input: 'skip' "
+                             "(default, same object delivered twice) or 'rename' (keep both)")
+    merge.add_argument("--report", help=_REPORT_HELP)
+    merge.set_defaults(func=_cmd_merge)
+
     lod = _sub(sub, "lod",
                help="derive and embed lower LODs from LOD3 or LOD2 source",
                epilog="examples:\n"
@@ -299,10 +402,12 @@ def build_parser() -> argparse.ArgumentParser:
                            "work from an LOD3 or LOD2 source; LOD2 needs an LOD3 source.")
     lod.add_argument("--lower-only", action="store_true",
                       help="strip the source geometry, keep only the newly derived lower LODs")
-    lod.add_argument("--lod1-height", choices=["average", "eave", "ridge"], default="average",
+    lod.add_argument("--lod1-height", choices=["average", "eave", "ridge", "measured"],
+                      default="average",
                       help="LOD1 block top, per SIG3D Part 2 sec 2.4: 'average' (default, "
-                           "(Min. Eaves + Max. Ridge) / 2), 'eave' (Min. Eaves Height) or "
-                           "'ridge' (Max. Ridge Height)")
+                           "(Min. Eaves + Max. Ridge) / 2), 'eave' (Min. Eaves Height), "
+                           "'ridge' (Max. Ridge Height) or 'measured' (the building's own "
+                           "bldg:measuredHeight above the ground; 'average' where it has none)")
     lod.add_argument("--limit", type=int, default=None,
                       help="only process the first N features")
     lod.add_argument("--report", help=_REPORT_HELP)

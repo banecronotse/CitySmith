@@ -4,7 +4,9 @@ semantics, converts to CityJSON and validates geometry."""
 from .core import add_lod2, enhance, inspect, InspectReport, Report
 from .citydoctor import validate as validate_citydoctor, ValidationReport
 from .crop import crop, CropReport
+from .merge import merge, MergeError, MergeReport
 
 __all__ = ["add_lod2", "enhance", "inspect", "InspectReport", "Report",
-           "validate_citydoctor", "ValidationReport", "crop", "CropReport"]
+           "validate_citydoctor", "ValidationReport", "crop", "CropReport",
+           "merge", "MergeError", "MergeReport"]
 __version__ = "0.1.0"
