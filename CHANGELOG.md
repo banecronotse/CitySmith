@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Releases are published to PyPI by GitHub Actions
+  (`.github/workflows/release.yml`) when a version tag is pushed: tests,
+  build and `twine check` run first, the tag must match the version in
+  `pyproject.toml`, and the upload uses PyPI trusted publishing (no API
+  token).
 
 ## [0.2.0] - 2026-10-13
 
