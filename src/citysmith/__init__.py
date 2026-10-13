@@ -11,4 +11,4 @@ __all__ = ["add_lod2", "enhance", "inspect", "InspectReport", "Report",
            "validate_citydoctor", "ValidationReport", "crop", "CropReport",
            "merge", "MergeError", "MergeReport",
            "validate_schema", "SchemaError", "SchemaReport"]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

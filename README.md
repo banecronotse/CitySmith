@@ -19,14 +19,14 @@ CityDoctor2 bridge.
 > Status: early development. All seven commands work end to end and are
 > tested, and every file CitySmith writes is checked against the official
 > CityGML 2.0 schemas in its test suite. See the
-> [Roadmap](docs/DESIGN.md#roadmap) for what's planned next.
+> [Roadmap](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#roadmap) for what's planned next.
 
 ## Example output
 
 The same real building (`tests/lod/CS1_lod3.gml`, a CityGRID-style export with a
 Building and a BuildingPart) derived from LOD3 down to LOD0 with `citysmith lod`:
 
-<img src="docs/images/cs1_example.png" alt="LOD3 source model with windows and roof detail, next to the derived LOD2 shell with windows removed, the derived LOD1 block model, and the derived LOD0 flattened footprint" width="100%">
+<img src="https://raw.githubusercontent.com/banecronotse/CitySmith/main/docs/images/cs1_example.png" alt="LOD3 source model with windows and roof detail, next to the derived LOD2 shell with windows removed, the derived LOD1 block model, and the derived LOD0 flattened footprint" width="100%">
 
 Every file shown is in `tests/`, reproducible with
 `citysmith lod tests/lod/CS1_lod3.gml --levels 0,1,2`. This building is a real
@@ -44,7 +44,7 @@ valid before handing it on. Format tools such as citygml-tools convert and
 filter CityGML, but they do not derive lower levels of detail from the
 real geometry of a detailed model or complete its semantics. CitySmith does
 that, from the data you already have, without inventing detail that isn't
-there. See [Related work](docs/RELATED_WORK.md) for how it compares with
+there. See [Related work](https://github.com/banecronotse/CitySmith/blob/main/docs/RELATED_WORK.md) for how it compares with
 the closest tools.
 
 ## Capabilities
@@ -80,7 +80,7 @@ CitySmith is deliberately narrow. It works on:
   attributes, `lod3Geometry` aggregation, and specifically balcony/chimney
   classification for `BuildingInstallation`. The hard tier (restructuring
   `BuildingPart`-modelled balconies, face reclassification by orientation) is
-  not implemented yet, see the [Roadmap](docs/DESIGN.md#roadmap).
+  not implemented yet, see the [Roadmap](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#roadmap).
 
 And explicitly does **not** touch:
 
@@ -110,9 +110,18 @@ And explicitly does **not** touch:
 ## Install
 
 ```bash
+pip install citysmith
+```
+
+Python 3.10 or newer; the only dependency is `lxml`. Update later with
+`pip install -U citysmith`.
+
+To work on the code itself, install from a clone instead:
+
+```bash
 git clone https://github.com/banecronotse/CitySmith.git
 cd CitySmith
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 If the bare `citysmith` command isn't found afterward, your Python scripts
@@ -315,7 +324,7 @@ is chosen with `--lod1-height`, using the same section's named heights:
 
 The first three are plain min/max over the shell's points, exactly as the guide
 defines them, no clustering or weighting on top. See
-[LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) in the design doc
+[LOD1 (extruded block)](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#lod1-extruded-block) in the design doc
 for the full section reference.
 
 If a building's ground surface comes in several polygons, adjoining pieces are
@@ -327,7 +336,7 @@ roof height. Pieces too small to be massing (pillars carrying the building
 over the passage) are dropped rather than extruded into thin full-height
 spikes, but never the last one, so no building is left without geometry. The
 counts are always reported. See
-[LOD1 (extruded block)](docs/DESIGN.md#lod1-extruded-block) for the reasoning
+[LOD1 (extruded block)](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#lod1-extruded-block) for the reasoning
 and the measured alternatives that were rejected.
 
 LOD1 is otherwise one box per volume. If a `Building` in your
@@ -343,7 +352,7 @@ worth checking the export's metadata (in ours, the source description pointed
 to this) before assuming the tool is wrong. Splitting such buildings into
 separate `BuildingPart`s upstream is the correct fix. CitySmith does not yet
 detect or flag this case automatically; it's a known limitation, tracked on
-the [Roadmap](docs/DESIGN.md#roadmap).
+the [Roadmap](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#roadmap).
 
 ### LOD0: the footprint
 
@@ -422,7 +431,7 @@ excluding the installation's own roof) is a balcony, above it a chimney or
 other roof structure. This catches real balconies that source CityGRID
 exports don't reliably tag with `OuterFloorSurface`, verified on real data:
 352 balconies and 2246 chimneys classified, 0 left unknown. See
-[Semantic enrichment](docs/DESIGN.md#semantic-enrichment) in the design doc
+[Semantic enrichment](https://github.com/banecronotse/CitySmith/blob/main/docs/DESIGN.md#semantic-enrichment) in the design doc
 for the full classification order and the known limitation (no filter yet
 for low canopies/awnings misread as balconies).
 
@@ -445,7 +454,7 @@ XML schemas: which elements may appear where, in which order, with which
 content. This catches files that other software may reject or read only
 partly, even when the geometry is fine. It is built in and works offline:
 the official schemas (CityGML 2.0, GML 3.1.1, xLink, xAL) ship with CitySmith
-unmodified, see [their notice](src/citysmith/data/schemas/NOTICE.md). No Java
+unmodified, see [their notice](https://github.com/banecronotse/CitySmith/blob/main/src/citysmith/data/schemas/NOTICE.md). No Java
 is needed for this part; `--schema-only` stops here.
 
 Errors are listed once per position, with line and column. Content from
@@ -498,4 +507,4 @@ not auto-heal.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](https://github.com/banecronotse/CitySmith/blob/main/LICENSE).

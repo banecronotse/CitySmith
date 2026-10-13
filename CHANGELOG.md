@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-10-13
+
+First release published on PyPI (`pip install citysmith`). It covers all
+work since the project started; 0.1.0 was never published.
+
 ### Added
 - Project scaffold, packaging and design document.
 - CityGML 2.0 namespace helpers.
