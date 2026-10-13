@@ -1008,3 +1008,87 @@ def test_cli_validate_schema_only_needs_no_citydoctor(tmp_path, monkeypatch, cap
     assert "schema              : valid" in capsys.readouterr().out
     import json
     assert json.loads(report.read_text())["schema"]["valid"] is True
+
+
+# --- inspect: file-level facts and multi-file comparison -------------------------
+
+def test_file_facts_on_real_building():
+    from citysmith.facts import file_facts
+    f = file_facts(str(DATA))
+    assert f.citygml_version == "2.0"
+    assert list(f.srs_names) == ["epsg:32634"]
+    assert f.top_level_types == {"bldg:Building": 1}
+    assert f.building_elements["Window"] == 25
+    assert f.building_elements["BuildingPart"] == 1
+    assert f.building_attributes["measuredHeight"] == {"present": 0, "of": 2}
+    assert f.generic_attributes["citygrid_UnitID"]["type"] == "string"
+    assert f.extent_note == "declared envelope covers all coordinates"
+    assert f.namespaces_without_schema == []
+    assert f.top_level_ids == {"CS1"}
+
+
+def test_file_facts_textures_envelope_and_extensions(tmp_path):
+    from citysmith.facts import file_facts
+    (tmp_path / "tex").mkdir()
+    (tmp_path / "tex" / "a.jpg").write_bytes(b"x" * 1000)
+    head = _MERGE_HEAD.format(srs="EPSG:25832").replace(
+        'xmlns:bldg=', 'xmlns:ade="urn:example:ade" xmlns:bldg=')
+    body = (_ground_building("B1", "p1", 100)
+            + '<app:appearanceMember><app:Appearance><app:theme>photo</app:theme>'
+            + "".join(f'<app:surfaceDataMember><app:ParameterizedTexture><app:imageURI>{u}'
+                      '</app:imageURI><app:target uri="#p1"/></app:ParameterizedTexture>'
+                      '</app:surfaceDataMember>' for u in ("tex/a.jpg", "tex/gone.jpg"))
+            + '</app:Appearance></app:appearanceMember>'
+            + '<cityObjectMember><ade:Thing gml:id="T1"/></cityObjectMember>')
+    path = tmp_path / "t.gml"
+    path.write_text(head + body + "</CityModel>", encoding="utf-8")
+    f = file_facts(str(path))
+    a = f.appearance
+    assert (a["parameterized_textures"], a["image_files"], a["image_files_missing"]) == (2, 2, 1)
+    assert a["image_bytes"] == 1000 and a["themes"] == {"photo": 1}
+    assert a["global_appearance_members"] == 1
+    # the fixture's envelope is 0..1, the building lies at x = 100
+    assert "does not cover" in f.extent_note
+    assert f.namespaces_without_schema == ["urn:example:ade"]
+    assert f.top_level_types == {"bldg:Building": 1, "ade:Thing": 1}
+
+
+def test_compare_files_is_a_merge_preflight(tmp_path):
+    from citysmith.facts import compare_files, file_facts
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0),
+                       _ground_building("SAME", "ps", 3))
+    b = _write_srs_gml(tmp_path / "b.gml", "urn:ogc:def:crs:EPSG::32634",
+                       _ground_building("SAME", "pt", 3))
+    c = _write_srs_gml(tmp_path / "c.gml", "EPSG:25832", _ground_building("C1", "pc", 500))
+    ok = compare_files([file_facts(str(a)), file_facts(str(b))])
+    assert ok["merge_preflight"] == "ok" and ok["same_crs"]
+    assert ok["shared_top_level_ids"][0]["examples"] == ["SAME"]
+    assert ok["overlapping_extents"] == [[str(a), str(b)]]
+    stop = compare_files([file_facts(str(a)), file_facts(str(c))])
+    assert stop["merge_preflight"] == "would stop"
+    assert "different coordinate systems" in stop["problems"][0]
+
+
+def test_cli_inspect_several_files_writes_comparison(tmp_path, capsys):
+    import json
+    from citysmith.cli import main
+    a = _write_srs_gml(tmp_path / "a.gml", "EPSG:32634", _ground_building("A1", "pa", 0))
+    b = _write_srs_gml(tmp_path / "b.gml", "EPSG:32634", _ground_building("A1", "pb", 0))
+    report = tmp_path / "r.json"
+    assert main(["inspect", str(a), str(b), "--schema", "--report", str(report)]) == 0
+    out = capsys.readouterr().out
+    assert "merge preflight    : OK" in out and "shared ids         : 1" in out
+    data = json.loads(report.read_text())
+    assert set(data["files"]) == {str(a), str(b)}
+    assert data["files"][str(a)]["file"]["schema"]["valid"] is True
+    assert data["comparison"]["shared_top_level_ids"][0]["count"] == 1
+
+
+def test_cli_inspect_single_file_report_keeps_old_keys(tmp_path):
+    import json
+    from citysmith.cli import main
+    report = tmp_path / "r.json"
+    assert main(["inspect", str(DATA), "--report", str(report)]) == 0
+    data = json.loads(report.read_text())
+    assert data["features"] == 2 and data["source_lod3"] == 2
+    assert data["file"]["citygml_version"] == "2.0"

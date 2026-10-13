@@ -38,7 +38,7 @@ produces those from what you already have.
 
 | Area | What it does | Status |
 | --- | --- | --- |
-| `inspect` | Read-only preflight: what geometry was found and what each capability can/can't do with it, no output written | done |
+| `inspect` | Read-only preflight: file facts (CityGML version, CRS, extent, object types, textures, attributes, extensions), what each capability can do with each building, and for several files a merge preflight; no output written | done |
 | `crop` | Extract a named subset of buildings by `gml:id` out of a larger file | done |
 | `merge` | Combine several CityGML files into one: CRS check, duplicate and id clash handling, texture paths kept valid | done |
 | `lod` | Derive and embed lower LODs: LOD1 block and LOD0 footprint from LOD3 or LOD2 data, a clean LOD2 shell from LOD3 | done |
@@ -114,6 +114,10 @@ directory isn't on PATH yet. Either add it, or run everything as
 ```bash
 # Check what's actually in a file before running anything on it
 citysmith inspect unfamiliar_city_model.gml
+citysmith inspect unfamiliar_city_model.gml --schema   # plus a schema check
+
+# Compare files before merging them: same CRS? ids in both? overlapping extents?
+citysmith inspect part_a.gml part_b.gml
 
 # Cut a small area out of a larger dataset by naming the buildings you want
 citysmith crop citywide.gml --ids BLDG_001,BLDG_002,BLDG_003 -o area.gml

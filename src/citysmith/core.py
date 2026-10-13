@@ -968,9 +968,12 @@ class InspectReport:
     installations: int = 0
     feature_detail: list[dict] = field(default_factory=list)
     id_coverage: dict = field(default_factory=dict)
+    file: object = None  # facts.FileFacts: version, CRS, extent, textures, ...
 
     def to_dict(self) -> dict:
-        return self.__dict__.copy()
+        d = self.__dict__.copy()
+        d["file"] = self.file.to_dict() if self.file is not None else None
+        return d
 
 
 def _iter_own_subtree(feature):
@@ -1006,16 +1009,24 @@ def _tally_id_coverage(feature, id_coverage: dict) -> None:
             bucket["missing"] += 1
 
 
-def inspect(input_path: str, *, limit: int | None = None) -> InspectReport:
+def inspect(input_path: str, *, limit: int | None = None,
+            with_schema: bool = False) -> InspectReport:
     """Detect, per feature, what geometry pattern is present and how
     detailed each one is, without deriving or writing anything. Intended to
     be run before a real `lod`/`semantics` call on unfamiliar data, so its
     shape (and what CitySmith can and can't do with it, and why) is known
-    upfront rather than discovered from a silent zero-progress run."""
+    upfront rather than discovered from a silent zero-progress run.
+
+    `report.file` carries the file-level facts (version, CRS, extent,
+    object types, textures, attributes; see facts.py), always for the whole
+    file even with `limit`. `with_schema` adds a schema check summary."""
+    from .facts import file_facts  # local import: facts imports merge, which imports core
+
     parser = etree.XMLParser(huge_tree=True, remove_blank_text=False)
     root = etree.parse(input_path, parser).getroot()
     poly_index = _build_polygon_index(root)
     report = InspectReport()
+    report.file = file_facts(input_path, root, with_schema=with_schema)
 
     for feature in root.iter():
         if feature.tag not in _FEATURE_TAGS:

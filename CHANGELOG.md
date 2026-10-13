@@ -130,6 +130,19 @@ All notable changes to this project are documented here. The format follows
   downloaded; CityGML 1.0/3.0 files are reported as not checkable. The JSON
   report keeps CityDoctor2's keys and adds a `schema` block. Approach follows
   citygml-tools' `validate`.
+- `inspect` shows file-level facts first (`facts.py`, `InspectReport.file`):
+  size, CityGML version, srsName values, measured extent and whether the
+  declared envelope covers it, top-level object types (including
+  non-building content), building element counts, how many buildings carry
+  `measuredHeight`, `function`, `usage`, `roofType`, `storeysAboveGround`,
+  `yearOfConstruction`, generic attribute names with type and count,
+  textures and materials (themes, image files found, missing, total size),
+  and namespaces without a bundled schema. `--schema` adds a schema check
+  summary. `inspect` now takes several files (wildcards expanded on Windows
+  too) and then adds a comparison that works as a `merge` preflight: same
+  CRS, top-level ids in more than one file, overlapping extents, and a
+  verdict ("ok" / "would stop"). The single-file JSON report keeps its keys
+  and adds `file`; with several files it is `{files, comparison}`.
 - `semantics` now gives every `WallSurface`/`RoofSurface`/`GroundSurface`/
   `OuterFloorSurface`/`OuterCeilingSurface`/`ClosureSurface`/`Window`/`Door`/
   `BuildingInstallation` a readable `gml:id` anchored to the owning

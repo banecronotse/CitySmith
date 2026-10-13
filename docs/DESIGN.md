@@ -441,6 +441,14 @@ annotations. So the bridge is validate-and-report, not auto-heal.
   SketchUp/FME-workbench-exported data.
 - `citysmith inspect`: read-only preflight reporting what was found and what
   each capability can/can't do with it, before committing to a real run.
+  File-level facts (`facts.py`): CityGML version, srsName values, declared
+  versus measured extent, top-level object types, building element counts,
+  coverage of optional building attributes (`measuredHeight` and others),
+  generic attribute names and types, textures and image files (found,
+  missing, size), namespaces without a bundled schema, optional schema
+  summary. Several files at once add a comparison that doubles as a
+  `merge` preflight (same CRS, ids in more than one file, overlapping
+  extents).
 - Semantic enhancer, easy tier: ids, `function` codes, `type` attributes,
   `lod3Geometry` aggregation, eave-height-based balcony/chimney classification.
 - Native CityJSON 1.1 writer.
@@ -496,9 +504,6 @@ annotations. So the bridge is validate-and-report, not auto-heal.
   naming the tool, version and settings, without a date so output stays
   reproducible.
 - **`crop --bbox`** (`intersects` / `within`) and `--invert`.
-- **File-level facts in `inspect`**: CityGML version, srsName, extent,
-  appearance themes and texture counts, generic attribute names, several
-  files at once.
 - **CityJSON 2.0** output in `convert`, keeping 1.1 as an option.
 - **Batch input** for the per-file commands (several files or a folder, `-o`
   as a folder), and optional texture copying for `merge`.

@@ -15,6 +15,7 @@ Subcommands:
 import argparse
 import glob
 import json
+import os
 import sys
 
 from . import __version__
@@ -46,9 +47,128 @@ _PATTERN_LABEL = {
 }
 
 
+def _mb(n) -> str:
+    return f"{n / 1e6:.1f} MB"
+
+
+def _fmt_extent(ext) -> str:
+    if ext is None:
+        return "none"
+    lo, hi = ext
+    size = "  ".join(f"{h - l:.0f}" for l, h in zip(lo[:3], hi[:3]))
+    return (f"{' '.join(f'{v:.2f}' for v in lo)}  to  {' '.join(f'{v:.2f}' for v in hi)}"
+            f"   (size {size})")
+
+
+def _print_file_facts(f) -> None:
+    print("File")
+    print(f"  size               : {_mb(f.size_bytes)}")
+    print(f"  CityGML version    : {f.citygml_version or 'not CityGML (unknown root namespace)'}")
+    if f.citygml_version and f.citygml_version != "2.0":
+        print("    CitySmith works on CityGML 2.0; citygml-tools can upgrade or convert others")
+    if f.srs_names:
+        srs = ", ".join(f"{s} ({n}x)" for s, n in f.srs_names.items())
+        print(f"  coordinate system  : {srs}")
+        if len(f.srs_names) > 1:
+            print("    several srsName values: CitySmith assumes one CRS per file")
+    else:
+        print("  coordinate system  : none declared")
+    print(f"  extent (measured)  : {_fmt_extent(f.extent_measured)}")
+    print(f"    {f.extent_note}")
+    print("  top-level objects  : " + (", ".join(f"{t} {n}" for t, n in f.top_level_types.items())
+                                       or "none"))
+    if f.building_elements:
+        print("  building elements  : " + ", ".join(f"{t} {n}"
+                                                    for t, n in f.building_elements.items()))
+    attrs = [f"{name} {v['present']}/{v['of']}" for name, v in f.building_attributes.items()]
+    if attrs:
+        print("  building attributes: " + ", ".join(attrs))
+        mh = f.building_attributes.get("measuredHeight", {})
+        if mh.get("of") and mh.get("present") == 0:
+            print("    no measuredHeight: lod --lod1-height measured would fall back to "
+                  "'average' everywhere")
+    if f.generic_attributes:
+        print("  generic attributes : " + ", ".join(
+            f"{name} ({v['type']}, {v['count']}x)" for name, v in f.generic_attributes.items()))
+    a = f.appearance
+    if a.get("parameterized_textures") or a.get("georeferenced_textures") or a.get("materials"):
+        themes = ", ".join(f"{t} ({n})" for t, n in a["themes"].items()) or "none"
+        print(f"  appearance         : {a['parameterized_textures']} texture(s), "
+              f"{a['georeferenced_textures']} georeferenced, {a['materials']} material(s); "
+              f"themes: {themes}")
+        print(f"    image files      : {a['image_files']} referenced, "
+              f"{_mb(a['image_bytes'])} found next to the file, "
+              f"{a['image_files_missing']} missing")
+    else:
+        print("  appearance         : none (no textures or materials)")
+    if f.namespaces_without_schema:
+        print("  extensions (ADEs) without a bundled schema:")
+        for ns in f.namespaces_without_schema:
+            print(f"    {ns}")
+    if f.schema is not None:
+        s = f.schema
+        if not s["checked"]:
+            print(f"  schema             : not checked ({s['note']})")
+        elif s["valid"]:
+            print("  schema             : valid (CityGML 2.0)")
+        else:
+            print(f"  schema             : INVALID, {s['error_count']} error(s); first:")
+            for m in s["first_errors"]:
+                print(f"    line {m['line']}: {m['message'][:150]}")
+            print("    full list: citysmith validate <file> --schema-only")
+    print()
+
+
+def _print_comparison(cmp) -> None:
+    print("=" * 70)
+    print("Comparison of the files (merge preflight)")
+    print("  CityGML versions   : " + ", ".join(
+        f"{v} ({os.path.basename(p)})" for p, v in cmp["citygml_versions"].items()))
+    print(f"  same CRS           : {'yes' if cmp['same_crs'] else 'NO'}")
+    for path, srs in cmp["srs_names"].items():
+        print(f"    {', '.join(srs) or 'none':24} {os.path.basename(path)}")
+    if cmp["shared_top_level_ids"]:
+        for s in cmp["shared_top_level_ids"]:
+            a, b = (os.path.basename(x) for x in s["files"])
+            print(f"  shared ids         : {s['count']} in both {a} and {b}, "
+                  f"e.g. {', '.join(s['examples'])}")
+    else:
+        print("  shared ids         : none")
+    pairs = ["{} + {}".format(*(os.path.basename(x) for x in p))
+             for p in cmp["overlapping_extents"]]
+    print(f"  overlapping extents: {'; '.join(pairs) or 'none'}")
+    print(f"  merge preflight    : {cmp['merge_preflight'].upper()}")
+    for p in cmp["problems"]:
+        print(f"    problem: {p}")
+    for n in cmp["notes"]:
+        print(f"    note: {n}")
+
+
 def _cmd_inspect(args) -> int:
-    print(f"reading  : {args.input}")
-    report = inspect_source(args.input, limit=args.limit)
+    inputs = _expand_inputs(args.inputs)
+    reports = {}
+    for i, path in enumerate(inputs):
+        if i:
+            print("=" * 70)
+        reports[path] = _inspect_one(path, args)
+    if len(inputs) > 1:
+        from .facts import compare_files
+        cmp = compare_files([r.file for r in reports.values()])
+        _print_comparison(cmp)
+        if args.report:
+            _write_report(args.report, {"files": {p: r.to_dict() for p, r in reports.items()},
+                                        "comparison": cmp})
+    elif args.report:
+        _write_report(args.report, reports[inputs[0]].to_dict())
+    return 0
+
+
+def _inspect_one(path, args):
+    print(f"reading  : {path}")
+    report = inspect_source(path, limit=args.limit, with_schema=args.schema)
+    print()
+    _print_file_facts(report.file)
+    print("Buildings")
     print(f"features found      : {report.features}")
     print(f"  usable, LOD3       : {report.source_lod3}")
     print(f"  usable, LOD2       : {report.source_lod2}")
@@ -77,16 +197,16 @@ def _cmd_inspect(args) -> int:
           "(needs an LOD3 source; LOD2-sourced features have nothing to derive there)")
     print(f"  semantics          : {'yes, ' + str(report.installations) + ' installation(s) to classify' if report.installations else 'no BuildingInstallations found'}")
     print("  convert            : yes, whatever geometry/semantics is already present converts to CityJSON")
-    print("  validate           : yes, native + CityDoctor2 both work on the raw file regardless of pattern")
+    print("  validate           : yes, schema check + CityDoctor2 both work on the raw file "
+          "regardless of pattern")
     if report.source_unclassified:
         print()
         print(f"Note: {report.source_unclassified} feature(s) have geometry CitySmith can see but not use, "
               "a flat MultiSurface with no boundedBy thematic classification, so there's no way to tell "
               "which polygon is the roof, wall or ground. Not a bug, just not enough information in the "
               "source data for this tool's approach.")
-    if args.report:
-        _write_report(args.report, report.to_dict())
-    return 0
+    print()
+    return report
 
 
 # --- crop ----------------------------------------------------------------------
@@ -385,10 +505,23 @@ def build_parser() -> argparse.ArgumentParser:
     insp = _sub(sub, "inspect",
                 help="read-only preflight: what's in this file and what each capability "
                      "can do with it",
-                epilog="example:\n  citysmith inspect unfamiliar_city_model.gml")
-    insp.add_argument("input", help="source CityGML file")
+                description="Read-only preflight, nothing is written. Per file:\n"
+                            "  - file facts: CityGML version, coordinate system, extent,\n"
+                            "    object types, textures, building and generic attributes,\n"
+                            "    extensions without a schema (--schema adds a schema check)\n"
+                            "  - per building: which LOD CitySmith can use, gml:id coverage,\n"
+                            "    and what each command can do with the file\n"
+                            "With several files, also a comparison that works as a merge\n"
+                            "preflight: same CRS, ids in more than one file, overlapping extents.",
+                epilog="examples:\n"
+                       "  citysmith inspect unfamiliar_city_model.gml --schema\n"
+                       "  citysmith inspect part_a.gml part_b.gml")
+    insp.add_argument("inputs", nargs="+", help="one or more CityGML files")
+    insp.add_argument("--schema", action="store_true",
+                       help="also check each file against the CityGML 2.0 schemas")
     insp.add_argument("--limit", type=int, default=None,
-                       help="only look at the first N features (quick check on a huge file)")
+                       help="only look at the first N features per file (quick check on a huge "
+                            "file); the file facts always cover the whole file")
     insp.add_argument("--report", help=_REPORT_HELP)
     insp.set_defaults(func=_cmd_inspect)
 
